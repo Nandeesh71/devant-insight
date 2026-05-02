@@ -4,60 +4,60 @@
 
 @layer base {
   :root {
-    --background: 240 10% 96%;
-    --foreground: 240 15% 12%;
+    --background: 240 13% 96%;
+    --foreground: 240 15% 14%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 15% 12%;
+    --card-foreground: 240 15% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 15% 12%;
+    --popover-foreground: 240 15% 14%;
 
-    --primary: 348 79% 60%;
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 15% 12%;
+    --secondary: 250 30% 96%;
+    --secondary-foreground: 240 15% 14%;
 
-    --muted: 240 5% 96%;
+    --muted: 240 10% 96%;
     --muted-foreground: 240 5% 50%;
 
-    --accent: 348 86% 95%;
-    --accent-foreground: 348 79% 50%;
+    --accent: 258 90% 95%;
+    --accent-foreground: 262 83% 50%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 240 6% 93%;
     --input: 240 6% 93%;
-    --ring: 348 79% 60%;
+    --ring: 262 83% 58%;
 
     --radius: 0.75rem;
 
-    /* DevANT custom tokens */
+    /* CloudDock custom tokens */
     --rail: 240 30% 14%;
     --sidebar-bg: 240 25% 16%;
     --sidebar-search: 240 20% 22%;
     --sidebar-tree: 240 15% 28%;
     --sidebar-text: 240 15% 70%;
     --sidebar-label: 240 10% 55%;
-    --brand: 348 79% 60%;
-    --brand-glow: 348 90% 70%;
-    --card-dark: 268 56% 12%;
-    --card-light: 350 100% 98%;
-    --row-selected: 350 100% 97%;
-    --row-hover: 350 100% 99%;
-    --health-green: 145 55% 42%;
-    --health-yellow: 48 82% 61%;
-    --health-red: 0 75% 55%;
-    --budget-purple: 262 52% 59%;
+    --brand: 262 83% 58%;
+    --brand-glow: 262 90% 70%;
+    --card-dark: 245 36% 25%;
+    --card-light: 250 60% 97%;
+    --row-selected: 258 100% 97%;
+    --row-hover: 250 100% 99%;
+    --upgrade-from: 252 70% 26%;
+    --upgrade-to: 245 73% 20%;
+    --upgrade-btn: 260 64% 33%;
 
-    --gradient-brand: linear-gradient(135deg, hsl(348 79% 60%), hsl(348 90% 70%));
-    --gradient-card-dark: linear-gradient(135deg, hsl(268 56% 12%), hsl(268 56% 18%));
-    --gradient-upgrade: linear-gradient(135deg, hsl(268 56% 14%), hsl(290 50% 22%));
+    --gradient-brand: linear-gradient(135deg, hsl(262 83% 58%), hsl(280 90% 70%));
+    --gradient-card-dark: linear-gradient(135deg, hsl(245 36% 25%), hsl(255 40% 30%));
+    --gradient-upgrade: linear-gradient(160deg, hsl(252 70% 26%), hsl(245 73% 20%));
+    --gradient-storage: linear-gradient(135deg, hsl(210 90% 60%), hsl(230 90% 70%));
     --shadow-card: 0 1px 2px hsl(240 10% 80% / 0.4), 0 4px 12px hsl(240 10% 80% / 0.12);
     --shadow-lift: 0 8px 24px hsl(240 15% 30% / 0.12);
-    --shadow-brand: 0 8px 24px hsl(348 79% 60% / 0.35);
+    --shadow-brand: 0 8px 24px hsl(262 83% 58% / 0.35);
   }
 
   .dark {
@@ -67,7 +67,7 @@
     --card-foreground: 0 0% 100%;
     --popover: 240 18% 16%;
     --popover-foreground: 0 0% 100%;
-    --primary: 348 79% 60%;
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
     --secondary: 240 15% 20%;
     --secondary-foreground: 0 0% 100%;
@@ -77,9 +77,9 @@
     --accent-foreground: 0 0% 100%;
     --border: 240 15% 22%;
     --input: 240 15% 22%;
-    --ring: 348 79% 60%;
+    --ring: 262 83% 58%;
     --row-hover: 240 18% 18%;
-    --row-selected: 348 30% 18%;
+    --row-selected: 262 30% 22%;
     --card-light: 240 18% 18%;
   }
 
@@ -101,20 +101,9 @@
 @layer utilities {
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { scrollbar-width: none; }
-
-  .tree-line {
-    background-image: linear-gradient(to bottom, hsl(var(--sidebar-tree)) 50%, transparent 50%);
-    background-size: 1px 4px;
-    background-repeat: repeat-y;
-  }
 }
 
 @keyframes fill-bar {
   from { width: 0; }
 }
 .animate-fill { animation: fill-bar 1s ease-out; }
-
-@keyframes sweep {
-  from { transform: rotate(-90deg); }
-}
-.animate-sweep { animation: sweep 1.2s ease-out; transform-origin: center; }
