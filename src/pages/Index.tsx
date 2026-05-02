@@ -1,9 +1,11 @@
 import { useState } from "react";
 import {
-  LayoutGrid, Target, Download, Trash2, Bell, Plus, Settings, LogOut,
+  LayoutGrid, GitBranch, GitPullRequest, Trash2, Bell, Plus, Settings, LogOut,
   Search, ChevronUp, ChevronRight, ChevronDown, Pencil, Folder, ArrowLeft,
   Sun, Moon, Info, SlidersHorizontal, MoreHorizontal, Share2, Link2,
-  LayoutList, Grid3x3, Cloud, Lock, Users, Rocket, Sparkles, FileText,
+  List, Grid3x3, Activity, Sparkles, Bug, Zap, RefreshCw, Code2,
+  LayoutDashboard, Layers, Smartphone, GitCommit, Lock, Users, PlusCircle,
+  Download,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -21,10 +23,10 @@ function useTheme() {
 
 /* ---------------- Left icon rail ---------------- */
 const railTop = [
-  { icon: LayoutGrid, label: "Dashboard", active: true },
-  { icon: Target, label: "Targets" },
-  { icon: Download, label: "Downloads" },
-  { icon: Trash2, label: "Trash" },
+  { icon: LayoutGrid, label: "Portfolio", active: true },
+  { icon: GitBranch, label: "Commits" },
+  { icon: GitPullRequest, label: "Pull Requests" },
+  { icon: Trash2, label: "Archived" },
   { icon: Bell, label: "Alerts", badge: true },
 ];
 
@@ -32,12 +34,8 @@ function IconRail() {
   return (
     <TooltipProvider delayDuration={150}>
       <aside className="w-14 shrink-0 bg-rail flex flex-col items-center py-3 gap-1">
-        <div className="w-9 h-9 rounded-xl bg-gradient-brand flex items-center justify-center text-white shadow-brand mb-2">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M2 12c5-5 15-5 20 0" />
-            <path d="M5 16c3.5-3.5 10.5-3.5 14 0" />
-            <path d="M9 19.5c1.5-1.5 4.5-1.5 6 0" />
-          </svg>
+        <div className="w-9 h-9 rounded-xl bg-gradient-brand flex items-center justify-center text-white text-xs font-bold shadow-brand mb-2">
+          DA
         </div>
         {railTop.map((it) => (
           <Tooltip key={it.label}>
@@ -48,86 +46,81 @@ function IconRail() {
                   it.active ? "bg-white/5 text-white" : "text-sidebar-text hover:text-white hover:bg-white/5"
                 )}
               >
-                {it.active && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r bg-brand" />}
+                {it.active && <span className="absolute -left-2 top-1.5 bottom-1.5 w-[3px] rounded-r bg-brand" />}
                 <it.icon size={20} />
-                {it.badge && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-rail" />}
+                {it.badge && <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" />}
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right">{it.label}</TooltipContent>
+            <TooltipContent side="right" className="bg-rail text-white border-white/10">{it.label}</TooltipContent>
           </Tooltip>
         ))}
         <Tooltip>
           <TooltipTrigger asChild>
-            <button className="mt-2 w-10 h-10 rounded-lg bg-white/10 text-white hover:bg-white/15 flex items-center justify-center">
-              <Plus size={18} />
+            <button className="mt-1 w-10 h-10 rounded-lg bg-white/5 text-sidebar-text hover:text-white flex items-center justify-center">
+              <Plus size={20} />
             </button>
           </TooltipTrigger>
-          <TooltipContent side="right">New</TooltipContent>
+          <TooltipContent side="right" className="bg-rail text-white border-white/10">New Project</TooltipContent>
         </Tooltip>
-
         <div className="mt-auto flex flex-col gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button className="w-10 h-10 rounded-lg text-sidebar-text hover:text-white flex items-center justify-center">
-                <Settings size={18} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Settings</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button className="w-10 h-10 rounded-lg text-sidebar-text hover:text-white flex items-center justify-center">
-                <LogOut size={18} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Log out</TooltipContent>
-          </Tooltip>
+          <button className="w-10 h-10 rounded-lg text-sidebar-text hover:text-white hover:bg-white/5 flex items-center justify-center">
+            <Settings size={18} />
+          </button>
+          <button className="w-10 h-10 rounded-lg text-sidebar-text hover:text-white hover:bg-white/5 flex items-center justify-center">
+            <LogOut size={18} />
+          </button>
         </div>
       </aside>
     </TooltipProvider>
   );
 }
 
-/* ---------------- Middle sidebar ---------------- */
-type FolderNode = { name: string; children?: FolderNode[] };
-const folders: FolderNode[] = [
+/* ---------------- Sidebar tree ---------------- */
+type TreeItem = { name: string; children?: TreeItem[]; badge?: string; leaf?: boolean };
+
+const projectTree: TreeItem[] = [
   {
-    name: "UI & UX Design",
+    name: "ShortFundly",
     children: [
-      { name: "Products Designs", children: [{ name: "Course Dashboard" }, { name: "KDS Dashboard" }] },
-      { name: "Drapora Projects" },
+      {
+        name: "Repositories",
+        children: [
+          { name: "main", leaf: true },
+          { name: "feature/auth", leaf: true },
+        ],
+      },
+      { name: "Perceptronix App" },
     ],
   },
-  { name: "Design Systems" },
-  { name: "Web Apps" },
+  { name: "KDS Dashboard" },
+  { name: "Tensor Redesign" },
+  { name: "Drapora Projects" },
 ];
 
-function TreeNode({ node, depth = 0, defaultOpen = false }: { node: FolderNode; depth?: number; defaultOpen?: boolean }) {
+function TreeNode({ item, depth = 0, defaultOpen = false }: { item: TreeItem; depth?: number; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
-  const hasChildren = !!node.children?.length;
-  const isLeaf = depth >= 2;
-
+  const hasChildren = !!item.children?.length;
   return (
-    <div>
+    <div className="relative">
       <button
-        onClick={() => hasChildren && setOpen((v) => !v)}
-        className={cn(
-          "relative w-full flex items-center gap-2 h-8 rounded-md text-[12px] hover:bg-white/5 text-sidebar-text",
-          depth === 0 ? "px-2" : "pl-4 pr-2"
-        )}
-        style={{ paddingLeft: depth === 0 ? 8 : 8 + depth * 14 }}
+        onClick={() => hasChildren && setOpen(!open)}
+        className="w-full flex items-center gap-2 py-1.5 px-2 rounded-md text-[13px] text-sidebar-text hover:text-white hover:bg-white/5 transition-colors"
+        style={{ paddingLeft: 8 + depth * 14 }}
       >
-        {depth > 0 && <span className="absolute left-0 top-1/2 w-3 h-px bg-sidebar-tree" style={{ left: depth * 14 - 6 }} />}
-        {!isLeaf && <Folder size={13} className="text-sidebar-text shrink-0" />}
-        <span className="flex-1 text-left truncate">{node.name}</span>
-        {hasChildren && (open ? <ChevronUp size={12} /> : <ChevronRight size={12} />)}
-        {!hasChildren && !isLeaf && <ChevronRight size={12} />}
+        {hasChildren ? (
+          <Folder size={14} className="text-sidebar-text shrink-0" />
+        ) : item.leaf ? (
+          <span className="w-3.5 shrink-0" />
+        ) : (
+          <Folder size={14} className="text-sidebar-text shrink-0" />
+        )}
+        <span className="flex-1 text-left truncate">{item.name}</span>
+        {hasChildren && (open ? <ChevronUp size={14} /> : <ChevronRight size={14} />)}
       </button>
       {hasChildren && open && (
-        <div className="relative">
-          <div className="absolute top-0 bottom-2 w-px bg-sidebar-tree" style={{ left: depth * 14 + 14 }} />
-          {node.children!.map((c) => (
-            <TreeNode key={c.name} node={c} depth={depth + 1} defaultOpen={depth + 1 < 1} />
+        <div className="relative ml-4 border-l border-[hsl(var(--sidebar-tree))]">
+          {item.children!.map((c) => (
+            <TreeNode key={c.name} item={c} depth={depth + 1} />
           ))}
         </div>
       )}
@@ -136,85 +129,73 @@ function TreeNode({ node, depth = 0, defaultOpen = false }: { node: FolderNode; 
 }
 
 function MiddleSidebar() {
-  const [overviewOpen, setOverviewOpen] = useState(true);
-
   return (
-    <aside className="w-60 shrink-0 bg-sidebar-bg flex flex-col text-sidebar-text">
-      <div className="flex items-center gap-2 px-3 pt-3 pb-2">
+    <aside className="w-60 shrink-0 bg-sidebar-bg flex flex-col text-white">
+      {/* header */}
+      <div className="flex items-center gap-2 px-4 pt-4 pb-3">
         <button className="w-7 h-7 rounded-md bg-white/5 hover:bg-white/10 flex items-center justify-center">
-          <ArrowLeft size={14} className="text-white" />
+          <ArrowLeft size={14} />
         </button>
-        <h2 className="text-white font-semibold text-[18px] flex-1">Dashboard</h2>
-        <button className="w-7 h-7 rounded-md hover:bg-white/5 flex items-center justify-center">
-          <Settings size={14} />
-        </button>
+        <h2 className="flex-1 font-semibold text-[15px]">Projects</h2>
+        <button className="text-sidebar-text hover:text-white"><Settings size={16} /></button>
       </div>
 
+      {/* search */}
       <div className="px-3 pb-3">
-        <div className="flex items-center gap-2 bg-sidebar-search rounded-lg px-2.5 h-8">
-          <Search size={13} className="text-sidebar-label" />
-          <input placeholder="Search" className="bg-transparent text-[12px] text-white placeholder:text-sidebar-label flex-1 outline-none" />
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-sidebar-label">⌘K</span>
+        <div className="flex items-center gap-2 bg-[hsl(var(--sidebar-search))] rounded-lg px-3 py-2">
+          <Search size={14} className="text-sidebar-text" />
+          <input
+            placeholder="Search projects..."
+            className="flex-1 bg-transparent text-[13px] placeholder:text-sidebar-label outline-none"
+          />
+          <span className="text-[10px] text-sidebar-label bg-black/30 px-1.5 py-0.5 rounded">⌘K</span>
         </div>
       </div>
 
+      {/* Overview active */}
       <div className="px-3 space-y-1">
-        <button
-          onClick={() => setOverviewOpen((v) => !v)}
-          className="w-full flex items-center gap-2 bg-brand rounded-lg px-3 h-9 text-white text-[13px] font-medium shadow-brand"
-        >
-          <Cloud size={14} />
+        <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-brand text-white font-semibold text-sm shadow-brand">
+          <LayoutGrid size={14} />
           <span className="flex-1 text-left">Overview</span>
-          {overviewOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          <ChevronUp size={14} />
         </button>
-        {overviewOpen && (
-          <div className="pl-5 relative">
-            <div className="absolute left-3 top-0 bottom-3 w-px bg-sidebar-tree" />
-            <button className="relative flex items-center gap-2 w-full pl-3 pr-2 h-8 rounded-md hover:bg-white/5 text-[12px]">
-              <span className="absolute left-0 top-1/2 w-3 h-px bg-sidebar-tree" />
-              <span className="flex-1 text-left">My Overview</span>
-              <ChevronRight size={12} />
-            </button>
-            <button className="relative flex items-center gap-2 w-full pl-3 pr-2 h-8 rounded-md bg-white/[0.04] text-[12px] text-white">
-              <span className="absolute left-0 top-1/2 w-3 h-px bg-sidebar-tree" />
-              <span className="flex-1 text-left">Recent Activity</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-black/40 text-sidebar-text">242</span>
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="px-3 mt-5 flex items-center justify-between">
-        <span className="text-[10px] tracking-wider uppercase text-sidebar-label font-semibold">Starred Files</span>
-        <button className="text-sidebar-label hover:text-white">
-          <Pencil size={11} />
-        </button>
-      </div>
-
-      <div className="px-3 mt-2 space-y-0.5 flex-1 overflow-y-auto scrollbar-hide">
-        {folders.map((f, i) => (
-          <TreeNode key={f.name} node={f} defaultOpen={i === 0} />
-        ))}
-
-        <button className="mt-3 w-full flex items-center justify-center gap-2 h-9 rounded-lg border border-dashed border-white/15 text-[12px] text-sidebar-text hover:bg-white/5 hover:text-white">
-          <Plus size={13} /> New Folder
-        </button>
-      </div>
-
-      {/* Trial banner */}
-      <div className="m-3 rounded-2xl p-4 bg-gradient-upgrade relative overflow-hidden">
-        <button className="absolute top-3 right-3 text-white/60 hover:text-white">
-          <MoreHorizontal size={14} />
-        </button>
-        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-3">
-          <Rocket size={20} className="text-orange-300" />
+        <div className="relative ml-4 border-l border-[hsl(var(--sidebar-tree))] pl-1">
+          <button className="w-full flex items-center justify-between py-1.5 px-2 text-[13px] text-sidebar-text hover:text-white">
+            <span>My Projects</span><ChevronRight size={14} />
+          </button>
+          <button className="w-full flex items-center justify-between py-1.5 px-2 text-[13px] text-sidebar-text hover:text-white">
+            <span>Recent Activity</span>
+            <span className="text-[10px] bg-black/30 text-white px-1.5 py-0.5 rounded-full">47</span>
+          </button>
         </div>
-        <div className="text-white font-semibold text-[14px]">Trial Ending Soon !</div>
-        <p className="text-[11px] text-white/60 mt-1 leading-snug">
-          Your access expires in 6 days. Upgrade now for access!
-        </p>
-        <button className="mt-3 w-full h-9 rounded-full bg-[hsl(var(--upgrade-btn))] text-white text-[12px] font-medium hover:brightness-110 flex items-center justify-center gap-1.5">
-          <Sparkles size={12} /> Upgrade to Pro
+      </div>
+
+      {/* Active Projects label */}
+      <div className="flex items-center justify-between px-5 mt-5 mb-1">
+        <span className="text-[10px] tracking-wider uppercase text-sidebar-label font-semibold">Active Projects</span>
+        <button className="text-sidebar-label hover:text-white"><Pencil size={12} /></button>
+      </div>
+
+      <div className="px-3 flex-1 overflow-y-auto scrollbar-hide">
+        <TreeNode item={projectTree[0]} defaultOpen />
+        {projectTree.slice(1).map((p) => <TreeNode key={p.name} item={p} />)}
+
+        <button className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-dashed border-[#4A4A6A] text-[13px] text-sidebar-text hover:text-white hover:border-white/30">
+          <PlusCircle size={14} />
+          New Project
+        </button>
+      </div>
+
+      {/* Upgrade banner */}
+      <div className="m-3 rounded-xl p-4 bg-gradient-upgrade relative overflow-hidden">
+        <button className="absolute top-2 right-2 text-white/50 hover:text-white">
+          <MoreHorizontal size={16} />
+        </button>
+        <div className="text-2xl mb-2">🚀</div>
+        <div className="text-white font-bold text-sm">Upgrade to DevANT Pro</div>
+        <div className="text-white/60 text-[11px] mt-1 mb-3">Unlock AI briefs, DORA metrics & screenshot diffs.</div>
+        <button className="w-full rounded-full py-2 bg-[#3D1F8C] hover:bg-[#4A26A8] text-white text-[13px] font-semibold flex items-center justify-center gap-1.5">
+          <Sparkles size={13} /> Upgrade to Pro
         </button>
       </div>
     </aside>
@@ -222,111 +203,72 @@ function MiddleSidebar() {
 }
 
 /* ---------------- Top bar ---------------- */
-function TopBar({ dark, onToggle }: { dark: boolean; onToggle: () => void }) {
+function TopBar({ dark, toggle }: { dark: boolean; toggle: () => void }) {
   return (
-    <div className="flex items-center gap-3 px-6 py-4 bg-card border-b border-border">
-      <div className="w-8 h-8 rounded-full bg-gradient-storage flex items-center justify-center text-white shadow-md">
-        <Cloud size={15} />
+    <div className="flex items-center px-6 py-3 border-b border-border">
+      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#3B82F6] flex items-center justify-center text-white">
+        <Activity size={16} />
       </div>
-      <div className="flex flex-col">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-[14px] text-foreground">Basic Storage</span>
-          <span className="text-[12px] text-muted-foreground">50GB / 100GB</span>
-        </div>
-        <div className="h-1 w-32 bg-muted rounded-full mt-1 overflow-hidden">
-          <div className="h-full w-1/2 bg-brand rounded-full animate-fill" />
+      <div className="ml-3">
+        <div className="text-[15px] font-semibold text-foreground">ShortFundly</div>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-[11px] text-muted-foreground">₹1.89L / ₹2.6L</span>
+          <div className="h-1 w-28 bg-muted rounded-full overflow-hidden">
+            <div className="h-1 bg-brand rounded-full animate-fill" style={{ width: "73%" }} />
+          </div>
         </div>
       </div>
-      <div className="flex-1" />
-      <button onClick={onToggle} className="w-9 h-9 rounded-full bg-muted hover:bg-accent flex items-center justify-center text-foreground">
-        {dark ? <Sun size={15} /> : <Moon size={15} />}
-      </button>
-      <button className="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground">
-        <Info size={15} />
-      </button>
-      <button className="relative w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground">
-        <Bell size={15} />
-        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500" />
-      </button>
-      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-500" />
+      <div className="ml-auto flex items-center gap-1.5">
+        <button onClick={toggle} className="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground">
+          {dark ? <Moon size={16} /> : <Sun size={16} />}
+        </button>
+        <button className="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"><Info size={16} /></button>
+        <button className="relative w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground">
+          <Bell size={16} />
+          <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full" />
+        </button>
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-300 to-pink-400" />
+      </div>
     </div>
   );
 }
 
-/* ---------------- Avatar stack ---------------- */
-function AvatarStack({ count = 3, extra }: { count?: number; extra?: number }) {
-  const colors = ["from-orange-400 to-pink-500", "from-blue-400 to-indigo-500", "from-green-400 to-teal-500", "from-purple-400 to-fuchsia-500"];
-  return (
-    <div className="flex items-center -space-x-2">
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className={cn("w-6 h-6 rounded-full border-2 border-white bg-gradient-to-br", colors[i % colors.length])} />
-      ))}
-      {extra && (
-        <div className="w-6 h-6 rounded-full border-2 border-white bg-accent text-accent-foreground text-[9px] font-semibold flex items-center justify-center">
-          +{extra}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ---------------- Recent edited ---------------- */
+/* ---------------- Main content ---------------- */
 const recentCards = [
-  { name: "Project Brief.docx", time: "Edited 12m ago", letter: "W", color: "bg-blue-500", dark: true, tip: true },
-  { name: "Design Notes.docx", time: "Edited 45m ago", letter: "W", color: "bg-blue-500" },
-  { name: "Project Details.xls", time: "Edited 50m ago", letter: "X", color: "bg-green-500" },
-  { name: "Project Details.xls", time: "Edited 50m ago", letter: "X", color: "bg-green-500" },
-  { name: "Cloud Dashboard.png", time: "Edited 1d ago", letter: "", color: "", thumb: true },
+  { title: "fix: auth token expiry", time: "Analyzed 8m ago", initial: "S", color: "bg-brand", dark: true },
+  { title: "feat: payment gateway", time: "Analyzed 32m ago", initial: "P", color: "bg-indigo-500" },
+  { title: "PR #47 — auth module", time: "Analyzed 1h ago", initial: "PR", color: "bg-orange-500" },
+  { title: "refactor: middleware", time: "Analyzed 2h ago", initial: "K", color: "bg-emerald-500" },
+  { title: "Weekly AI Brief", time: "Generated 1d ago", initial: "AI", color: "bg-brand", briefStyle: true },
 ];
 
-function RecentEdited() {
+function RecentlyAnalyzed() {
   return (
-    <section className="px-6 pt-6">
+    <section className="px-6 pt-5">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-[15px] text-foreground">Recent edited</h3>
-        <button className="text-[12px] text-muted-foreground hover:text-foreground flex items-center gap-1">
-          View all <ChevronRight size={12} />
-        </button>
+        <h3 className="font-semibold text-[16px] text-foreground">Recently Analyzed</h3>
+        <a className="text-sm text-brand cursor-pointer hover:underline">View all ›</a>
       </div>
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
         {recentCards.map((c, i) => (
-          <div
-            key={i}
-            className="group min-w-[200px] flex-1 bg-card rounded-xl border border-border shadow-card p-3 hover:shadow-lift transition-all hover:-translate-y-0.5"
-          >
+          <div key={i} className="group min-w-[170px] bg-card rounded-2xl border border-border p-3 shadow-card hover:-translate-y-0.5 hover:shadow-lift transition-all cursor-pointer">
             <div className={cn(
-              "relative h-24 rounded-lg mb-3 flex items-center justify-center overflow-hidden",
-              c.dark ? "bg-[hsl(var(--card-dark))]" : "bg-muted/40"
+              "h-20 rounded-xl mb-3 relative flex items-center justify-center",
+              c.dark ? "bg-[#1C1C2E]" : c.briefStyle ? "bg-accent" : "bg-muted/40"
             )}>
-              {c.thumb ? (
-                <div className="absolute inset-2 bg-card rounded-md p-1.5 flex gap-1">
-                  <div className="flex-1 space-y-1">
-                    <div className="h-1.5 w-3/4 bg-muted rounded" />
-                    <div className="h-1 w-full bg-muted rounded" />
-                    <div className="h-1 w-2/3 bg-muted rounded" />
-                    <div className="h-3 w-1/3 bg-orange-300/60 rounded mt-1" />
-                  </div>
-                  <div className="w-8 bg-gradient-to-b from-orange-200 to-pink-200 rounded" />
-                </div>
-              ) : (
-                <div className={cn("w-9 h-9 rounded-full text-white text-[12px] font-semibold flex items-center justify-center", c.color)}>
-                  {c.letter}
-                </div>
-              )}
-              {c.tip && (
-                <div className="absolute opacity-0 group-hover:opacity-100 transition bg-foreground text-background text-[11px] px-2.5 py-1 rounded-md">
-                  See details
-                </div>
+              <div className={cn("absolute top-2 left-2 w-7 h-7 rounded-full text-white text-[11px] font-bold flex items-center justify-center", c.color)}>
+                {c.initial}
+              </div>
+              {c.dark && (
+                <span className="opacity-0 group-hover:opacity-100 transition bg-black/80 text-white text-[10px] px-2 py-1 rounded-full">View Report</span>
               )}
             </div>
             <div className="flex items-start justify-between">
               <div className="min-w-0">
-                <div className="text-[13px] font-medium text-foreground truncate">{c.name}</div>
+                <div className="text-[13px] font-semibold text-foreground truncate">{c.title}</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">{c.time}</div>
               </div>
-              <button className="text-muted-foreground hover:text-foreground shrink-0">
-                <MoreHorizontal size={14} />
-              </button>
+              <button className="text-muted-foreground"><MoreHorizontal size={14} /></button>
             </div>
           </div>
         ))}
@@ -335,83 +277,61 @@ function RecentEdited() {
   );
 }
 
-/* ---------------- Folder icon glyphs ---------------- */
-function FigmaGlyph() {
-  return (
-    <div className="w-7 h-9 relative">
-      <div className="absolute top-0 left-0 w-3 h-3 rounded-full bg-red-500" />
-      <div className="absolute top-0 right-0 w-3 h-3 rounded-full bg-orange-400" />
-      <div className="absolute top-3 left-0 w-3 h-3 rounded-l-full bg-purple-500" />
-      <div className="absolute top-3 right-0 w-3 h-3 rounded-full bg-blue-500" />
-      <div className="absolute top-6 left-0 w-3 h-3 rounded-bl-full bg-green-500" />
-    </div>
-  );
-}
-function SketchGlyph() {
-  return (
-    <div className="w-8 h-8 relative">
-      <svg viewBox="0 0 24 24" className="w-full h-full">
-        <path d="M12 2 L22 9 L12 22 L2 9 Z" fill="#FDB300" />
-        <path d="M12 2 L22 9 L12 9 Z" fill="#FDAD00" />
-        <path d="M2 9 L12 9 L12 2 Z" fill="#FDAD00" />
-        <path d="M12 9 L22 9 L12 22 Z" fill="#EA6C00" />
-        <path d="M2 9 L12 9 L12 22 Z" fill="#FDAD00" />
-      </svg>
-    </div>
-  );
-}
-
-/* ---------------- Shared Folders ---------------- */
-const folderCards = [
-  { name: "Dashboard Designs", meta: "62 files, 2.6 GB", dark: true, glyph: "figma", extra: undefined as number | undefined },
-  { name: "Figma Files", meta: "202 files, 2.6 GB", glyph: "figma", extra: 12 },
-  { name: "Project Details.xls", meta: "12 files, 502 GB", glyph: "figma" },
-  { name: "Project Documents", meta: "12 files, 502 MB", glyph: "figma" },
-  { name: "KDS Dashboard", meta: "12 Sketch files, 52.4 MB", glyph: "sketch" },
-  { name: "Mobile App - UI", meta: "102 files, 3.2 GB", glyph: "sketch" },
+/* Active Projects */
+const projects = [
+  { name: "ShortFundly", meta: "47 commits · ₹2.6L budget", icon: GitBranch, dark: true, health: "74", healthColor: "text-yellow-400" },
+  { name: "Perceptronix App", meta: "23 commits · ₹1.8L", icon: Code2, color: "text-brand", health: "88", healthColor: "text-emerald-500" },
+  { name: "KDS Dashboard", meta: "18 commits · ₹90K", icon: LayoutDashboard, color: "text-amber-500", health: "91", healthColor: "text-emerald-500" },
+  { name: "Tensor Redesign", meta: "9 commits · ₹45K", icon: Layers, color: "text-amber-500", health: "82", healthColor: "text-emerald-500" },
+  { name: "Drapora Mobile", meta: "12 commits · 52K lines", icon: Smartphone, color: "text-amber-500", health: "79", healthColor: "text-yellow-400" },
+  { name: "Znexus API", meta: "102 commits · 3.2GB", icon: Zap, color: "text-amber-500", health: "85", healthColor: "text-emerald-500" },
 ];
 
-function SharedFolders() {
+function LayerArt({ dark = false }: { dark?: boolean }) {
   return (
-    <section className="px-6 pt-8">
+    <div className="absolute -top-2 -right-2 w-20 h-16 pointer-events-none">
+      <div className={cn("absolute right-0 top-3 w-16 h-10 rounded-xl rotate-6", dark ? "bg-purple-400/40" : "bg-purple-300/60")} />
+      <div className={cn("absolute right-2 top-0 w-14 h-9 rounded-xl -rotate-3", dark ? "bg-purple-300/60" : "bg-purple-400/70")} />
+      <div className={cn("absolute right-1 top-1 w-12 h-8 rounded-xl rotate-2", dark ? "bg-violet-200/80" : "bg-violet-500/80")} />
+    </div>
+  );
+}
+
+function ActiveProjects() {
+  return (
+    <section className="px-6 pt-6">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-[15px] text-foreground">Shared Folders</h3>
-        <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 text-[12px] px-2.5 h-7 rounded-md bg-accent text-accent-foreground">
-            <SlidersHorizontal size={11} /> Newest <ChevronDown size={11} />
+        <h3 className="font-semibold text-[16px] text-foreground">Active Projects</h3>
+        <div className="flex items-center gap-3">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border text-sm text-muted-foreground hover:bg-muted">
+            <SlidersHorizontal size={13} /> Newest <ChevronDown size={13} />
           </button>
-          <button className="text-[12px] text-muted-foreground hover:text-foreground flex items-center gap-1">
-            View all <ChevronRight size={12} />
-          </button>
+          <a className="text-sm text-brand cursor-pointer hover:underline">View all ›</a>
         </div>
       </div>
-
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-        {folderCards.map((f) => (
+        {projects.map((p) => (
           <div
-            key={f.name}
+            key={p.name}
             className={cn(
-              "group relative min-w-[200px] flex-1 rounded-2xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-lift overflow-hidden border",
-              f.dark ? "bg-gradient-card-dark text-white border-white/5" : "bg-[hsl(var(--card-light))] border-border text-foreground"
+              "relative overflow-hidden min-w-[170px] h-[130px] rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-0.5",
+              p.dark ? "bg-[#2D2B55] text-white shadow-lift" : "bg-card border border-border shadow-card hover:shadow-lift"
             )}
           >
-            {/* layered folder backdrop */}
-            <div className={cn("absolute -top-2 right-2 w-20 h-16 rounded-xl rotate-6", f.dark ? "bg-white/5" : "bg-brand/10")} />
-            <div className={cn("absolute top-0 right-6 w-20 h-16 rounded-xl -rotate-3", f.dark ? "bg-white/10" : "bg-brand/15")} />
-
-            <div className="relative flex items-center justify-between">
-              {f.glyph === "figma" ? <FigmaGlyph /> : <SketchGlyph />}
-            </div>
-
-            <div className="relative mt-10">
-              <div className={cn("text-[14px] font-semibold truncate", f.dark ? "text-white" : "text-foreground")}>
-                {f.name}
-              </div>
-              <div className={cn("text-[11.5px] mt-0.5", f.dark ? "text-white/60" : "text-muted-foreground")}>
-                {f.meta}
-              </div>
-              <div className="mt-3">
-                <AvatarStack count={3} extra={f.extra} />
+            <LayerArt dark={p.dark} />
+            <p.icon size={18} className={cn("relative z-10", p.dark ? "text-violet-300" : p.color)} />
+            <div className="relative z-10">
+              <div className={cn("text-[13px] font-bold", p.dark ? "text-white" : "text-foreground")}>{p.name}</div>
+              <div className={cn("text-[11px] mt-0.5", p.dark ? "text-white/60" : "text-muted-foreground")}>{p.meta}</div>
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex -space-x-1.5">
+                  {["bg-pink-400", "bg-amber-400", "bg-cyan-400"].map((b, i) => (
+                    <div key={i} className={cn("w-5 h-5 rounded-full border-2", b, p.dark ? "border-[#2D2B55]" : "border-white")} />
+                  ))}
+                </div>
+                <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", p.dark ? "bg-white/10" : "bg-muted", p.healthColor)}>
+                  {p.health}
+                </span>
               </div>
             </div>
           </div>
@@ -421,185 +341,187 @@ function SharedFolders() {
   );
 }
 
-/* ---------------- Files Table ---------------- */
-type FileRow = {
-  name: string; share: "Shared" | "Restricted"; sharers: 2 | 3;
-  Icon: typeof FileText; iconBg: string; iconColor: string;
-  uploaded: string; lateUploaded: string; modified: string; size: string;
+/* ---------------- Commits table ---------------- */
+type Commit = {
+  id: string; msg: string; sub: string; author: string; date: string;
+  tag: string; tagClass: string; risk: string; riskClass: string; size: string;
+  icon: any; iconBg: string; restricted?: boolean;
 };
 
-const files: FileRow[] = [
-  { name: "Project Brief.docx", share: "Shared", sharers: 3, Icon: FileText, iconBg: "bg-blue-100", iconColor: "text-blue-600", uploaded: "Sep 26, 2025", lateUploaded: "Sep 28, 2025", modified: "Sep 28, 2025", size: "5 MB" },
-  { name: "Project Details.xls", share: "Shared", sharers: 3, Icon: FileText, iconBg: "bg-green-100", iconColor: "text-green-600", uploaded: "Sep 27, 2025", lateUploaded: "Sep 27, 2025", modified: "Sep 27, 2025", size: "1.2 MB" },
-  { name: "Cloud Dashboard.fig", share: "Restricted", sharers: 2, Icon: FileText, iconBg: "bg-purple-100", iconColor: "text-purple-600", uploaded: "Sep 28, 2025", lateUploaded: "Sep 27, 2025", modified: "Sep 28, 2025", size: "1 GB" },
-  { name: "Design Notes.docx", share: "Shared", sharers: 2, Icon: FileText, iconBg: "bg-blue-100", iconColor: "text-blue-600", uploaded: "Sep 1, 2025", lateUploaded: "Sep 27, 2025", modified: "Sep 28, 2025", size: "20 MB" },
+const commits: Commit[] = [
+  { id: "a3f92c", msg: "fix: resolve auth token expiry", sub: "Commit #a3f92c", author: "Ravi", date: "Sep 26, 2025",
+    tag: "Bug Fix", tagClass: "bg-red-100 text-red-700", risk: "🔴 High", riskClass: "bg-red-100 text-red-700",
+    size: "2.1 MB", icon: Bug, iconBg: "bg-red-500", restricted: true },
+  { id: "f8e21a", msg: "feat: add payment gateway", sub: "Commit #f8e21a", author: "Priya", date: "Sep 27, 2025",
+    tag: "Feature", tagClass: "bg-emerald-100 text-emerald-700", risk: "🔴 High", riskClass: "bg-red-100 text-red-700",
+    size: "1.2 MB", icon: Zap, iconBg: "bg-emerald-500" },
+  { id: "c91d34", msg: "refactor: cleanup middleware", sub: "Commit #c91d34", author: "Arjun", date: "Sep 28, 2025",
+    tag: "Refactor", tagClass: "bg-blue-100 text-blue-700", risk: "🟡 Medium", riskClass: "bg-yellow-100 text-yellow-700",
+    size: "892 KB", icon: RefreshCw, iconBg: "bg-blue-500", restricted: true },
+  { id: "44bc01", msg: "chore: update dependencies", sub: "Commit #44bc01", author: "Ravi", date: "Sep 1, 2025",
+    tag: "Chore", tagClass: "bg-gray-100 text-gray-600", risk: "🟢 Low", riskClass: "bg-emerald-100 text-emerald-700",
+    size: "20 KB", icon: Settings, iconBg: "bg-gray-400" },
 ];
 
-function FilesTable() {
-  const [tab, setTab] = useState<"opened" | "docs" | "folders">("opened");
-  const [view, setView] = useState<"list" | "grid">("list");
-  const [selected, setSelected] = useState<number | null>(1);
-
+function CommitsTable({ selectedId, setSelectedId }: { selectedId: string; setSelectedId: (id: string) => void }) {
+  const [tab, setTab] = useState("commits");
   const tabs = [
-    { key: "opened" as const, label: "Recently Opened" },
-    { key: "docs" as const, label: "Shared Documents" },
-    { key: "folders" as const, label: "Shared Folders" },
+    { id: "commits", label: "Recent Commits" },
+    { id: "prs", label: "Pull Requests" },
+    { id: "deploys", label: "Deployments" },
   ];
-
   return (
-    <section className="px-6 pt-8 pb-32">
-      <div className="bg-card rounded-2xl border border-border shadow-card">
-        <div className="flex items-center gap-2 p-3 border-b border-border">
-          <div className="flex items-center gap-1.5">
-            {tabs.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={cn(
-                  "h-8 px-3 rounded-full text-[12px] font-medium flex items-center gap-1.5 transition",
-                  tab === t.key ? "bg-brand text-white shadow-brand" : "text-muted-foreground hover:bg-muted"
-                )}
-              >
-                {tab === t.key && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex-1" />
-          <div className="flex items-center gap-2 bg-muted rounded-md px-2.5 h-8 w-56">
-            <Search size={12} className="text-muted-foreground" />
-            <input placeholder="Search files..." className="bg-transparent text-[12px] flex-1 outline-none" />
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-background text-muted-foreground">⌘F</span>
-          </div>
-          <div className="flex items-center bg-muted rounded-md p-0.5">
-            <button onClick={() => setView("grid")} className={cn("w-7 h-7 rounded flex items-center justify-center", view === "grid" ? "bg-card shadow-sm" : "text-muted-foreground")}>
-              <Grid3x3 size={13} />
-            </button>
-            <button onClick={() => setView("list")} className={cn("w-7 h-7 rounded flex items-center justify-center", view === "list" ? "bg-card shadow-sm text-brand" : "text-muted-foreground")}>
-              <LayoutList size={13} />
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-[40px_2fr_1fr_1fr_1fr_1fr_0.8fr_40px] gap-3 px-4 py-2.5 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border">
-          <div />
-          <div>File Name</div>
-          <div>Owner</div>
-          <div>Date Uploaded</div>
-          <div>Late Uploaded</div>
-          <div>Last Modified</div>
-          <div>File Size</div>
-          <div />
-        </div>
-
-        {files.map((f, i) => {
-          const isSel = selected === i;
-          return (
-            <div
-              key={i}
-              onClick={() => setSelected(isSel ? null : i)}
+    <section className="px-6 pt-6 pb-24">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
               className={cn(
-                "grid grid-cols-[40px_2fr_1fr_1fr_1fr_1fr_0.8fr_40px] gap-3 px-4 py-3 items-center border-b border-border last:border-b-0 cursor-pointer transition-colors",
-                isSel ? "bg-[hsl(var(--row-selected))]" : "hover:bg-[hsl(var(--row-hover))]"
+                "px-4 py-1.5 rounded-full text-sm transition-colors",
+                tab === t.id ? "bg-brand text-white font-semibold" : "text-muted-foreground hover:bg-muted"
               )}
             >
-              <div className="flex items-center justify-center">
-                <div className={cn("w-4 h-4 rounded border flex items-center justify-center", isSel ? "bg-brand border-brand" : "border-border")}>
-                  {isSel && <div className="w-2 h-2 bg-white rounded-sm" />}
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className={cn("w-7 h-8 rounded-md flex items-center justify-center shrink-0", f.iconBg, f.iconColor)}>
-                  <f.Icon size={14} />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[13px] font-medium text-foreground truncate">{f.name}</div>
-                  <div className="text-[11px] text-muted-foreground flex items-center gap-1">
-                    {f.share}
-                    {f.share === "Restricted" ? <Lock size={9} /> : <Users size={9} />}
-                  </div>
-                </div>
-              </div>
-              <div><AvatarStack count={f.sharers} /></div>
-              <div className="text-[12px] text-muted-foreground">{f.uploaded}</div>
-              <div className="text-[12px] text-muted-foreground">{f.lateUploaded}</div>
-              <div className="text-[12px] text-muted-foreground">{f.modified}</div>
-              <div className="text-[12px] text-foreground font-medium">{f.size}</div>
-              <button className="text-muted-foreground hover:text-foreground flex justify-center">
-                <MoreHorizontal size={14} />
-              </button>
-            </div>
-          );
-        })}
+              {tab === t.id && "✓ "}{t.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-64">
+            <Search size={14} className="text-muted-foreground" />
+            <input placeholder="Search commits..." className="flex-1 bg-transparent text-sm outline-none" />
+            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">⌘F</span>
+          </div>
+          <button className="w-8 h-8 rounded-md text-muted-foreground hover:bg-muted flex items-center justify-center"><Grid3x3 size={16} /></button>
+          <button className="w-8 h-8 rounded-md bg-muted text-foreground flex items-center justify-center"><List size={16} /></button>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground border-b border-border">
+              <th className="w-10 px-4 py-3"><input type="checkbox" className="rounded" /></th>
+              <th className="py-3">Commit Message</th>
+              <th className="py-3">Author</th>
+              <th className="py-3">Date Pushed</th>
+              <th className="py-3">AI Tag</th>
+              <th className="py-3">Risk Level</th>
+              <th className="py-3">Diff Size</th>
+              <th className="w-10" />
+            </tr>
+          </thead>
+          <tbody>
+            {commits.map((c) => {
+              const selected = c.id === selectedId;
+              return (
+                <tr
+                  key={c.id}
+                  onClick={() => setSelectedId(c.id)}
+                  className={cn(
+                    "border-b border-border last:border-0 cursor-pointer transition-colors",
+                    selected ? "bg-[hsl(var(--row-selected))]" : "hover:bg-[hsl(var(--row-hover))]"
+                  )}
+                >
+                  <td className="px-4 py-3">
+                    <div
+                      className={cn(
+                        "w-4 h-4 rounded border flex items-center justify-center",
+                        selected ? "bg-brand border-brand text-white" : "border-border bg-card"
+                      )}
+                    >
+                      {selected && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                    </div>
+                  </td>
+                  <td className="py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white", c.iconBg)}>
+                        <c.icon size={15} />
+                      </div>
+                      <div>
+                        <div className="text-[13px] font-semibold text-foreground">{c.msg}</div>
+                        <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          {c.sub}
+                          {c.restricted ? <><Lock size={10} className="ml-1" /> Restricted</> : <><Users size={10} className="ml-1" /> Shared</>}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-300 to-pink-400" />
+                      <span className="text-[13px] text-foreground">{c.author}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 text-[13px] text-muted-foreground">{c.date}</td>
+                  <td className="py-3"><span className={cn("text-[11px] font-semibold px-2 py-1 rounded-full", c.tagClass)}>{c.tag}</span></td>
+                  <td className="py-3"><span className={cn("text-[11px] font-semibold px-2 py-1 rounded-full", c.riskClass)}>{c.risk}</span></td>
+                  <td className="py-3 text-[13px] text-foreground">{c.size}</td>
+                  <td className="py-3 pr-4 text-muted-foreground"><MoreHorizontal size={16} /></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </section>
   );
 }
 
 /* ---------------- Bottom status bar ---------------- */
-function BottomBar() {
+function BottomBar({ commit }: { commit: Commit }) {
   return (
-    <div className="absolute left-0 right-0 bottom-0 bg-card border-t border-border px-6 py-3 flex items-center gap-3">
-      <div className="w-6 h-6 rounded bg-purple-100 text-purple-600 flex items-center justify-center">
-        <FileText size={12} />
-      </div>
-      <span className="text-[12px] text-foreground font-medium">Cloud Dashboard.fig</span>
-      <span className="text-[12px] text-muted-foreground">· 1.5 GB · Sep 28, 2025</span>
-      <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-foreground text-background flex items-center gap-1">
-        Restricted <Lock size={9} />
+    <div className="absolute bottom-0 left-0 right-0 bg-card border-t border-border px-6 py-3 flex items-center gap-3">
+      <GitCommit size={16} className="text-brand" />
+      <span className="text-[13px] text-foreground">
+        {commit.msg} · {commit.size} diff · {commit.date}
       </span>
-      <div className="flex-1" />
-      <button className="w-7 h-7 rounded hover:bg-muted flex items-center justify-center text-muted-foreground"><Share2 size={13} /></button>
-      <button className="w-7 h-7 rounded hover:bg-muted flex items-center justify-center text-muted-foreground"><Link2 size={13} /></button>
-      <button className="w-7 h-7 rounded hover:bg-muted flex items-center justify-center text-muted-foreground"><Trash2 size={13} /></button>
-      <button className="w-7 h-7 rounded hover:bg-muted flex items-center justify-center text-muted-foreground"><Download size={13} /></button>
-      <button className="w-7 h-7 rounded hover:bg-muted flex items-center justify-center text-muted-foreground"><MoreHorizontal size={13} /></button>
+      <span className="bg-[#1C1C2E] text-white text-[11px] font-semibold px-3 py-1 rounded-full flex items-center gap-1">
+        {commit.risk.includes("High") ? "High Risk 🔴" : commit.risk.includes("Medium") ? "Medium Risk 🟡" : "Low Risk 🟢"}
+      </span>
+      <div className="ml-auto flex items-center gap-1 text-muted-foreground">
+        {[Share2, Link2, Trash2, Download, MoreHorizontal].map((I, i) => (
+          <button key={i} className="w-8 h-8 rounded-md hover:bg-muted flex items-center justify-center"><I size={16} /></button>
+        ))}
+      </div>
     </div>
   );
 }
 
 /* ---------------- Page ---------------- */
-const Index = () => {
+export default function Index() {
   const { dark, toggle } = useTheme();
+  const [selectedId, setSelectedId] = useState("f8e21a");
+  const selected = commits.find((c) => c.id === selectedId)!;
 
   return (
-    <div className="h-screen w-screen flex bg-background overflow-hidden">
+    <div className="h-screen w-full flex bg-background">
       <IconRail />
       <MiddleSidebar />
-
-      <main className="flex-1 flex flex-col min-w-0 relative">
-        <TopBar dark={dark} onToggle={toggle} />
-
-        <div className="flex-1 overflow-y-auto">
-          <div className="flex items-center px-6 pt-5">
-            <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
-              <span className="hover:text-foreground cursor-pointer">Dashboard</span>
-              <span>/</span>
-              <span className="hover:text-foreground cursor-pointer flex items-center gap-1">Overview <ChevronDown size={11} /></span>
-              <span>/</span>
-              <span className="text-foreground font-medium">Recent Activity</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-foreground text-background font-semibold">242</span>
-            </div>
-            <div className="flex-1" />
-            <div className="flex items-center gap-2">
-              <button className="h-8 px-3 rounded-md border border-border text-[12px] flex items-center gap-1.5 hover:bg-muted">
-                <SlidersHorizontal size={11} /> Short <ChevronDown size={11} />
-              </button>
-              <button className="h-8 px-3 rounded-full bg-brand text-white text-[12px] font-medium flex items-center gap-1.5 shadow-brand hover:scale-[1.02] transition-transform">
-                <Plus size={12} /> Create
-              </button>
-            </div>
+      <main className="flex-1 relative overflow-y-auto bg-card">
+        <TopBar dark={dark} toggle={toggle} />
+        <div className="px-6 pt-4 flex items-center justify-between flex-wrap gap-2">
+          <div className="text-sm text-muted-foreground flex items-center gap-2">
+            Projects <span className="text-muted">/</span>
+            <span className="flex items-center gap-1">Overview <ChevronDown size={13} /></span>
+            <span className="text-muted">/</span> Recent Activity
+            <span className="ml-1 bg-[#1C1C2E] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">47</span>
           </div>
-
-          <RecentEdited />
-          <SharedFolders />
-          <FilesTable />
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-border text-sm text-muted-foreground hover:bg-muted">
+              <SlidersHorizontal size={13} /> Filter <ChevronDown size={13} />
+            </button>
+            <button className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-brand text-white text-sm font-semibold hover:opacity-90">
+              <Plus size={14} /> New Project
+            </button>
+          </div>
         </div>
-
-        <BottomBar />
+        <RecentlyAnalyzed />
+        <ActiveProjects />
+        <CommitsTable selectedId={selectedId} setSelectedId={setSelectedId} />
+        <BottomBar commit={selected} />
       </main>
     </div>
   );
-};
-
-export default Index;
+}
