@@ -9,6 +9,10 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useDevantData } from "@/hooks/useDevantData";
+import { LoadingSpinner, ErrorBanner } from "@/components/StatusBanners";
+import { apiClient } from "@/lib/apiClient";
+import { useProject } from "@/context/ProjectContext";
 
 /* ---------------- Theme ---------------- */
 function useTheme() {
@@ -493,14 +497,88 @@ function BottomBar({ commit }: { commit: Commit }) {
 export default function Index() {
   const { dark, toggle } = useTheme();
   const [selectedId, setSelectedId] = useState("f8e21a");
-  const selected = commits.find((c) => c.id === selectedId)!;
+  const { loading, error, commits: apiCommits, refetch } = useDevantData();
+  const { projectId } = useProject();
+
+  // Map API commits onto the existing visual schema; fall back to seed data.
+  const liveCommits: Commit[] =
+    apiCommits && apiCommits.length
+      ? apiCommits.map((c, i) => {
+          const tag = (c.ai_type_tag || "Chore").toString();
+          const risk = (c.ai_risk_flag || "low").toString().toLowerCase();
+          const tagClass =
+            tag.toLowerCase().includes("bug")
+              ? "bg-red-100 text-red-700"
+              : tag.toLowerCase().includes("feat")
+              ? "bg-emerald-100 text-emerald-700"
+              : tag.toLowerCase().includes("refactor")
+              ? "bg-blue-100 text-blue-700"
+              : "bg-gray-100 text-gray-600";
+          const riskClass = risk.startsWith("h")
+            ? "bg-red-100 text-red-700"
+            : risk.startsWith("m")
+            ? "bg-yellow-100 text-yellow-700"
+            : "bg-emerald-100 text-emerald-700";
+          const riskLabel = risk.startsWith("h") ? "🔴 High" : risk.startsWith("m") ? "🟡 Medium" : "🟢 Low";
+          const Icon = tag.toLowerCase().includes("bug")
+            ? Bug
+            : tag.toLowerCase().includes("feat")
+            ? Zap
+            : tag.toLowerCase().includes("refactor")
+            ? RefreshCw
+            : Settings;
+          const id = (c.sha || c.id || `c${i}`).toString().slice(0, 6);
+          return {
+            id,
+            msg: c.message || c.ai_summary || "(no message)",
+            sub: `Commit #${id}`,
+            author: c.author || "—",
+            date: c.date || "",
+            tag,
+            tagClass,
+            risk: riskLabel,
+            riskClass,
+            size: c.diff_size?.toString() || "—",
+            icon: Icon,
+            iconBg:
+              tag.toLowerCase().includes("bug")
+                ? "bg-red-500"
+                : tag.toLowerCase().includes("feat")
+                ? "bg-emerald-500"
+                : tag.toLowerCase().includes("refactor")
+                ? "bg-blue-500"
+                : "bg-gray-400",
+          } as Commit;
+        })
+      : commits;
+
+  const activeList = liveCommits;
+  const selected = activeList.find((c) => c.id === selectedId) || activeList[0];
+
+  const handleLinkRepo = async () => {
+    try {
+      const repos = await apiClient.get<unknown[]>("/api/github/repos");
+      const first = (repos?.[0] as { id?: string; full_name?: string }) || null;
+      if (first && projectId) {
+        await apiClient.post("/api/github/link-repo", {
+          project_id: projectId,
+          repo: first.full_name || first.id,
+        });
+        refetch();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <div className="h-screen w-full flex bg-background">
+      <LoadingSpinner visible={loading} />
       <IconRail />
       <MiddleSidebar />
       <main className="flex-1 relative overflow-y-auto bg-card">
         <TopBar dark={dark} toggle={toggle} />
+        <ErrorBanner error={error} onRetry={refetch} />
         <div className="px-6 pt-4 flex items-center justify-between flex-wrap gap-2">
           <div className="text-sm text-muted-foreground flex items-center gap-2">
             Projects <span className="text-muted">/</span>
@@ -509,6 +587,9 @@ export default function Index() {
             <span className="ml-1 bg-[#1C1C2E] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">47</span>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={handleLinkRepo} className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-border text-sm text-muted-foreground hover:bg-muted">
+              <Link2 size={13} /> Link Repository
+            </button>
             <button className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-border text-sm text-muted-foreground hover:bg-muted">
               <SlidersHorizontal size={13} /> Filter <ChevronDown size={13} />
             </button>
@@ -519,9 +600,139 @@ export default function Index() {
         </div>
         <RecentlyAnalyzed />
         <ActiveProjects />
-        <CommitsTable selectedId={selectedId} setSelectedId={setSelectedId} />
-        <BottomBar commit={selected} />
+        <CommitsTableLive commits={activeList} selectedId={selectedId} setSelectedId={setSelectedId} />
+        {selected && <BottomBar commit={selected} />}
       </main>
     </div>
   );
 }
+
+function CommitsTableLive({
+  commits: list,
+  selectedId,
+  setSelectedId,
+}: {
+  commits: Commit[];
+  selectedId: string;
+  setSelectedId: (id: string) => void;
+}) {
+  // Re-use existing CommitsTable rendering by temporarily swapping the seed list.
+  // Simpler: render a thin wrapper around CommitsTable using its prop signature.
+  return <CommitsTableWithData data={list} selectedId={selectedId} setSelectedId={setSelectedId} />;
+}
+
+function CommitsTableWithData({
+  data,
+  selectedId,
+  setSelectedId,
+}: {
+  data: Commit[];
+  selectedId: string;
+  setSelectedId: (id: string) => void;
+}) {
+  // Mirror of CommitsTable but uses provided data array.
+  const [tab, setTab] = useState("commits");
+  const tabs = [
+    { id: "commits", label: "Recent Commits" },
+    { id: "prs", label: "Pull Requests" },
+    { id: "deploys", label: "Deployments" },
+  ];
+  return (
+    <section className="px-6 pt-6 pb-24">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-sm transition-colors",
+                tab === t.id ? "bg-brand text-white font-semibold" : "text-muted-foreground hover:bg-muted"
+              )}
+            >
+              {tab === t.id && "✓ "}{t.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-64">
+            <Search size={14} className="text-muted-foreground" />
+            <input placeholder="Search commits..." className="flex-1 bg-transparent text-sm outline-none" />
+            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">⌘F</span>
+          </div>
+          <button className="w-8 h-8 rounded-md text-muted-foreground hover:bg-muted flex items-center justify-center"><Grid3x3 size={16} /></button>
+          <button className="w-8 h-8 rounded-md bg-muted text-foreground flex items-center justify-center"><List size={16} /></button>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground border-b border-border">
+              <th className="w-10 px-4 py-3"><input type="checkbox" className="rounded" /></th>
+              <th className="py-3">Commit Message</th>
+              <th className="py-3">Author</th>
+              <th className="py-3">Date Pushed</th>
+              <th className="py-3">AI Tag</th>
+              <th className="py-3">Risk Level</th>
+              <th className="py-3">Diff Size</th>
+              <th className="w-10" />
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((c) => {
+              const selected = c.id === selectedId;
+              return (
+                <tr
+                  key={c.id}
+                  onClick={() => setSelectedId(c.id)}
+                  className={cn(
+                    "border-b border-border last:border-0 cursor-pointer transition-colors",
+                    selected ? "bg-[hsl(var(--row-selected))]" : "hover:bg-[hsl(var(--row-hover))]"
+                  )}
+                >
+                  <td className="px-4 py-3">
+                    <div
+                      className={cn(
+                        "w-4 h-4 rounded border flex items-center justify-center",
+                        selected ? "bg-brand border-brand text-white" : "border-border bg-card"
+                      )}
+                    >
+                      {selected && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                    </div>
+                  </td>
+                  <td className="py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white", c.iconBg)}>
+                        <c.icon size={15} />
+                      </div>
+                      <div>
+                        <div className="text-[13px] font-semibold text-foreground">{c.msg}</div>
+                        <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          {c.sub}
+                          {c.restricted ? <><Lock size={10} className="ml-1" /> Restricted</> : <><Users size={10} className="ml-1" /> Shared</>}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-300 to-pink-400" />
+                      <span className="text-[13px] text-foreground">{c.author}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 text-[13px] text-muted-foreground">{c.date}</td>
+                  <td className="py-3"><span className={cn("text-[11px] font-semibold px-2 py-1 rounded-full", c.tagClass)}>{c.tag}</span></td>
+                  <td className="py-3"><span className={cn("text-[11px] font-semibold px-2 py-1 rounded-full", c.riskClass)}>{c.risk}</span></td>
+                  <td className="py-3 text-[13px] text-foreground">{c.size}</td>
+                  <td className="py-3 pr-4 text-muted-foreground"><MoreHorizontal size={16} /></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
