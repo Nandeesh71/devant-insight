@@ -793,20 +793,23 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-[2px]" onClick={onClose}>
-      <div className="flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card" onClick={(e) => e.stopPropagation()}>
+      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card" onClick={(e) => e.stopPropagation()}>
         
         {/* Header Section */}
-        <div className="border-b border-border p-8 pb-6">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-[28px] font-bold tracking-tight text-foreground">Import Git Repository</h2>
-            <button onClick={onClose} className="text-muted-foreground transition-colors hover:text-foreground"><X size={24} /></button>
+        <div className="border-b border-border px-6 pb-5 pt-5">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-[20px] font-bold tracking-tight text-foreground">Import Git Repository</h2>
+            <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><X size={18} /></button>
           </div>
 
           {!user?.github_connected ? (
-             <div className="py-10 text-left">
-               <Github className="mx-auto mb-4 text-brand" size={32} />
-               <p className="mb-6 text-lg text-muted-foreground">Connect GitHub to import your repositories.</p>
-               <button onClick={connectGithub} className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-brand/90"><Github size={18} /> Connect GitHub</button>
+             <div className="flex flex-col items-center justify-center py-10 text-center">
+               <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+                 <Github size={28} strokeWidth={1.5} />
+               </div>
+               <p className="mb-1 text-[15px] font-semibold text-foreground">Connect your GitHub account</p>
+               <p className="mb-6 text-[13px] text-muted-foreground">Link GitHub to import and track your repositories.</p>
+               <button onClick={connectGithub} className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-brand/90"><Github size={15} strokeWidth={1.5} /> Connect GitHub</button>
              </div>
           ) : (
             <div className="relative z-10 flex flex-col gap-4">
@@ -882,7 +885,7 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
               const timeAgo = repo.updated_at ? getRelativeTime(new Date(repo.updated_at)) : "Unknown time";
 
               return (
-                <div key={String(repo.id || fullName)} className="group flex items-center justify-between border-b border-border/50 px-8 py-5 transition-colors hover:bg-muted/50">
+                <div key={String(repo.id || fullName)} className="group flex items-center justify-between border-b border-border/50 px-5 py-4 transition-colors hover:bg-muted/50">
                   <div className="flex min-w-0 items-center gap-4">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-primary-foreground shadow-sm">
                        <Zap size={16} className="fill-current text-yellow-300" />

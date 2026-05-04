@@ -100,23 +100,13 @@ export function FolderCard({
             >
               <Unplug size={14} strokeWidth={1.5} />
             </button>
-            <button
-              type="button"
-              aria-label="View repository on GitHub"
-              title="View repository on GitHub"
-              disabled={!repoUrl}
-              onClick={(e) => { e.stopPropagation(); if (repoUrl) window.open(repoUrl, "_blank", "noopener,noreferrer"); }}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-muted-foreground hover:text-foreground disabled:opacity-40"
-            >
-              <Github size={12} strokeWidth={2} />
-            </button>
           </div>
         </div>
 
         {/* MIDDLE SECTION: Title & Stats */}
         <div className="flex-1 space-y-1 relative z-10">
-          <h3 className="flex max-w-full items-center gap-2 overflow-hidden whitespace-nowrap text-[14px] font-bold tracking-tight sm:text-[16px]">
-            <span className="min-w-0 truncate">{repoName || title}</span>
+          <h3 className="flex max-w-full flex-wrap items-center gap-2 text-[14px] font-bold tracking-tight sm:text-[16px]">
+            <span className="min-w-0 whitespace-normal break-words leading-tight">{repoName || title}</span>
             <span
               className={cn(
                 "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
@@ -159,6 +149,18 @@ export function FolderCard({
               </Avatar>
             ))}
           </div>
+
+          <button
+            type="button"
+            aria-label="View repository on GitHub"
+            title="View repository on GitHub"
+            disabled={!repoUrl}
+            onClick={(e) => { e.stopPropagation(); if (repoUrl) window.open(repoUrl, "_blank", "noopener,noreferrer"); }}
+            className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-black/5 px-3 py-1 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40 dark:bg-white/10"
+          >
+            <Github size={12} strokeWidth={2} />
+            <span>View on Github</span>
+          </button>
 
         </div>
       </div>
