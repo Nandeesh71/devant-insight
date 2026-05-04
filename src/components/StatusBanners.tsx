@@ -18,7 +18,7 @@ export function ErrorBanner({ error, onRetry }: { error: string | null; onRetry?
   }, [error]);
   if (!error || dismissed) return null;
   return (
-    <div className="mx-6 mt-3 flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-700 dark:text-red-300">
+    <div className="mx-6 mt-3 flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
       <AlertTriangle size={16} className="mt-0.5 shrink-0" />
       <div className="flex-1">
         <div className="font-semibold">API error</div>
