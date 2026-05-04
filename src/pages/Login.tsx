@@ -12,7 +12,7 @@ export default function Login() {
     <div className="min-h-screen w-full flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-lift p-8">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center text-white font-bold shadow-brand">DA</div>
+          <div className="w-10 h-10 rounded-lg bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold shadow-brand">DA</div>
           <div>
             <h1 className="text-xl font-bold text-foreground">DevANT</h1>
             <p className="text-xs text-muted-foreground">Developer Activity Narrative Tracker</p>
@@ -33,7 +33,7 @@ export default function Login() {
           <button
             onClick={signInGithub}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-full bg-[#24292f] hover:bg-[#1b1f24] text-white text-sm font-semibold transition-colors"
+            className="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-full bg-foreground hover:opacity-90 text-background text-sm font-semibold transition-opacity"
           >
             <Github size={16} /> Continue with GitHub
           </button>
