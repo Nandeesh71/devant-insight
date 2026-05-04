@@ -495,12 +495,28 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
             const budgetStr = budgetNum ? `₹${Math.round(budgetNum).toLocaleString('en-IN')}` : undefined;
             const riskLevel = typeof raw.risk_level === "string" ? raw.risk_level : undefined;
 
+            // build enriched props (falling back to existing fields if new ones are absent)
+            const displayName = (p as any).displayName || (p as any).name || repo?.split('/')[1] || repo;
+            const deploymentUrl = (p as any).deploymentUrl || (p as any).deployment_url || ((p as any).name ? `${(p as any).name}.vercel.app` : null);
+            const repoFullName = (p as any).repoFullName || (p as any).github_repo_full_name || repoFull;
+            const lastCommitMessage = (p as any).lastCommitMessage || (p as any).latest_commit_message || (p as any).last_commit_message || null;
+            const lastCommitTime = (p as any).lastCommitTime || (p as any).last_commit_time || (p as any).last_activity || null;
+            const branchName = (p as any).branchName || (p as any).default_branch || 'main';
+
             return (
               <FolderCard
                 key={p.id}
                 id={p.id}
                 title={repo}
+                // keep fullName for compatibility
                 fullName={repoFull}
+                // new fields passed through (FolderCard will use them in existing slots)
+                displayName={displayName}
+                deploymentUrl={deploymentUrl}
+                repoFullName={repoFullName}
+                lastCommitMessage={lastCommitMessage}
+                lastCommitTime={lastCommitTime}
+                branchName={branchName}
                 commits={commitsCount}
                 healthScore={healthScore}
                 budget={budgetStr}

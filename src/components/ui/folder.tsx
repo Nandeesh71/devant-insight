@@ -7,6 +7,13 @@ export interface FolderCardProps {
   id: string;
   title: string;
   fullName: string;
+  // optional enriched fields
+  displayName?: string;
+  deploymentUrl?: string | null;
+  repoFullName?: string;
+  lastCommitMessage?: string | null;
+  lastCommitTime?: string | null;
+  branchName?: string | null;
   commits: number;
   budget?: string | null;
   spent?: number;
@@ -22,6 +29,12 @@ export interface FolderCardProps {
 
 export function FolderCard({
   title,
+  displayName,
+  deploymentUrl,
+  repoFullName,
+  lastCommitMessage,
+  lastCommitTime,
+  branchName,
   commits,
   budget,
   healthScore,
@@ -116,13 +129,22 @@ export function FolderCard({
         {/* MIDDLE SECTION: Title & Stats */}
         <div className="flex-1 space-y-1 relative z-10">
           <h3 className="truncate text-[16px] font-bold tracking-tight">
-            {title}
+            {displayName || title}
           </h3>
-          <p className={cn(
-            "text-[13px] font-medium",
-            isActive ? "text-white/70" : "text-muted-foreground"
-          )}>
-            {commits} commits <span className="mx-1 opacity-50">•</span> {budget || "No budget"}
+          <p
+            className={cn(
+              "text-[13px] font-medium",
+              isActive ? "text-white/70" : "text-muted-foreground"
+            )}
+            // if a deployment URL is available, make the stats line clickable to open it
+            onClick={(e) => { if (deploymentUrl) { e.stopPropagation(); window.open(deploymentUrl.startsWith('http') ? deploymentUrl : `https://${deploymentUrl}`, '_blank', 'noopener,noreferrer'); } }}
+            style={{ cursor: deploymentUrl ? 'pointer' : 'default' }}
+          >
+            {/* Left slot: show latest commit message if provided, otherwise fallback to commits count */}
+            {lastCommitMessage ? String(lastCommitMessage) : `${commits} commits`}
+            <span className="mx-1 opacity-50">•</span>
+            {/* Right slot: show repo badge (repoFullName) if present, otherwise budget text */}
+            {repoFullName ? String(repoFullName) : (budget || 'No budget')}
           </p>
         </div>
 
