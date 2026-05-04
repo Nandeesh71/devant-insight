@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const oauthRedirect = (provider: "google" | "github", mode: "login" | "connect" = "login") => {
-    const redirect = encodeURIComponent(`${window.location.origin}/auth/callback`);
+    const redirect = encodeURIComponent(`${window.location.origin}/`);
     const t = localStorage.getItem(TOKEN_KEY);
     const tokenParam = mode === "connect" && t ? `&token=${encodeURIComponent(t)}` : "";
     window.location.href = `${API_BASE}/api/auth/${provider}?mode=${mode}&redirect=${redirect}${tokenParam}`;
