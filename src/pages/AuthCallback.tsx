@@ -13,6 +13,8 @@ export default function AuthCallback() {
   const { setSession, refresh } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
 
   const normalizeNext = (value: string | null | undefined) => {
     if (!value) return "/";
@@ -45,8 +47,20 @@ export default function AuthCallback() {
       const sn = param(search, "next");
       if (st || sc || se || sn) return { token: st, code: sc, error: se, next: sn };
 
+      // Supabase uses fragment: /auth/callback#access_token=...&type=recovery or /auth/callback#code=...
+      const hash = window.location.hash.slice(1); // remove leading #
+      if (hash) {
+        const frag = new URLSearchParams(hash);
+        const ft = param(frag, "access_token") || param(frag, "token") || param(frag, "jwt");
+        const fc = param(frag, "code");
+        const fe = param(frag, "error") || param(frag, "error_description");
+        if (ft || fc || fe) {
+          console.log("[AuthCallback] Found in fragment:", { has_token: !!ft, has_code: !!fc, has_error: !!fe });
+          return { token: ft, code: fc, error: fe, next: sn };
+        }
+      }
+
       // fallback: parse hash after /auth/callback
-      const hash = window.location.hash || ""; // e.g. #/auth/callback?token=... or #/auth/callback/<encoded>/... or #/auth/callback/https://...?
       const marker = "/auth/callback";
       const idx = hash.indexOf(marker);
       if (idx !== -1) {
@@ -135,8 +149,18 @@ export default function AuthCallback() {
       return;
     }
 
-    setError("Missing auth token or authorization code in callback");
-  }, [params, setSession, refresh, navigate]);
+    // If no token or code found, wait a moment and retry (Supabase may be slow to redirect)
+    if (retryCount < maxRetries) {
+      console.warn(`[AuthCallback] No token/code on attempt ${retryCount + 1}/${maxRetries}, retrying...`);
+      const timer = setTimeout(() => setRetryCount(retryCount + 1), 1500);
+      return () => clearTimeout(timer);
+    }
+    
+    // After max retries, show error with hint
+    const hint = 
+      "The Google OAuth response may not have completed. Try: (1) Clear browser cache, (2) Check Google OAuth app settings, (3) Ensure redirect_uri matches exactly.";
+    setError(`Missing auth token or code in callback. ${hint}`);
+  }, [params, setSession, refresh, navigate, retryCount]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -145,8 +169,25 @@ export default function AuthCallback() {
           <>
             <AlertTriangle className="mx-auto text-destructive mb-3" />
             <h2 className="font-bold text-foreground mb-1">Sign-in failed</h2>
-            <p className="text-sm text-muted-foreground mb-4">{error}</p>
-            <a href="/login" className="text-sm text-brand hover:underline">← Back to login</a>
+            <p className="text-xs text-muted-foreground mb-4" style={{ maxHeight: "150px", overflowY: "auto" }}>{error}</p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  localStorage.removeItem("devant.token");
+                  localStorage.removeItem("devant.user");
+                  window.location.href = "/login";
+                }}
+                className="w-full text-sm text-brand hover:underline"
+              >
+                ← Clear cache & back to login
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full text-sm text-muted-foreground hover:text-brand"
+              >
+                🔄 Retry (refresh page)
+              </button>
+            </div>
           </>
         ) : (
           <>
