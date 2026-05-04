@@ -4,47 +4,54 @@
 
 @layer base {
   :root {
-    --background: 240 13% 96%;
+    /* Brand / Accent colors */
+    --accent: 262 83% 58%; /* #7c3aed */
+    --accent-hover: 263 70% 50%; /* #6d28d9 */
+    
+    /* Light mode layout */
+    --background: 40 25% 98%; /* #fafaf9 */
     --foreground: 240 15% 14%;
-
-    --card: 0 0% 100%;
+    --card: 0 0% 100%; /* #ffffff */
     --card-foreground: 240 15% 14%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 240 15% 14%;
-
+    
     --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
-
+    
     --secondary: 250 30% 96%;
     --secondary-foreground: 240 15% 14%;
-
+    
     --muted: 240 10% 96%;
     --muted-foreground: 240 5% 50%;
-
-    --accent: 258 90% 95%;
-    --accent-foreground: 262 83% 50%;
-
+    
+    --accent-foreground: 0 0% 100%;
+    
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
-
-    --border: 240 6% 93%;
-    --input: 240 6% 93%;
+    
+    /* Dark Borders & Surfaces (Used in dark themes or sidebars) */
+    --border: 253 28% 20%; /* #2a2440 */
+    --input: 253 28% 20%;
     --ring: 262 83% 58%;
+    
+    --surface: 252 42% 12%; /* #16112a */
+    --surface-raised: 255 38% 15%; /* #1e1733 */
 
     --radius: 0.75rem;
 
-    /* CloudDock custom tokens */
-    --rail: 240 30% 14%;
-    --sidebar-bg: 240 25% 16%;
-    --sidebar-search: 240 20% 22%;
-    --sidebar-tree: 240 15% 28%;
+    /* Sidebar / Specific dark layout elements */
+    --rail: 249 29% 9%; /* #13111f */
+    --sidebar-bg: 249 29% 9%;
+    --sidebar-search: 253 28% 20%;
+    --sidebar-tree: 255 38% 15%;
     --sidebar-text: 240 15% 70%;
     --sidebar-label: 240 10% 55%;
+    
     --brand: 262 83% 58%;
     --brand-glow: 262 90% 70%;
-    --card-dark: 245 36% 25%;
-    --card-light: 250 60% 97%;
+    --card-dark: 255 38% 15%;
+    --card-light: 0 0% 100%;
     --row-selected: 258 100% 97%;
     --row-hover: 250 100% 99%;
     --upgrade-from: 252 70% 26%;
@@ -52,7 +59,7 @@
     --upgrade-btn: 260 64% 33%;
 
     --gradient-brand: linear-gradient(135deg, hsl(262 83% 58%), hsl(280 90% 70%));
-    --gradient-card-dark: linear-gradient(135deg, hsl(245 36% 25%), hsl(255 40% 30%));
+    --gradient-card-dark: linear-gradient(135deg, hsl(252 42% 12%), hsl(255 38% 15%));
     --gradient-upgrade: linear-gradient(160deg, hsl(252 70% 26%), hsl(245 73% 20%));
     --gradient-storage: linear-gradient(135deg, hsl(210 90% 60%), hsl(230 90% 70%));
     --shadow-card: 0 1px 2px hsl(240 10% 80% / 0.4), 0 4px 12px hsl(240 10% 80% / 0.12);
@@ -61,26 +68,29 @@
   }
 
   .dark {
-    --background: 240 20% 10%;
+    --background: 252 42% 12%; /* #16112a surface */
     --foreground: 0 0% 100%;
-    --card: 240 18% 16%;
+    --card: 255 38% 15%; /* #1e1733 surface-raised */
     --card-foreground: 0 0% 100%;
-    --popover: 240 18% 16%;
+    --popover: 255 38% 15%;
     --popover-foreground: 0 0% 100%;
     --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 15% 20%;
+    --secondary: 253 28% 20%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 240 15% 20%;
+    --muted: 253 28% 20%;
     --muted-foreground: 240 10% 65%;
-    --accent: 240 15% 22%;
+    
+    --accent: 262 83% 58%;
+    --accent-hover: 263 70% 50%;
     --accent-foreground: 0 0% 100%;
-    --border: 240 15% 22%;
-    --input: 240 15% 22%;
+    
+    --border: 253 28% 20%; /* #2a2440 */
+    --input: 253 28% 20%;
     --ring: 262 83% 58%;
-    --row-hover: 240 18% 18%;
+    --row-hover: 253 28% 20%;
     --row-selected: 262 30% 22%;
-    --card-light: 240 18% 18%;
+    --card-light: 255 38% 15%;
   }
 
   * {
