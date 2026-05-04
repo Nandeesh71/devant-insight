@@ -209,7 +209,9 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
   return (
     <TooltipProvider delayDuration={150}>
       <aside className="hidden w-14 shrink-0 flex-col items-center gap-2 bg-rail py-4 lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:h-dvh">
-        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-sm font-semibold text-white shadow-brand">DA</div>
+        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg">
+          <img src="/devant-logo.svg" alt="DevANT" className="h-full w-full text-[#1e293b]" />
+        </div>
         {items.map((item) => {
           const active = tab === item.id;
           return (

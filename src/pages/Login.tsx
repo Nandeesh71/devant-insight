@@ -12,7 +12,9 @@ export default function Login() {
     <div className="min-h-screen w-full flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-lift p-8">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold shadow-brand">DA</div>
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+            <img src="/devant-logo.svg" alt="DevANT" className="h-full w-full text-[#1e293b]" />
+          </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">DevANT</h1>
             <p className="text-xs text-muted-foreground">Developer Activity Narrative Tracker</p>
