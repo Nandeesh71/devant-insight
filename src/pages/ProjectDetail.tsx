@@ -56,9 +56,9 @@ type UiCommit = {
   url?: string;
 };
 
-function getRepoName(project: Project | undefined) {
+function getRepoName(project: Project | undefined): string {
   if (!project) return "—";
-  return project.name || project.github_repo || project.repository_name || "Unknown";
+  return String(project.name || project.github_repo || project.repository_name || "Unknown");
 }
 
 function getProjectRepoUrl(p: Project | undefined) {
@@ -204,7 +204,7 @@ export default function ProjectDetail() {
     try {
       await apiClient.delete(`/api/projects/${resolvedProject.id}`);
       setDisconnectTarget(null);
-      toast({ title: "Repository disconnected", description: getRepoName(resolvedProject) });
+      toast({ title: "Repository disconnected", description: String(getRepoName(resolvedProject)) });
       navigate("/");
     } catch (error) {
       toast({ title: "Disconnect failed", description: (error as Error).message, variant: "destructive" });
@@ -643,7 +643,7 @@ export default function ProjectDetail() {
           isOpen={Boolean(disconnectTarget)}
           onClose={() => setDisconnectTarget(null)}
           onConfirm={handleDisconnect}
-          projectName={disconnectTarget ? getRepoName(disconnectTarget) : ""}
+          projectName={disconnectTarget ? String(getRepoName(disconnectTarget)) : ""}
         />
       </TooltipProvider>
     </div>

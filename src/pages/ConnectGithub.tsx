@@ -48,7 +48,9 @@ export default function ConnectGithub() {
     <div className="flex min-h-screen w-full items-center justify-center bg-background px-4">
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-lift">
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand font-bold text-primary-foreground shadow-brand">DA</div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg">
+            <img src="/devant-logo.svg" alt="DevANT" className="h-full w-full text-[#1e293b]" />
+          </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">Connect GitHub</h1>
             <p className="text-xs text-muted-foreground">Required for real repositories</p>

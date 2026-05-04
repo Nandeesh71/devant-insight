@@ -54,6 +54,8 @@ export function useDevantData(): DevantData {
 
   useEffect(() => {
     let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout>;
+
     async function load() {
       if (typeof window !== "undefined" && !localStorage.getItem("devant.token")) {
         setProjects([]);
@@ -68,10 +70,21 @@ export function useDevantData(): DevantData {
       }
       setLoading(true);
       setError(null);
+
+      // Set a 10-second timeout to prevent indefinite loading
+      timeoutId = setTimeout(() => {
+        if (!cancelled) {
+          setLoading(false);
+          setError("Request timeout - try refreshing");
+        }
+      }, 10000);
+
       try {
         const ps = await apiClient.get<Project[]>("/api/projects");
         if (cancelled) return;
-        setProjects(ps);
+        clearTimeout(timeoutId);
+        
+        setProjects(Array.isArray(ps) ? ps : []);
         const storedProjectExists = projectId ? ps.some((p) => p.id === projectId) : false;
         const activeId = storedProjectExists ? projectId : ps[0]?.id;
         if (!activeId) {
@@ -119,14 +132,23 @@ export function useDevantData(): DevantData {
           }
         }
       } catch (e) {
-        if (!cancelled) setError((e as Error).message);
+        if (!cancelled) {
+          setError((e as Error).message);
+          setProjects([]);
+          setLoading(false);
+        }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          clearTimeout(timeoutId);
+          setLoading(false);
+        }
       }
     }
+
     load();
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
     };
   }, [projectId, tick, setProjectId, hydratedProjects, projects]);
 
