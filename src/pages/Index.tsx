@@ -870,7 +870,8 @@ export default function Index() {
       </div>
     );
   }
-  if (!token || !user) return <Navigate to="/login" replace />;
+  if (!token) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/connect-github" replace />;
   if (!user.github_connected) return <Navigate to="/connect-github" replace />;
 
   const showEmpty = !loading && projects.length === 0;
