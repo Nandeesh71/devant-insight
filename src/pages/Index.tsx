@@ -165,16 +165,25 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
   ];
   return (
     <TooltipProvider delayDuration={150}>
-      <aside className="flex w-14 shrink-0 flex-col items-center gap-1 bg-rail py-3">
-        <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-brand text-xs font-bold text-primary-foreground shadow-brand">DA</div>
+      <aside className="hidden w-14 shrink-0 flex-col items-center gap-2 bg-rail py-4 lg:flex">
+        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-xs font-bold text-primary-foreground shadow-brand">DA</div>
         {items.map((item) => {
           const active = tab === item.id;
           return (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
-                <button onClick={() => setTab(item.id)} className={cn("relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all duration-200", active ? "bg-primary/20 text-primary-foreground shadow-sm" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground hover:shadow-sm")}>
-                  {active && <span className="absolute -left-2 bottom-1.5 top-1.5 w-[3px] rounded-r bg-brand" />}
-                  <item.icon size={20} />
+                <button
+                  type="button"
+                  aria-label={item.label}
+                  onClick={() => setTab(item.id)}
+                  className={cn(
+                    "relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg transition-all duration-200",
+                    active
+                      ? "bg-brand/10 text-foreground ring-1 ring-brand/30 shadow-sm"
+                      : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground hover:shadow-sm"
+                  )}
+                >
+                  <item.icon size={19} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right" className="border-border bg-card text-foreground">{item.label}</TooltipContent>
@@ -183,8 +192,13 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
         })}
         <Tooltip>
           <TooltipTrigger asChild>
-            <button onClick={() => setTab("alerts")} className="relative flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground">
-              <Bell size={20} />
+            <button
+              type="button"
+              aria-label="Alerts"
+              onClick={() => setTab("alerts")}
+              className="relative flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground"
+            >
+              <Bell size={19} />
               {alertsCount > 0 && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-destructive" />}
             </button>
           </TooltipTrigger>
@@ -193,13 +207,13 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
         <div className="mt-auto flex flex-col gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
-              <button onClick={onSettings} className="flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground"><Settings size={18} /></button>
+              <button type="button" aria-label="Settings" onClick={onSettings} className="flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground"><Settings size={18} /></button>
             </TooltipTrigger>
             <TooltipContent side="right" className="border-border bg-card text-foreground">Settings</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button onClick={onSignOut} className="flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground"><LogOut size={18} /></button>
+              <button type="button" aria-label="Logout" onClick={onSignOut} className="flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground"><LogOut size={18} /></button>
             </TooltipTrigger>
             <TooltipContent side="right" className="border-border bg-card text-foreground">Logout</TooltipContent>
           </Tooltip>
@@ -213,10 +227,10 @@ function MiddleSidebar({ projects, activeId, onSelect, onLinkRepo }: { projects:
   const [query, setQuery] = useState("");
   const filtered = projects.filter((p) => getRepoName(p).toLowerCase().includes(query.toLowerCase()));
   return (
-    <aside className="flex w-64 shrink-0 flex-col bg-sidebar-bg text-primary-foreground">
+    <aside className="hidden w-64 shrink-0 flex-col bg-sidebar-bg text-primary-foreground lg:flex">
       <div className="flex items-center gap-2 px-4 pb-3 pt-4">
         <h2 className="flex-1 text-[15px] font-semibold">Projects</h2>
-        <button onClick={onLinkRepo} className="text-sidebar-text hover:text-primary-foreground"><PlusCircle size={17} /></button>
+        <button type="button" aria-label="Link GitHub repository" onClick={onLinkRepo} className="text-sidebar-text hover:text-primary-foreground"><PlusCircle size={17} /></button>
       </div>
       <div className="px-3 pb-3">
         <div className="flex items-center gap-2 rounded-lg bg-sidebar-search px-3 py-2">
@@ -225,7 +239,7 @@ function MiddleSidebar({ projects, activeId, onSelect, onLinkRepo }: { projects:
         </div>
       </div>
       <div className="px-3">
-        <button className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-primary-foreground shadow-brand transition-all duration-200 hover:bg-brand/90 hover:shadow-lg">
+        <button type="button" className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-primary-foreground shadow-brand transition-all duration-200 hover:bg-brand/90 hover:shadow-lg">
           <PieChart size={14} /><span className="flex-1 text-left">Overview</span>
         </button>
       </div>
@@ -240,13 +254,13 @@ function MiddleSidebar({ projects, activeId, onSelect, onLinkRepo }: { projects:
           const active = activeId === p.id;
           const repo = getRepoName(p);
           return (
-            <button key={p.id} onClick={() => onSelect(p.id)} className={cn("mb-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-[13px] transition-colors", active ? "bg-primary/15 text-primary-foreground" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground")}>
+            <button key={p.id} type="button" onClick={() => onSelect(p.id)} className={cn("mb-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-[13px] transition-colors", active ? "bg-primary/15 text-primary-foreground" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground")}>
               <Folder size={14} className="shrink-0" />
               <span className="min-w-0 flex-1 truncate text-left">{repo}</span>
             </button>
           );
         })}
-        <button onClick={onLinkRepo} className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-sidebar-tree py-2 text-[13px] text-sidebar-text transition-all duration-200 hover:border-border hover:bg-primary/5 hover:text-primary-foreground">
+        <button type="button" onClick={onLinkRepo} className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-sidebar-tree py-2 text-[13px] text-sidebar-text transition-all duration-200 hover:border-border hover:bg-primary/5 hover:text-primary-foreground">
           <Link size={14} /> Link GitHub repo
         </button>
       </div>
@@ -258,20 +272,24 @@ function TopBar({ dark, toggle, project, onBell, onSettings, onSignOut }: { dark
   const { user } = useAuth();
   const repo = getRepoName(project);
   return (
-    <div className="flex items-center border-b border-border px-6 py-3">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-brand text-primary-foreground"><Activity size={16} /></div>
-      <div className="ml-3 min-w-0">
-        <div className="truncate text-[15px] font-semibold text-foreground">{repo}</div>
-        <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-          <Github size={12} /> {project ? "Real GitHub project" : "No project selected"}
+    <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 sm:px-6">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-primary-foreground"><Activity size={16} /></div>
+        <div className="min-w-0">
+          <div className="truncate text-[15px] font-semibold text-foreground">{repo}</div>
+          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+            <Github size={12} /> {project ? "Real GitHub project" : "No project selected"}
+          </div>
         </div>
       </div>
-      <div className="ml-auto flex items-center gap-1.5">
-        <button onClick={toggle} className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted">{dark ? <Moon size={16} /> : <Sun size={16} />}</button>
-        <button onClick={onBell} className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"><Bell size={16} /></button>
-        <button onClick={onSettings} className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"><Settings size={16} /></button>
-        <button onClick={onSignOut} className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"><LogOut size={13} /> Logout</button>
-        <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-accent text-xs font-bold text-brand">
+      <div className="ml-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <button type="button" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} onClick={toggle} className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted">{dark ? <Moon size={16} /> : <Sun size={16} />}</button>
+        <button type="button" aria-label="Alerts" onClick={onBell} className="relative flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"><Bell size={16} /></button>
+        <button type="button" aria-label="Settings" onClick={onSettings} className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"><Settings size={16} /></button>
+        <button type="button" onClick={onSignOut} className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold text-muted-foreground hover:bg-muted">
+          <LogOut size={13} /> <span className="hidden sm:inline">Logout</span>
+        </button>
+        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-accent text-xs font-bold text-brand">
           {user?.avatar_url ? <img src={user.avatar_url} alt="User avatar" className="h-full w-full object-cover" /> : (user?.name || user?.email || "U").slice(0, 1).toUpperCase()}
         </div>
       </div>
@@ -349,7 +367,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading }
       <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-2">
         {loading && projects.length === 0 ? (
           [1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex h-[126px] min-w-[190px] flex-col justify-between overflow-hidden rounded-lg border border-border/50 bg-card p-4 shadow-card">
+            <div key={i} className="flex h-[126px] min-w-[170px] flex-col justify-between overflow-hidden rounded-lg border border-border/50 bg-card p-4 shadow-card sm:min-w-[190px]">
               <Skeleton className="h-4 w-4 rounded-full" />
               <div>
                 <Skeleton className="mb-1 h-4 w-24" />
@@ -363,7 +381,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading }
             const active = p.id === activeId;
             const repo = getRepoName(p);
             return (
-              <button key={p.id} onClick={() => onSelect(p.id)} className={cn("relative flex h-[126px] min-w-[190px] cursor-pointer flex-col justify-between rounded-lg border bg-card p-4 text-left shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift", active ? "border-brand ring-1 ring-brand" : "border-border/50")}>
+              <button key={p.id} type="button" onClick={() => onSelect(p.id)} className={cn("relative flex h-[126px] min-w-[170px] cursor-pointer flex-col justify-between rounded-lg border bg-card p-4 text-left shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift sm:min-w-[190px]", active ? "border-brand ring-1 ring-brand" : "border-border/50")}>
                 <GitBranch size={18} className={cn("transition-colors", active ? "text-brand" : "text-muted-foreground")} />
                 <div>
                   <div className="truncate text-[13px] font-bold text-foreground">{repo}</div>
@@ -404,18 +422,18 @@ function CommitsTable({ tab, setTab, commits, team, search, setSearch, selectedI
             <button key={t.id} onClick={() => setTab(t.id)} className={cn("cursor-pointer rounded-full px-4 py-1.5 text-sm transition-all duration-200", tab === t.id ? "bg-brand font-semibold text-primary-foreground shadow-sm hover:bg-brand/90" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>{t.label}</button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex w-64 items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-1.5 focus-within:border-brand">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <div className="flex w-full items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 focus-within:border-brand sm:w-64">
             <Search size={14} className="text-muted-foreground" />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search commits..." className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
           </div>
-          <button className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"><Grid3x3 size={16} /></button>
-          <button className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-muted text-foreground transition-all duration-200"><List size={16} /></button>
+          <button type="button" aria-label="Grid view" className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"><Grid3x3 size={16} /></button>
+          <button type="button" aria-label="List view" className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md bg-muted text-foreground transition-all duration-200"><List size={16} /></button>
         </div>
       </div>
-      <div className="overflow-hidden rounded-lg border border-border/50 bg-card">
+      <div className="overflow-x-auto rounded-lg border border-border/50 bg-card">
         {tab === "team" ? (
-          <table className="w-full text-sm">
+          <table className="min-w-[640px] w-full text-sm">
             <thead><tr className="border-b border-border/50 text-left text-[11px] uppercase tracking-wider text-muted-foreground"><th className="px-4 py-3">Member</th><th>Role</th><th>Status</th><th>Last commit</th></tr></thead>
             <tbody>
               {loading && team.length === 0 ? (
@@ -430,7 +448,7 @@ function CommitsTable({ tab, setTab, commits, team, search, setSearch, selectedI
         ) : tab === "alerts" ? (
           <div className="p-8 text-center text-sm text-muted-foreground">No alert endpoint is returning data yet.</div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="min-w-[960px] w-full text-sm">
             <thead>
               <tr className="border-b border-border/50 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
                 <th className="w-10 px-4 py-3" /><th className="py-3">Commit Message</th><th className="py-3">Author</th><th className="py-3">Date</th><th className="py-3">AI Tag</th><th className="py-3">Risk</th><th className="py-3">Diff</th><th className="w-10" />
@@ -482,7 +500,7 @@ function CommitDrawer({ commit, onClose }: { commit: UiCommit | null; onClose: (
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-foreground/40" />
-      <div className="relative h-full w-[480px] max-w-full overflow-y-auto border-l border-border bg-card" onClick={(e) => e.stopPropagation()}>
+      <div className="relative h-full w-full max-w-full overflow-y-auto border-l border-border bg-card sm:w-[480px]" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div><div className="font-mono text-xs text-muted-foreground">#{commit.sha}</div><h3 className="mt-0.5 font-semibold text-foreground">{commit.message}</h3></div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X size={16} /></button>
@@ -500,9 +518,9 @@ function CommitDrawer({ commit, onClose }: { commit: UiCommit | null; onClose: (
 
 function BottomBar({ commit }: { commit: UiCommit }) {
   return (
-    <div className="absolute bottom-0 left-0 right-0 flex items-center gap-3 border-t border-border bg-card px-6 py-3">
+    <div className="sticky bottom-0 z-20 mt-6 flex flex-wrap items-center gap-3 border-t border-border bg-card/95 px-4 py-3 backdrop-blur sm:px-6">
       <GitCommit size={16} className="text-brand" />
-      <span className="text-[13px] text-foreground">{commit.message} · {commit.size} diff · {commit.date}</span>
+      <span className="min-w-0 flex-1 text-[13px] text-foreground">{commit.message} · {commit.size} diff · {commit.date}</span>
       <span className={cn("rounded-full px-3 py-1 text-[11px] font-semibold", riskClass(commit.risk))}>{commit.risk} Risk</span>
     </div>
   );
@@ -645,11 +663,11 @@ export default function Index() {
   const showEmpty = !loading && projects.length === 0;
 
   return (
-    <div className="flex h-screen w-full bg-background">
+    <div className="flex min-h-screen w-full overflow-hidden bg-background">
       <LoadingSpinner visible={loading} />
       <IconRail tab={tab} setTab={setTab} alertsCount={0} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
       <MiddleSidebar projects={projects} activeId={projectId} onSelect={setProjectId} onLinkRepo={() => setShowLink(true)} />
-      <main className="relative flex-1 overflow-y-auto bg-card">
+      <main className="relative min-w-0 flex-1 overflow-y-auto bg-card pb-24">
         <TopBar dark={dark} toggle={toggle} project={activeProject} onBell={() => setTab("alerts")} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
         <ErrorBanner error={error} onRetry={refetch} />
         <div className="flex flex-wrap items-center justify-between gap-2 px-6 pt-4">
@@ -659,8 +677,8 @@ export default function Index() {
             <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-brand">{uiCommits.length}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={refetch} className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"><RefreshCw size={13} /> Refresh</button>
-            <button onClick={() => setShowLink(true)} className="flex cursor-pointer items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-brand/90 hover:shadow-md"><Link size={14} /> Link Repository</button>
+            <button type="button" onClick={refetch} className="flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"><RefreshCw size={13} /> Refresh</button>
+            <button type="button" onClick={() => setShowLink(true)} className="flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-brand/90 hover:shadow-md"><Link size={14} /> Link Repository</button>
           </div>
         </div>
 
