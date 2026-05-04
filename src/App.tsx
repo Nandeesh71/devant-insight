@@ -24,7 +24,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/auth/callback/*" element={<AuthCallback />} />
               <Route path="/connect-github" element={<ConnectGithub />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
