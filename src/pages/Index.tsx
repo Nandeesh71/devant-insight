@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import {
   Activity,
+  AlertCircle,
   AlertTriangle,
   Bell,
   CheckCircle2,
@@ -12,13 +13,16 @@ import {
   Github,
   GitCommit,
   Grid3x3,
-  LayoutGrid,
+  Info,
+  LayoutDashboard,
+  Link,
   Link2,
   List,
   Loader2,
   LogOut,
   Moon,
-  MoreHorizontal,
+  MoreVertical,
+  PieChart,
   PlusCircle,
   RefreshCw,
   Search,
@@ -29,6 +33,7 @@ import {
   X,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingSpinner, ErrorBanner } from "@/components/StatusBanners";
 import { useAuth } from "@/context/AuthContext";
 import { useProject } from "@/context/ProjectContext";
@@ -154,7 +159,7 @@ function EmptyState({ title, description, actionLabel, onAction, icon: Icon = Gi
 /* ---------------- Layout ---------------- */
 function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: string; setTab: (t: string) => void; alertsCount: number; onSettings: () => void; onSignOut: () => void }) {
   const items = [
-    { id: "portfolio", icon: LayoutGrid, label: "Portfolio" },
+    { id: "portfolio", icon: LayoutDashboard, label: "Portfolio" },
     { id: "commits", icon: GitBranch, label: "Commits" },
     { id: "team", icon: User, label: "Team" },
   ];
@@ -167,7 +172,7 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
           return (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
-                <button onClick={() => setTab(item.id)} className={cn("relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors", active ? "bg-primary/20 text-primary-foreground" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground")}>
+                <button onClick={() => setTab(item.id)} className={cn("relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all duration-200", active ? "bg-primary/20 text-primary-foreground shadow-sm" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground hover:shadow-sm")}>
                   {active && <span className="absolute -left-2 bottom-1.5 top-1.5 w-[3px] rounded-r bg-brand" />}
                   <item.icon size={20} />
                 </button>
@@ -220,8 +225,8 @@ function MiddleSidebar({ projects, activeId, onSelect, onLinkRepo }: { projects:
         </div>
       </div>
       <div className="px-3">
-        <button className="flex w-full items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-primary-foreground shadow-brand">
-          <LayoutGrid size={14} /><span className="flex-1 text-left">Overview</span>
+        <button className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-primary-foreground shadow-brand transition-all duration-200 hover:bg-brand/90 hover:shadow-lg">
+          <PieChart size={14} /><span className="flex-1 text-left">Overview</span>
         </button>
       </div>
       <div className="mb-1 mt-5 flex items-center justify-between px-5">
@@ -241,8 +246,8 @@ function MiddleSidebar({ projects, activeId, onSelect, onLinkRepo }: { projects:
             </button>
           );
         })}
-        <button onClick={onLinkRepo} className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-sidebar-tree py-2 text-[13px] text-sidebar-text hover:border-border hover:text-primary-foreground">
-          <Github size={14} /> Link GitHub repo
+        <button onClick={onLinkRepo} className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-sidebar-tree py-2 text-[13px] text-sidebar-text transition-all duration-200 hover:border-border hover:bg-primary/5 hover:text-primary-foreground">
+          <Link size={14} /> Link GitHub repo
         </button>
       </div>
     </aside>
@@ -275,24 +280,39 @@ function TopBar({ dark, toggle, project, onBell, onSettings, onSignOut }: { dark
 }
 
 /* ---------------- Dashboard sections ---------------- */
-function StatCards({ health, finance, dora }: Pick<ReturnType<typeof useDevantData>, "health" | "finance" | "dora">) {
+function StatCards({ health, finance, dora, loading }: Pick<ReturnType<typeof useDevantData>, "health" | "finance" | "dora" | "loading">) {
   const score = typeof health?.score === "number" ? health.score : null;
   const burn = typeof finance?.burn_percent === "number" ? finance.burn_percent : null;
+
+  if (loading && !score && !burn) {
+    return (
+      <section className="grid grid-cols-1 gap-3 px-6 pt-6 md:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
+            <Skeleton className="mb-2 h-3 w-24" />
+            <Skeleton className="mb-2 h-8 w-16" />
+            <Skeleton className="h-2 w-full" />
+          </div>
+        ))}
+      </section>
+    );
+  }
+
   return (
     <section className="grid grid-cols-1 gap-3 px-6 pt-6 md:grid-cols-3">
-      <div className="rounded-lg border border-border bg-card p-4 shadow-card">
-        <div className="text-xs text-muted-foreground">Project Health</div>
+      <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Activity size={12} /> Project Health</div>
         <div className="mt-1 flex items-end gap-2"><div className="text-3xl font-bold text-foreground">{score ?? "—"}</div><div className="mb-1 text-xs text-muted-foreground">/ 100</div></div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-2 rounded-full bg-brand" style={{ width: `${Math.max(0, Math.min(score ?? 0, 100))}%` }} /></div>
       </div>
-      <div className="rounded-lg border border-border bg-card p-4 shadow-card">
-        <div className="text-xs text-muted-foreground">Budget · Burn · Runway</div>
+      <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><AlertCircle size={12} /> Budget · Burn · Runway</div>
         <div className="mt-1 text-lg font-bold text-foreground">{formatCurrency(finance?.spent)} <span className="text-xs font-normal text-muted-foreground">/ {formatCurrency(finance?.budget)}</span></div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-2 rounded-full bg-brand" style={{ width: `${Math.max(0, Math.min(burn ?? 0, 100))}%` }} /></div>
         <div className="mt-1.5 text-[11px] text-muted-foreground">{burn ?? "—"}% spent · {finance?.runway_months ?? "—"}mo runway</div>
       </div>
-      <div className="rounded-lg border border-border bg-card p-4 shadow-card">
-        <div className="text-xs text-muted-foreground">DORA</div>
+      <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Info size={12} /> DORA Metrics</div>
         <div className="mt-2 grid grid-cols-2 gap-1.5 text-[11px]">
           <div><div className="text-muted-foreground">Deploy Freq</div><div className="font-bold text-foreground">{dora?.deployment_frequency?.value ?? "—"}</div></div>
           <div><div className="text-muted-foreground">Lead Time</div><div className="font-bold text-foreground">{dora?.change_lead_time?.value ?? "—"}</div></div>
@@ -304,7 +324,7 @@ function StatCards({ health, finance, dora }: Pick<ReturnType<typeof useDevantDa
   );
 }
 
-function ActiveProjects({ projects, activeId, onSelect, sort, setSort }: { projects: Project[]; activeId: string | null; onSelect: (id: string) => void; sort: string; setSort: (s: string) => void }) {
+function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading }: { projects: Project[]; activeId: string | null; onSelect: (id: string) => void; sort: string; setSort: (s: string) => void; loading: boolean }) {
   const [open, setOpen] = useState(false);
   const sorted = useMemo(() => {
     const copy = [...projects];
@@ -316,31 +336,44 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort }: { proje
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[16px] font-semibold text-foreground">Linked Projects</h3>
         <div className="relative">
-          <button onClick={() => setOpen(!open)} className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted">
+          <button onClick={() => setOpen(!open)} className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground">
             <SlidersHorizontal size={13} /> {sort} <ChevronDown size={13} />
           </button>
           {open && (
             <div className="absolute right-0 z-30 mt-1 w-36 rounded-lg border border-border bg-card py-1 shadow-lift">
-              {['Newest', 'Name'].map((s) => <button key={s} onClick={() => { setSort(s); setOpen(false); }} className="w-full px-3 py-1.5 text-left text-xs hover:bg-muted">{s}</button>)}
+              {['Newest', 'Name'].map((s) => <button key={s} onClick={() => { setSort(s); setOpen(false); }} className="w-full cursor-pointer px-3 py-1.5 text-left text-xs transition-colors hover:bg-muted">{s}</button>)}
             </div>
           )}
         </div>
       </div>
       <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-2">
-        {sorted.map((p) => {
-          const active = p.id === activeId;
-          const repo = getRepoName(p);
-          return (
-            <button key={p.id} onClick={() => onSelect(p.id)} className={cn("relative flex h-[126px] min-w-[190px] flex-col justify-between overflow-hidden rounded-lg border border-border bg-card p-4 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lift", active && "ring-2 ring-brand")}>
-              <GitBranch size={18} className="text-brand" />
+        {loading && projects.length === 0 ? (
+          [1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex h-[126px] min-w-[190px] flex-col justify-between overflow-hidden rounded-lg border border-border/50 bg-card p-4 shadow-card">
+              <Skeleton className="h-4 w-4 rounded-full" />
               <div>
-                <div className="truncate text-[13px] font-bold text-foreground">{repo}</div>
-                <div className="mt-0.5 truncate text-[11px] text-muted-foreground">{String(p.description || p.default_branch || p.status || "Linked from GitHub")}</div>
-                <div className="mt-2 inline-flex rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-brand">Real data</div>
+                <Skeleton className="mb-1 h-4 w-24" />
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="mt-2 h-4 w-12 rounded-full" />
               </div>
-            </button>
-          );
-        })}
+            </div>
+          ))
+        ) : (
+          sorted.map((p) => {
+            const active = p.id === activeId;
+            const repo = getRepoName(p);
+            return (
+              <button key={p.id} onClick={() => onSelect(p.id)} className={cn("relative flex h-[126px] min-w-[190px] cursor-pointer flex-col justify-between overflow-hidden rounded-lg border border-border/50 bg-card p-4 text-left shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift", active && "ring-2 ring-brand")}>
+                <GitBranch size={18} className="text-brand" />
+                <div>
+                  <div className="truncate text-[13px] font-bold text-foreground">{repo}</div>
+                  <div className="mt-0.5 truncate text-[11px] text-muted-foreground">{String(p.description || p.default_branch || p.status || "Linked from GitHub")}</div>
+                  <div className="mt-2 inline-flex rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-brand">Real data</div>
+                </div>
+              </button>
+            );
+          })
+        )}
       </div>
     </section>
   );
@@ -361,32 +394,37 @@ function riskClass(risk: string) {
   return "bg-muted text-muted-foreground";
 }
 
-function CommitsTable({ tab, setTab, commits, team, search, setSearch, selectedId, setSelectedId, onOpen }: { tab: string; setTab: (t: string) => void; commits: UiCommit[]; team: ReturnType<typeof useDevantData>["team"]; search: string; setSearch: (s: string) => void; selectedId: string; setSelectedId: (id: string) => void; onOpen: (c: UiCommit) => void }) {
+function CommitsTable({ tab, setTab, commits, team, search, setSearch, selectedId, setSelectedId, onOpen, loading }: { tab: string; setTab: (t: string) => void; commits: UiCommit[]; team: ReturnType<typeof useDevantData>["team"]; search: string; setSearch: (s: string) => void; selectedId: string; setSelectedId: (id: string) => void; onOpen: (c: UiCommit) => void; loading: boolean }) {
   const filtered = commits.filter((c) => !search || c.message.toLowerCase().includes(search.toLowerCase()) || c.author.toLowerCase().includes(search.toLowerCase()) || c.sha.includes(search));
   return (
     <section className="px-6 pb-24 pt-6">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {[{ id: "commits", label: "Recent Commits" }, { id: "team", label: "Team" }, { id: "alerts", label: "Alerts" }].map((t) => (
-            <button key={t.id} onClick={() => setTab(t.id)} className={cn("rounded-full px-4 py-1.5 text-sm transition-colors", tab === t.id ? "bg-brand font-semibold text-primary-foreground" : "text-muted-foreground hover:bg-muted")}>{t.label}</button>
+            <button key={t.id} onClick={() => setTab(t.id)} className={cn("cursor-pointer rounded-full px-4 py-1.5 text-sm transition-all duration-200", tab === t.id ? "bg-brand font-semibold text-primary-foreground shadow-sm hover:bg-brand/90" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>{t.label}</button>
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex w-64 items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5">
+          <div className="flex w-64 items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-1.5 focus-within:border-brand">
             <Search size={14} className="text-muted-foreground" />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search commits..." className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
           </div>
-          <button className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"><Grid3x3 size={16} /></button>
-          <button className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-foreground"><List size={16} /></button>
+          <button className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"><Grid3x3 size={16} /></button>
+          <button className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-muted text-foreground transition-all duration-200"><List size={16} /></button>
         </div>
       </div>
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
+      <div className="overflow-hidden rounded-lg border border-border/50 bg-card">
         {tab === "team" ? (
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted-foreground"><th className="px-4 py-3">Member</th><th>Role</th><th>Status</th><th>Last commit</th></tr></thead>
+            <thead><tr className="border-b border-border/50 text-left text-[11px] uppercase tracking-wider text-muted-foreground"><th className="px-4 py-3">Member</th><th>Role</th><th>Status</th><th>Last commit</th></tr></thead>
             <tbody>
-              {team.length === 0 && <tr><td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">No team data returned yet</td></tr>}
-              {team.map((m) => <tr key={m.id} className="border-b border-border last:border-0"><td className="px-4 py-3 font-semibold text-foreground">{m.name}</td><td className="text-muted-foreground">{m.role}</td><td>{m.status}</td><td className="text-muted-foreground">{m.last_commit || "—"}</td></tr>)}
+              {loading && team.length === 0 ? (
+                [1, 2, 3].map(i => <tr key={i} className="border-b border-border/50 last:border-0"><td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td><td><Skeleton className="h-4 w-20" /></td><td><Skeleton className="h-4 w-16" /></td><td><Skeleton className="h-4 w-24" /></td></tr>)
+              ) : team.length === 0 ? (
+                <tr><td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">No team data returned yet</td></tr>
+              ) : (
+                team.map((m) => <tr key={m.id} className="border-b border-border/50 transition-colors hover:bg-row-hover last:border-0"><td className="px-4 py-3 font-semibold text-foreground">{m.name}</td><td className="text-muted-foreground">{m.role}</td><td>{m.status}</td><td className="text-muted-foreground">{m.last_commit || "—"}</td></tr>)
+              )}
             </tbody>
           </table>
         ) : tab === "alerts" ? (
@@ -394,27 +432,43 @@ function CommitsTable({ tab, setTab, commits, team, search, setSearch, selectedI
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+              <tr className="border-b border-border/50 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
                 <th className="w-10 px-4 py-3" /><th className="py-3">Commit Message</th><th className="py-3">Author</th><th className="py-3">Date</th><th className="py-3">AI Tag</th><th className="py-3">Risk</th><th className="py-3">Diff</th><th className="w-10" />
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 && <tr><td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">No commits returned for this project yet</td></tr>}
-              {filtered.map((c) => {
-                const selected = c.id === selectedId;
-                return (
-                  <tr key={c.id} onClick={() => setSelectedId(c.id)} onDoubleClick={() => onOpen(c)} className={cn("cursor-pointer border-b border-border transition-colors last:border-0", selected ? "bg-row-selected" : "hover:bg-row-hover")}>
-                    <td className="px-4 py-3"><div className={cn("flex h-4 w-4 items-center justify-center rounded border", selected ? "border-brand bg-brand text-primary-foreground" : "border-border bg-card")}>{selected && <CheckCircle2 size={12} />}</div></td>
-                    <td className="py-3"><div className="flex items-center gap-3"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-brand"><GitCommit size={15} /></div><div><div className="text-[13px] font-semibold text-foreground">{c.message}</div><div className="font-mono text-[11px] text-muted-foreground">Commit #{c.sha}</div></div></div></td>
-                    <td className="py-3 text-[13px] text-foreground">{c.author}</td>
-                    <td className="py-3 text-[13px] text-muted-foreground">{c.date}</td>
-                    <td className="py-3"><span className={cn("rounded-full px-2 py-1 text-[11px] font-semibold", tagClass(c.tag))}>{c.tag}</span></td>
-                    <td className="py-3"><span className={cn("rounded-full px-2 py-1 text-[11px] font-semibold", riskClass(c.risk))}>{c.risk}</span></td>
-                    <td className="py-3 text-[13px] text-foreground">{c.size}</td>
-                    <td className="py-3 pr-4 text-muted-foreground"><MoreHorizontal size={16} /></td>
+              {loading && filtered.length === 0 ? (
+                [1, 2, 3, 4, 5].map(i => (
+                  <tr key={i} className="border-b border-border/50 last:border-0">
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-4 rounded" /></td>
+                    <td className="py-3"><div className="flex items-center gap-3"><Skeleton className="h-8 w-8 rounded-lg" /><div><Skeleton className="mb-1 h-4 w-48" /><Skeleton className="h-3 w-20" /></div></div></td>
+                    <td className="py-3"><Skeleton className="h-4 w-24" /></td>
+                    <td className="py-3"><Skeleton className="h-4 w-20" /></td>
+                    <td className="py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                    <td className="py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                    <td className="py-3"><Skeleton className="h-4 w-12" /></td>
+                    <td className="py-3 pr-4"><Skeleton className="h-4 w-4" /></td>
                   </tr>
-                );
-              })}
+                ))
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">No commits returned for this project yet</td></tr>
+              ) : (
+                filtered.map((c) => {
+                  const selected = c.id === selectedId;
+                  return (
+                    <tr key={c.id} onClick={() => setSelectedId(c.id)} onDoubleClick={() => onOpen(c)} className={cn("cursor-pointer border-b border-border/50 transition-all duration-200 last:border-0", selected ? "bg-row-selected shadow-sm" : "hover:bg-row-hover")}>
+                      <td className="px-4 py-3"><div className={cn("flex h-4 w-4 items-center justify-center rounded border transition-colors", selected ? "border-brand bg-brand text-primary-foreground" : "border-border/80 bg-card")}>{selected && <CheckCircle2 size={12} />}</div></td>
+                      <td className="py-3"><div className="flex items-center gap-3"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-brand"><GitCommit size={15} /></div><div><div className="text-[13px] font-semibold text-foreground">{c.message}</div><div className="font-mono text-[11px] text-muted-foreground">Commit #{c.sha}</div></div></div></td>
+                      <td className="py-3 text-[13px] text-foreground">{c.author}</td>
+                      <td className="py-3 text-[13px] text-muted-foreground">{c.date}</td>
+                      <td className="py-3"><span className={cn("rounded-full px-2 py-1 text-[11px] font-semibold", tagClass(c.tag))}>{c.tag}</span></td>
+                      <td className="py-3"><span className={cn("rounded-full px-2 py-1 text-[11px] font-semibold", riskClass(c.risk))}>{c.risk}</span></td>
+                      <td className="py-3 text-[13px] text-foreground">{c.size}</td>
+                      <td className="py-3 pr-4 text-muted-foreground"><MoreVertical size={16} /></td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         )}
@@ -595,8 +649,8 @@ export default function Index() {
             <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-brand">{uiCommits.length}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={refetch} className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted"><RefreshCw size={13} /> Refresh</button>
-            <button onClick={() => setShowLink(true)} className="flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"><Link2 size={14} /> Link Repository</button>
+            <button onClick={refetch} className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"><RefreshCw size={13} /> Refresh</button>
+            <button onClick={() => setShowLink(true)} className="flex cursor-pointer items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-brand/90 hover:shadow-md"><Link size={14} /> Link Repository</button>
           </div>
         </div>
 
@@ -604,9 +658,9 @@ export default function Index() {
           <EmptyState title="Link your first GitHub repository" description="Your dashboard is empty because mock projects were removed. Choose a real repo from your GitHub account to create a DevANT project." actionLabel="Link GitHub repo" onAction={() => setShowLink(true)} />
         ) : (
           <>
-            <StatCards health={health} finance={finance} dora={dora} />
-            <ActiveProjects projects={projects} activeId={projectId} onSelect={setProjectId} sort={sort} setSort={setSort} />
-            <CommitsTable tab={tab === "portfolio" ? "commits" : tab} setTab={setTab} commits={uiCommits} team={team} search={search} setSearch={setSearch} selectedId={selected?.id || ""} setSelectedId={setSelectedId} onOpen={setDrawerCommit} />
+            <StatCards health={health} finance={finance} dora={dora} loading={loading} />
+            <ActiveProjects projects={projects} activeId={projectId} onSelect={setProjectId} sort={sort} setSort={setSort} loading={loading} />
+            <CommitsTable tab={tab === "portfolio" ? "commits" : tab} setTab={setTab} commits={uiCommits} team={team} search={search} setSearch={setSearch} selectedId={selected?.id || ""} setSelectedId={setSelectedId} onOpen={setDrawerCommit} loading={loading} />
             {selected && <BottomBar commit={selected} />}
           </>
         )}
