@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
+import ProjectDetail from "./pages/ProjectDetail.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { ProjectProvider } from "./context/ProjectContext";
 import { AuthProvider } from "./context/AuthContext";
@@ -23,6 +24,7 @@ const App = () => (
           <HashRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/:owner/:repo" element={<ProjectDetail />} />
               <Route path="/login" element={<Login />} />
               <Route path="/auth/callback/*" element={<AuthCallback />} />
               <Route path="/connect-github" element={<ConnectGithub />} />

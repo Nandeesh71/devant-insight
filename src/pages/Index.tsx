@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   Activity,
   AlertCircle,
@@ -7,6 +7,7 @@ import {
   Bell,
   CheckCircle2,
   ChevronDown,
+  Database,
   ExternalLink,
   Clock3,
   Folder,
@@ -397,7 +398,7 @@ function StatCards({ health, finance, dora, loading }: Pick<ReturnType<typeof us
   );
 }
 
-function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, onRequestDisconnect }: { projects: Project[]; activeId: string | null; onSelect: (id: string) => void; sort: string; setSort: (s: string) => void; loading: boolean; onRequestDisconnect: (project: Project) => void }) {
+function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, onRequestDisconnect }: { projects: Project[]; activeId: string | null; onSelect: (project: Project) => void; sort: string; setSort: (s: string) => void; loading: boolean; onRequestDisconnect: (project: Project) => void }) {
   const [open, setOpen] = useState(false);
   const sorted = useMemo(() => {
     const copy = [...projects];
@@ -419,15 +420,22 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
           )}
         </div>
       </div>
-      <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-2">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] items-stretch gap-4 pb-2">
         {loading && projects.length === 0 ? (
-          [1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex h-[126px] min-w-[170px] flex-col justify-between overflow-hidden rounded-lg border border-border/50 bg-card p-4 shadow-card sm:min-w-[190px]">
-              <Skeleton className="h-4 w-4 rounded-full" />
-              <div>
-                <Skeleton className="mb-1 h-4 w-24" />
-                <Skeleton className="h-3 w-16" />
-                <div className="mt-3 inline-flex rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-brand">Real data</div>
+          [1, 2, 3].map((i) => (
+            <div key={i} className="relative flex h-full min-h-[240px] flex-col rounded-[18px] border-[1.5px] border-transparent bg-card p-4 shadow-card">
+              <div className="flex items-start justify-between gap-3">
+                <Skeleton className="h-[34px] w-[34px] rounded-xl" />
+                <Skeleton className="h-7 w-7 rounded-lg" />
+              </div>
+              <div className="mt-3 space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-28" />
+              </div>
+              <Skeleton className="mt-3 h-6 w-24 rounded-full" />
+              <div className="mt-auto flex items-center gap-2 pt-4">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-8 w-8 rounded-full" />
               </div>
             </div>
           ))
@@ -442,47 +450,62 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
                 key={p.id}
                 role="button"
                 tabIndex={0}
-                onClick={() => onSelect(p.id)}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelect(p.id); }}
-                className={cn("group relative flex h-[126px] min-w-[170px] cursor-pointer flex-col justify-between rounded-lg border bg-card p-4 text-left shadow-card transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lift sm:min-w-[190px]", active ? "border-brand ring-1 ring-brand" : "border-border/50")}
+                onClick={() => onSelect(p)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelect(p); }}
+                className={cn(
+                  "group relative flex h-full min-h-[240px] cursor-pointer flex-col rounded-[18px] border-[1.5px] border-transparent bg-card p-4 text-left shadow-card transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lift",
+                  active
+                    ? "shadow-[0_0_0_1.5px_#7c3aed,0_4px_20px_rgba(124,58,237,0.12)]"
+                    : "shadow-card"
+                )}
               >
                 <button
                   type="button"
                   aria-label="Disconnect repository"
                   title="Disconnect repository"
                   onClick={(e) => { e.stopPropagation(); onRequestDisconnect(p); }}
-                  className="absolute right-2.5 top-2.5 rounded-full p-1 text-muted-foreground opacity-70 transition-colors duration-150 ease-out hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+                  className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors duration-150 ease-out hover:bg-destructive/10 hover:text-destructive"
                 >
                   <Unplug size={14} strokeWidth={1.5} />
                 </button>
 
-                <GitFork size={18} strokeWidth={1.5} className={cn("transition-colors", active ? "text-brand" : "text-muted-foreground")} />
-                <div>
-                  <div className="truncate text-[13px] font-semibold text-foreground">{repo}</div>
-                  <div className="mt-0.5 truncate text-[11px] text-muted-foreground">{String(p.description || p.default_branch || p.status || "Linked from GitHub")}</div>
-                  <div className={cn("mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold", active ? "bg-brand text-primary-foreground" : "bg-accent text-brand")}>Real data</div>
-                  <div className="mt-3 flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      aria-label="Open GitHub repository"
-                      title="Open GitHub repository"
-                      disabled={!repoUrl}
-                      onClick={(e) => { e.stopPropagation(); if (repoUrl) window.open(repoUrl, "_blank", "noopener,noreferrer"); }}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <Github size={14} strokeWidth={1.5} />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Open commit history"
-                      title="Open commit history"
-                      disabled={!commitsUrl}
-                      onClick={(e) => { e.stopPropagation(); if (commitsUrl) window.open(commitsUrl, "_blank", "noopener,noreferrer"); }}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <ExternalLink size={14} strokeWidth={1.5} />
-                    </button>
+                <div className="flex items-start justify-between gap-3 pr-10">
+                  <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-xl bg-accent text-brand">
+                    <GitFork size={18} strokeWidth={1.5} className={cn("transition-colors", active ? "text-brand" : "text-muted-foreground")} />
                   </div>
+                </div>
+
+                <div className="mt-3 space-y-1.5">
+                  <div className="truncate text-[13px] font-semibold text-foreground">{repo}</div>
+                  <div className="text-[11px] leading-4 text-muted-foreground">{String(p.description || p.default_branch || p.status || "Linked from GitHub")}</div>
+                </div>
+
+                <div className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-[10px] py-[3px] text-[12px] font-semibold text-[#7c3aed]">
+                  <Database size={11} strokeWidth={1.8} />
+                  <span>Real data</span>
+                </div>
+
+                <div className="mt-auto flex items-center gap-2 pt-4">
+                  <button
+                    type="button"
+                    aria-label="Open GitHub repository"
+                    title="Open GitHub repository"
+                    disabled={!repoUrl}
+                    onClick={(e) => { e.stopPropagation(); if (repoUrl) window.open(repoUrl, "_blank", "noopener,noreferrer"); }}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-transparent text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <Github size={14} strokeWidth={1.5} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Open commit history"
+                    title="Open commit history"
+                    disabled={!commitsUrl}
+                    onClick={(e) => { e.stopPropagation(); if (commitsUrl) window.open(commitsUrl, "_blank", "noopener,noreferrer"); }}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-transparent text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <ExternalLink size={14} strokeWidth={1.5} />
+                  </button>
                 </div>
               </article>
             );
@@ -750,6 +773,7 @@ function SettingsModal({ open, onClose, onSignOut }: { open: boolean; onClose: (
 
 /* ---------------- Page ---------------- */
 export default function Index() {
+  const navigate = useNavigate();
   const { dark, toggle } = useTheme();
   const { user, token, loading: authLoading, signOut } = useAuth();
   const { projectId, setProjectId } = useProject();
@@ -772,6 +796,13 @@ export default function Index() {
   useEffect(() => {
     if (!selectedId && uiCommits[0]) setSelectedId(uiCommits[0].id);
   }, [selectedId, uiCommits]);
+
+  const handleProjectSelect = (p: Project) => {
+    setProjectId(p.id);
+    const repo = getRepoName(p);
+    const owner = p.owner || "owner";
+    navigate(`/${owner}/${repo}`);
+  };
 
   const handleDisconnect = async () => {
     if (!disconnectTarget) return;
@@ -830,7 +861,7 @@ export default function Index() {
         ) : (
           <>
             <StatCards health={health} finance={finance} dora={dora} loading={loading} />
-            <ActiveProjects projects={projects} activeId={projectId} onSelect={setProjectId} sort={sort} setSort={setSort} loading={loading} onRequestDisconnect={setDisconnectTarget} />
+            <ActiveProjects projects={projects} activeId={projectId} onSelect={handleProjectSelect} sort={sort} setSort={setSort} loading={loading} onRequestDisconnect={setDisconnectTarget} />
             <CommitsTable tab={tab === "portfolio" ? "commits" : tab} setTab={setTab} commits={uiCommits} team={team} search={search} setSearch={setSearch} selectedId={selected?.id || ""} setSelectedId={setSelectedId} onOpen={setDrawerCommit} loading={loading} viewMode={viewMode} setViewMode={setViewMode} />
             {selected && <BottomBar commit={selected} />}
           </>
