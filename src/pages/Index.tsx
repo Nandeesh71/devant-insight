@@ -364,31 +364,38 @@ function StatCards({ health, finance, dora, loading }: Pick<ReturnType<typeof us
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Activity size={12} strokeWidth={1.5} /> Project Health</div>
         <div className="mt-1 flex items-end gap-1.5"><div className="text-3xl font-bold text-foreground">{score ?? "—"}</div><div className="mb-1 text-xs font-medium text-muted-foreground">/ 100</div></div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-2 rounded-full bg-brand" style={{ width: `${Math.max(0, Math.min(score ?? 0, 100))}%` }} /></div>
+        <div className="mt-2 text-[11px] font-medium text-muted-foreground">
+          {score !== null && (score >= 71 ? "Good" : score >= 41 ? "Needs Attention" : "Critical")}
+        </div>
       </div>
       <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><AlertCircle size={12} strokeWidth={1.5} /> Budget · Burn · Runway</div>
         <div className="mt-1 text-lg font-semibold text-foreground">
-          {formatMaybeCurrency(finance?.spent)} <span className="text-xs font-medium text-muted-foreground">/ {formatMaybeCurrency(finance?.budget)}</span>
+          {finance?.budget ? `₹${Math.round(finance.spent || 0).toLocaleString('en-IN')}` : "Not configured"} <span className="text-xs font-medium text-muted-foreground">{finance?.budget ? `/ ₹${Math.round(finance.budget).toLocaleString('en-IN')}` : ""}</span>
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-2 rounded-full bg-brand" style={{ width: `${Math.max(0, Math.min(burn ?? 0, 100))}%` }} /></div>
-        <div className="mt-1.5 text-[11px] text-muted-foreground">{burn ?? "—"}% spent · {finance?.runway_months == null ? "—" : `${finance.runway_months}mo`} runway</div>
+        {finance?.budget && (
+          <>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-2 rounded-full bg-brand" style={{ width: `${Math.max(0, Math.min(burn ?? 0, 100))}%` }} /></div>
+            <div className="mt-1.5 text-[11px] text-muted-foreground">{burn ?? "—"}% spent · {finance?.runway_months == null ? "No runway data" : `${finance.runway_months}mo`}</div>
+          </>
+        )}
       </div>
       <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Info size={12} strokeWidth={1.5} /> DORA Metrics</div>
-        <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
-          <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+        <div className="mt-3 grid grid-cols-2 gap-0 border border-border/50 divide-x divide-border/50 divide-y divide-border/50">
+          <div className="bg-card p-2.5 text-[11px]">
             <div className="flex items-center gap-1.5 text-muted-foreground"><Zap size={12} strokeWidth={1.5} /> Deploy Freq</div>
             <div className="mt-1 font-semibold text-foreground">{dora?.deployment_frequency?.value ?? "—"}</div>
           </div>
-          <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+          <div className="bg-card p-2.5 text-[11px]">
             <div className="flex items-center gap-1.5 text-muted-foreground"><Clock3 size={12} strokeWidth={1.5} /> Lead Time</div>
             <div className="mt-1 font-semibold text-foreground">{dora?.change_lead_time?.value ?? "—"}</div>
           </div>
-          <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+          <div className="bg-card p-2.5 text-[11px]">
             <div className="flex items-center gap-1.5 text-muted-foreground"><AlertTriangle size={12} strokeWidth={1.5} /> Failure Rate</div>
             <div className="mt-1 font-semibold text-foreground">{dora?.change_failure_rate?.value ?? "—"}</div>
           </div>
-          <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+          <div className="bg-card p-2.5 text-[11px]">
             <div className="flex items-center gap-1.5 text-muted-foreground"><Star size={12} strokeWidth={1.5} /> Rating</div>
             <div className="mt-1 font-semibold text-foreground">{dora?.deployment_frequency?.rating ?? "—"}</div>
           </div>
@@ -470,14 +477,14 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
                 </button>
 
                 <div className="flex items-start justify-between gap-3 pr-10">
-                  <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-xl bg-accent text-brand">
-                    <GitFork size={18} strokeWidth={1.5} className={cn("transition-colors", active ? "text-brand" : "text-muted-foreground")} />
+                  <div className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-lg bg-accent text-brand">
+                    <GitFork size={16} strokeWidth={1.5} className={cn("transition-colors", active ? "text-brand" : "text-muted-foreground")} />
                   </div>
                 </div>
 
                 <div className="mt-3 space-y-1.5">
                   <div className="truncate text-[13px] font-semibold text-foreground">{repo}</div>
-                  <div className="text-[11px] leading-4 text-muted-foreground">{String(p.description || p.default_branch || p.status || "Linked from GitHub")}</div>
+                  <div className="truncate text-[11px] leading-4 text-muted-foreground">{String(p.description || p.default_branch || p.status || "Linked from GitHub")}</div>
                 </div>
 
                 <div className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-[10px] py-[3px] text-[12px] font-semibold text-[#7c3aed]">
@@ -485,7 +492,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
                   <span>Real data</span>
                 </div>
 
-                <div className="mt-auto flex items-center gap-2 pt-4">
+                <div className="mt-auto flex items-center gap-1.5 pt-4">
                   <button
                     type="button"
                     aria-label="Open GitHub repository"

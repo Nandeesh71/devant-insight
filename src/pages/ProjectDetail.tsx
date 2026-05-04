@@ -5,6 +5,7 @@ import {
   AlertCircle,
   AlertTriangle,
   Bell,
+  Calendar,
   CheckCircle2,
   ChevronRight,
   Code,
@@ -201,6 +202,9 @@ export default function ProjectDetail() {
                   style={{ width: `${Math.max(0, Math.min(health?.score ?? 0, 100))}%` }}
                 />
               </div>
+              <div className="mt-2 text-[11px] font-medium text-muted-foreground">
+                {health?.score !== null && (health.score >= 71 ? "Good" : health.score >= 41 ? "Needs Attention" : "Critical")}
+              </div>
             </div>
 
             <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
@@ -225,26 +229,26 @@ export default function ProjectDetail() {
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Info size={12} strokeWidth={1.5} /> DORA Metrics
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
-                <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+              <div className="mt-3 grid grid-cols-2 gap-0 border border-border/50 divide-x divide-border/50 divide-y divide-border/50">
+                <div className="bg-card p-2.5 text-[11px]">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Zap size={12} strokeWidth={1.5} /> Deploy Freq
                   </div>
                   <div className="mt-1 font-semibold text-foreground">{dora?.deployment_frequency?.value ?? "—"}</div>
                 </div>
-                <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+                <div className="bg-card p-2.5 text-[11px]">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Clock size={12} strokeWidth={1.5} /> Lead Time
                   </div>
                   <div className="mt-1 font-semibold text-foreground">{dora?.change_lead_time?.value ?? "—"}</div>
                 </div>
-                <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+                <div className="bg-card p-2.5 text-[11px]">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <AlertTriangle size={12} strokeWidth={1.5} /> Failure Rate
                   </div>
                   <div className="mt-1 font-semibold text-foreground">{dora?.change_failure_rate?.value ?? "—"}</div>
                 </div>
-                <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+                <div className="bg-card p-2.5 text-[11px]">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Star size={12} strokeWidth={1.5} /> Rating
                   </div>
@@ -398,6 +402,3 @@ function ProjectDetailSkeleton() {
     </div>
   );
 }
-
-// Placeholder import
-const Calendar = Clock;
