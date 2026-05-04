@@ -363,12 +363,12 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading }
             const active = p.id === activeId;
             const repo = getRepoName(p);
             return (
-              <button key={p.id} onClick={() => onSelect(p.id)} className={cn("relative flex h-[126px] min-w-[190px] cursor-pointer flex-col justify-between overflow-hidden rounded-lg border border-border/50 bg-card p-4 text-left shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift", active && "ring-2 ring-brand")}>
-                <GitBranch size={18} className="text-brand" />
+              <button key={p.id} onClick={() => onSelect(p.id)} className={cn("relative flex h-[126px] min-w-[190px] cursor-pointer flex-col justify-between rounded-lg border bg-card p-4 text-left shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift", active ? "border-brand ring-1 ring-brand" : "border-border/50")}>
+                <GitBranch size={18} className={cn("transition-colors", active ? "text-brand" : "text-muted-foreground")} />
                 <div>
                   <div className="truncate text-[13px] font-bold text-foreground">{repo}</div>
                   <div className="mt-0.5 truncate text-[11px] text-muted-foreground">{String(p.description || p.default_branch || p.status || "Linked from GitHub")}</div>
-                  <div className="mt-2 inline-flex rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-brand">Real data</div>
+                  <div className={cn("mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold", active ? "bg-brand text-primary-foreground" : "bg-accent text-brand")}>Real data</div>
                 </div>
               </button>
             );
@@ -627,7 +627,17 @@ export default function Index() {
   }, [selectedId, uiCommits]);
 
   if (authLoading) {
-    return <div className="flex h-screen items-center justify-center bg-background text-muted-foreground"><Loader2 className="mr-2 animate-spin text-brand" size={18} /> Restoring session…</div>;
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-brand text-primary-foreground shadow-brand">
+          <Activity size={24} className="animate-pulse" />
+        </div>
+        <h2 className="text-lg font-semibold text-foreground">Loading DevANT</h2>
+        <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 size={14} className="animate-spin text-brand" /> Restoring session...
+        </p>
+      </div>
+    );
   }
   if (!token || !user) return <Navigate to="/login" replace />;
   if (!user.github_connected) return <Navigate to="/connect-github" replace />;
