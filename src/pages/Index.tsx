@@ -812,9 +812,9 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
                <button onClick={connectGithub} className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-brand/90"><Github size={15} strokeWidth={1.5} /> Connect GitHub</button>
              </div>
           ) : (
-            <div className="relative z-10 flex flex-col gap-4">
+            <div className="relative z-10 flex flex-col gap-4 px-6 pb-4 sm:flex-row">
               {/* Account Dropdown */}
-              <div className="relative w-full">
+              <div className="relative w-full sm:w-[260px]">
                 <button 
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
                   className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-muted"
@@ -837,8 +837,8 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
                     </div>
                     <div className="border-t border-border">
                       <button onClick={connectGithub} className="flex w-full items-center gap-3 px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted">
-                        <PlusCircle size={16} className="text-muted-foreground" />
-                        Add GitHub Account
+                         <PlusCircle size={16} className="text-muted-foreground" />
+                         Add GitHub Account
                       </button>
                       <button className="flex w-full items-center gap-3 px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted">
                         <List size={16} className="text-muted-foreground" />
@@ -856,7 +856,7 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search..." 
-                  className="w-full rounded-lg border border-border bg-background py-2.5 pl-11 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand focus:ring-2 focus:ring-brand/30"
+                  className="w-full rounded-lg border border-border bg-background py-2.5 pl-11 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground focus:ring-2 focus:ring-foreground/20"
                 />
               </div>
             </div>
@@ -885,14 +885,14 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
               const timeAgo = repo.updated_at ? getRelativeTime(new Date(repo.updated_at)) : "Unknown time";
 
               return (
-                <div key={String(repo.id || fullName)} className="group flex items-center justify-between border-b border-border/50 px-5 py-4 transition-colors hover:bg-muted/50">
+                <div key={String(repo.id || fullName)} className="group flex items-center justify-between border-b border-border/50 px-5 py-4 transition-colors hover:bg-foreground/5 dark:hover:bg-white/5">
                   <div className="flex min-w-0 items-center gap-4">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-primary-foreground shadow-sm">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-purple-600 to-blue-500 text-white shadow-sm">
                        <Zap size={16} className="fill-current text-yellow-300" />
                     </div>
                     <div className="flex min-w-0 flex-col">
                       <div className="flex items-center gap-2">
-                        <span className="truncate text-[15px] font-semibold text-foreground">{displayName}</span>
+                        <span className="truncate text-[15px] font-semibold text-foreground group-hover:text-foreground">{displayName}</span>
                         {isPrivate && <Lock size={13} className="shrink-0 text-muted-foreground" />}
                         <span className="flex shrink-0 items-center gap-1.5 text-[13px] text-muted-foreground">
                           <span className="text-[10px] opacity-50">•</span>
@@ -905,7 +905,7 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
                   <button 
                     onClick={() => linkRepo(repo)} 
                     disabled={!!linking}
-                    className="ml-4 shrink-0 rounded-md bg-brand px-4 py-1.5 text-[13px] font-semibold text-primary-foreground shadow-sm transition-opacity hover:bg-brand/90 disabled:opacity-50"
+                    className="ml-4 shrink-0 rounded-md bg-foreground px-4 py-1.5 text-[13px] font-semibold text-background shadow-sm transition-opacity hover:opacity-80 disabled:opacity-50"
                   >
                     {linking === fullName ? "Importing..." : "Import"}
                   </button>
