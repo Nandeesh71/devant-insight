@@ -8,10 +8,12 @@ import {
   CheckCircle2,
   ChevronDown,
   ExternalLink,
+  Clock3,
   Folder,
   GitBranch,
   Github,
   GitCommit,
+  GitFork,
   Grid3x3,
   Info,
   LayoutDashboard,
@@ -30,10 +32,15 @@ import {
   SlidersHorizontal,
   Sun,
   User,
+  Users,
+  Unplug,
+  Star,
+  Zap,
   X,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DisconnectModal } from "@/components/ui/disconnect-modal";
 import { LoadingSpinner, ErrorBanner } from "@/components/StatusBanners";
 import { useAuth } from "@/context/AuthContext";
 import { useProject } from "@/context/ProjectContext";
@@ -88,6 +95,22 @@ function formatDate(value?: string) {
 function formatCurrency(value?: number) {
   if (value === undefined || value === null || Number.isNaN(value)) return "—";
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+}
+
+function formatMaybeCurrency(value?: number | null) {
+  return value === undefined || value === null ? "—" : formatCurrency(value);
+}
+
+function getProjectRepoUrl(project: Project | null) {
+  const repoName = String(project?.repo_full_name || project?.github_repo_full_name || project?.github_repo || project?.repository || "");
+  if (!repoName) return null;
+  if (repoName.startsWith("http")) return repoName;
+  return `https://github.com/${repoName}`;
+}
+
+function getProjectCommitsUrl(project: Project | null) {
+  const repoUrl = getProjectRepoUrl(project);
+  return repoUrl ? `${repoUrl.replace(/\/$/, "")}/commits` : null;
 }
 
 function getRepoName(project: Project | null) {
@@ -160,13 +183,13 @@ function EmptyState({ title, description, actionLabel, onAction, icon: Icon = Gi
 function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: string; setTab: (t: string) => void; alertsCount: number; onSettings: () => void; onSignOut: () => void }) {
   const items = [
     { id: "portfolio", icon: LayoutDashboard, label: "Portfolio" },
-    { id: "commits", icon: GitBranch, label: "Commits" },
+    { id: "commits", icon: GitFork, label: "Commits" },
     { id: "team", icon: User, label: "Team" },
   ];
   return (
     <TooltipProvider delayDuration={150}>
       <aside className="hidden w-14 shrink-0 flex-col items-center gap-2 bg-rail py-4 lg:flex">
-        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-xs font-bold text-primary-foreground shadow-brand">DA</div>
+        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-sm font-semibold text-white shadow-brand">DA</div>
         {items.map((item) => {
           const active = tab === item.id;
           return (
@@ -177,13 +200,13 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
                   aria-label={item.label}
                   onClick={() => setTab(item.id)}
                   className={cn(
-                    "relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg transition-all duration-200",
+                    "relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-[hsl(var(--sidebar-icon))] transition-all duration-150 ease-out",
                     active
-                      ? "bg-brand/10 text-foreground ring-1 ring-brand/30 shadow-sm"
-                      : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground hover:shadow-sm"
+                      ? "bg-brand/10 text-white ring-1 ring-brand/30 shadow-sm"
+                      : "hover:bg-primary/10 hover:text-white hover:shadow-sm"
                   )}
                 >
-                  <item.icon size={19} />
+                  <item.icon size={18} strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right" className="border-border bg-card text-foreground">{item.label}</TooltipContent>
@@ -196,9 +219,9 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
               type="button"
               aria-label="Alerts"
               onClick={() => setTab("alerts")}
-              className="relative flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground"
+              className="relative flex h-11 w-11 items-center justify-center rounded-lg text-[hsl(var(--sidebar-icon))] transition-all duration-150 ease-out hover:bg-primary/10 hover:text-white"
             >
-              <Bell size={19} />
+              <Bell size={18} strokeWidth={1.5} />
               {alertsCount > 0 && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-destructive" />}
             </button>
           </TooltipTrigger>
@@ -207,13 +230,13 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
         <div className="mt-auto flex flex-col gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
-              <button type="button" aria-label="Settings" onClick={onSettings} className="flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground"><Settings size={18} /></button>
+              <button type="button" aria-label="Settings" onClick={onSettings} className="flex h-11 w-11 items-center justify-center rounded-lg text-[hsl(var(--sidebar-icon))] transition-all duration-150 ease-out hover:bg-primary/10 hover:text-white"><Settings size={18} strokeWidth={1.5} /></button>
             </TooltipTrigger>
             <TooltipContent side="right" className="border-border bg-card text-foreground">Settings</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button type="button" aria-label="Logout" onClick={onSignOut} className="flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground"><LogOut size={18} /></button>
+              <button type="button" aria-label="Logout" onClick={onSignOut} className="flex h-11 w-11 items-center justify-center rounded-lg text-[hsl(var(--sidebar-icon))] transition-all duration-150 ease-out hover:bg-primary/10 hover:text-white"><LogOut size={18} strokeWidth={1.5} /></button>
             </TooltipTrigger>
             <TooltipContent side="right" className="border-border bg-card text-foreground">Logout</TooltipContent>
           </Tooltip>
@@ -223,24 +246,23 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
   );
 }
 
-function MiddleSidebar({ projects, activeId, onSelect, onLinkRepo }: { projects: Project[]; activeId: string | null; onSelect: (id: string) => void; onLinkRepo: () => void }) {
+function MiddleSidebar({ projects, activeId, onSelect }: { projects: Project[]; activeId: string | null; onSelect: (id: string) => void }) {
   const [query, setQuery] = useState("");
   const filtered = projects.filter((p) => getRepoName(p).toLowerCase().includes(query.toLowerCase()));
   return (
     <aside className="hidden w-64 shrink-0 flex-col bg-sidebar-bg text-primary-foreground lg:flex">
       <div className="flex items-center gap-2 px-4 pb-3 pt-4">
         <h2 className="flex-1 text-[15px] font-semibold">Projects</h2>
-        <button type="button" aria-label="Link GitHub repository" onClick={onLinkRepo} className="text-sidebar-text hover:text-primary-foreground"><PlusCircle size={17} /></button>
       </div>
       <div className="px-3 pb-3">
         <div className="flex items-center gap-2 rounded-lg bg-sidebar-search px-3 py-2">
-          <Search size={14} className="text-sidebar-text" />
+          <Search size={14} strokeWidth={1.5} className="text-sidebar-text" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search linked repos..." className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-sidebar-label" />
         </div>
       </div>
       <div className="px-3">
-        <button type="button" className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-primary-foreground shadow-brand transition-all duration-200 hover:bg-brand/90 hover:shadow-lg">
-          <PieChart size={14} /><span className="flex-1 text-left">Overview</span>
+        <button type="button" className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-primary-foreground shadow-brand transition-all duration-150 ease-out hover:bg-brand/90 hover:shadow-lg">
+          <PieChart size={14} strokeWidth={1.5} /><span className="flex-1 text-left">Overview</span>
         </button>
       </div>
       <div className="mb-1 mt-5 flex items-center justify-between px-5">
@@ -254,15 +276,12 @@ function MiddleSidebar({ projects, activeId, onSelect, onLinkRepo }: { projects:
           const active = activeId === p.id;
           const repo = getRepoName(p);
           return (
-            <button key={p.id} type="button" onClick={() => onSelect(p.id)} className={cn("mb-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-[13px] transition-colors", active ? "bg-primary/15 text-primary-foreground" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground")}>
-              <Folder size={14} className="shrink-0" />
+            <button key={p.id} type="button" onClick={() => onSelect(p.id)} className={cn("mb-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-[13px] transition-all duration-150 ease-out", active ? "bg-primary/15 text-primary-foreground" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground")}>
+              <Folder size={14} strokeWidth={1.5} className="shrink-0" />
               <span className="min-w-0 flex-1 truncate text-left">{repo}</span>
             </button>
           );
         })}
-        <button type="button" onClick={onLinkRepo} className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-sidebar-tree py-2 text-[13px] text-sidebar-text transition-all duration-200 hover:border-border hover:bg-primary/5 hover:text-primary-foreground">
-          <Link size={14} /> Link GitHub repo
-        </button>
       </div>
     </aside>
   );
@@ -272,7 +291,8 @@ function TopBar({ dark, toggle, project, onBell, onSettings, onSignOut }: { dark
   const { user } = useAuth();
   const repo = getRepoName(project);
   return (
-    <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 sm:px-6">
+    <TooltipProvider delayDuration={150}>
+      <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 sm:px-6">
       <div className="flex min-w-0 items-center gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-primary-foreground"><Activity size={16} /></div>
         <div className="min-w-0">
@@ -283,17 +303,38 @@ function TopBar({ dark, toggle, project, onBell, onSettings, onSignOut }: { dark
         </div>
       </div>
       <div className="ml-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <button type="button" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} onClick={toggle} className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted">{dark ? <Moon size={16} /> : <Sun size={16} />}</button>
-        <button type="button" aria-label="Alerts" onClick={onBell} className="relative flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"><Bell size={16} /></button>
-        <button type="button" aria-label="Settings" onClick={onSettings} className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"><Settings size={16} /></button>
-        <button type="button" onClick={onSignOut} className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold text-muted-foreground hover:bg-muted">
-          <LogOut size={13} /> <span className="hidden sm:inline">Logout</span>
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted">
+              {dark ? <Moon size={18} strokeWidth={1.5} /> : <Sun size={18} strokeWidth={1.5} />}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="border-border bg-card text-foreground">{dark ? "Light theme" : "Dark theme"}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" aria-label="Alerts" onClick={onBell} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted"><Bell size={18} strokeWidth={1.5} /></button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Alerts</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" aria-label="Settings" onClick={onSettings} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted"><Settings size={18} strokeWidth={1.5} /></button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Settings</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" aria-label="Logout" onClick={onSignOut} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted"><LogOut size={18} strokeWidth={1.5} /></button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Logout</TooltipContent>
+        </Tooltip>
         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-accent text-xs font-bold text-brand">
           {user?.avatar_url ? <img src={user.avatar_url} alt="User avatar" className="h-full w-full object-cover" /> : (user?.name || user?.email || "U").slice(0, 1).toUpperCase()}
         </div>
       </div>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
 
@@ -319,30 +360,44 @@ function StatCards({ health, finance, dora, loading }: Pick<ReturnType<typeof us
   return (
     <section className="grid grid-cols-1 gap-3 px-6 pt-6 md:grid-cols-3">
       <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Activity size={12} /> Project Health</div>
-        <div className="mt-1 flex items-end gap-2"><div className="text-3xl font-bold text-foreground">{score ?? "—"}</div><div className="mb-1 text-xs text-muted-foreground">/ 100</div></div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Activity size={12} strokeWidth={1.5} /> Project Health</div>
+        <div className="mt-1 flex items-end gap-1.5"><div className="text-3xl font-bold text-foreground">{score ?? "—"}</div><div className="mb-1 text-xs font-medium text-muted-foreground">/ 100</div></div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-2 rounded-full bg-brand" style={{ width: `${Math.max(0, Math.min(score ?? 0, 100))}%` }} /></div>
       </div>
       <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><AlertCircle size={12} /> Budget · Burn · Runway</div>
-        <div className="mt-1 text-lg font-bold text-foreground">{formatCurrency(finance?.spent)} <span className="text-xs font-normal text-muted-foreground">/ {formatCurrency(finance?.budget)}</span></div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><AlertCircle size={12} strokeWidth={1.5} /> Budget · Burn · Runway</div>
+        <div className="mt-1 text-lg font-semibold text-foreground">
+          {formatMaybeCurrency(finance?.spent)} <span className="text-xs font-medium text-muted-foreground">/ {formatMaybeCurrency(finance?.budget)}</span>
+        </div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-2 rounded-full bg-brand" style={{ width: `${Math.max(0, Math.min(burn ?? 0, 100))}%` }} /></div>
-        <div className="mt-1.5 text-[11px] text-muted-foreground">{burn ?? "—"}% spent · {finance?.runway_months ?? "—"}mo runway</div>
+        <div className="mt-1.5 text-[11px] text-muted-foreground">{burn ?? "—"}% spent · {finance?.runway_months == null ? "—" : `${finance.runway_months}mo`} runway</div>
       </div>
       <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Info size={12} /> DORA Metrics</div>
-        <div className="mt-2 grid grid-cols-2 gap-1.5 text-[11px]">
-          <div><div className="text-muted-foreground">Deploy Freq</div><div className="font-bold text-foreground">{dora?.deployment_frequency?.value ?? "—"}</div></div>
-          <div><div className="text-muted-foreground">Lead Time</div><div className="font-bold text-foreground">{dora?.change_lead_time?.value ?? "—"}</div></div>
-          <div><div className="text-muted-foreground">Failure Rate</div><div className="font-bold text-foreground">{dora?.change_failure_rate?.value ?? "—"}</div></div>
-          <div><div className="text-muted-foreground">Rating</div><div className="font-bold text-foreground">{dora?.deployment_frequency?.rating ?? "—"}</div></div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Info size={12} strokeWidth={1.5} /> DORA Metrics</div>
+        <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+          <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+            <div className="flex items-center gap-1.5 text-muted-foreground"><Zap size={12} strokeWidth={1.5} /> Deploy Freq</div>
+            <div className="mt-1 font-semibold text-foreground">{dora?.deployment_frequency?.value ?? "—"}</div>
+          </div>
+          <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+            <div className="flex items-center gap-1.5 text-muted-foreground"><Clock3 size={12} strokeWidth={1.5} /> Lead Time</div>
+            <div className="mt-1 font-semibold text-foreground">{dora?.change_lead_time?.value ?? "—"}</div>
+          </div>
+          <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+            <div className="flex items-center gap-1.5 text-muted-foreground"><AlertTriangle size={12} strokeWidth={1.5} /> Failure Rate</div>
+            <div className="mt-1 font-semibold text-foreground">{dora?.change_failure_rate?.value ?? "—"}</div>
+          </div>
+          <div className="rounded-md border border-border/50 bg-muted/30 p-2.5">
+            <div className="flex items-center gap-1.5 text-muted-foreground"><Star size={12} strokeWidth={1.5} /> Rating</div>
+            <div className="mt-1 font-semibold text-foreground">{dora?.deployment_frequency?.rating ?? "—"}</div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading }: { projects: Project[]; activeId: string | null; onSelect: (id: string) => void; sort: string; setSort: (s: string) => void; loading: boolean }) {
+function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, onRequestDisconnect }: { projects: Project[]; activeId: string | null; onSelect: (id: string) => void; sort: string; setSort: (s: string) => void; loading: boolean; onRequestDisconnect: (project: Project) => void }) {
   const [open, setOpen] = useState(false);
   const sorted = useMemo(() => {
     const copy = [...projects];
@@ -354,7 +409,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading }
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[16px] font-semibold text-foreground">Linked Projects</h3>
         <div className="relative">
-          <button onClick={() => setOpen(!open)} className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground">
+          <button type="button" onClick={() => setOpen(!open)} className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground transition-all duration-150 ease-out hover:bg-muted hover:text-foreground">
             <SlidersHorizontal size={13} /> {sort} <ChevronDown size={13} />
           </button>
           {open && (
@@ -372,7 +427,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading }
               <div>
                 <Skeleton className="mb-1 h-4 w-24" />
                 <Skeleton className="h-3 w-16" />
-                <Skeleton className="mt-2 h-4 w-12 rounded-full" />
+                <div className="mt-3 inline-flex rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-brand">Real data</div>
               </div>
             </div>
           ))
@@ -380,15 +435,56 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading }
           sorted.map((p) => {
             const active = p.id === activeId;
             const repo = getRepoName(p);
+            const repoUrl = getProjectRepoUrl(p);
+            const commitsUrl = getProjectCommitsUrl(p);
             return (
-              <button key={p.id} type="button" onClick={() => onSelect(p.id)} className={cn("relative flex h-[126px] min-w-[170px] cursor-pointer flex-col justify-between rounded-lg border bg-card p-4 text-left shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift sm:min-w-[190px]", active ? "border-brand ring-1 ring-brand" : "border-border/50")}>
-                <GitBranch size={18} className={cn("transition-colors", active ? "text-brand" : "text-muted-foreground")} />
+              <article
+                key={p.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => onSelect(p.id)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelect(p.id); }}
+                className={cn("group relative flex h-[126px] min-w-[170px] cursor-pointer flex-col justify-between rounded-lg border bg-card p-4 text-left shadow-card transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lift sm:min-w-[190px]", active ? "border-brand ring-1 ring-brand" : "border-border/50")}
+              >
+                <button
+                  type="button"
+                  aria-label="Disconnect repository"
+                  title="Disconnect repository"
+                  onClick={(e) => { e.stopPropagation(); onRequestDisconnect(p); }}
+                  className="absolute right-2.5 top-2.5 rounded-full p-1 text-muted-foreground opacity-70 transition-colors duration-150 ease-out hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+                >
+                  <Unplug size={14} strokeWidth={1.5} />
+                </button>
+
+                <GitFork size={18} strokeWidth={1.5} className={cn("transition-colors", active ? "text-brand" : "text-muted-foreground")} />
                 <div>
-                  <div className="truncate text-[13px] font-bold text-foreground">{repo}</div>
+                  <div className="truncate text-[13px] font-semibold text-foreground">{repo}</div>
                   <div className="mt-0.5 truncate text-[11px] text-muted-foreground">{String(p.description || p.default_branch || p.status || "Linked from GitHub")}</div>
                   <div className={cn("mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold", active ? "bg-brand text-primary-foreground" : "bg-accent text-brand")}>Real data</div>
+                  <div className="mt-3 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      aria-label="Open GitHub repository"
+                      title="Open GitHub repository"
+                      disabled={!repoUrl}
+                      onClick={(e) => { e.stopPropagation(); if (repoUrl) window.open(repoUrl, "_blank", "noopener,noreferrer"); }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <Github size={14} strokeWidth={1.5} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Open commit history"
+                      title="Open commit history"
+                      disabled={!commitsUrl}
+                      onClick={(e) => { e.stopPropagation(); if (commitsUrl) window.open(commitsUrl, "_blank", "noopener,noreferrer"); }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <ExternalLink size={14} strokeWidth={1.5} />
+                    </button>
+                  </div>
                 </div>
-              </button>
+              </article>
             );
           })
         )}
@@ -412,23 +508,42 @@ function riskClass(risk: string) {
   return "bg-muted text-muted-foreground";
 }
 
-function CommitsTable({ tab, setTab, commits, team, search, setSearch, selectedId, setSelectedId, onOpen, loading }: { tab: string; setTab: (t: string) => void; commits: UiCommit[]; team: ReturnType<typeof useDevantData>["team"]; search: string; setSearch: (s: string) => void; selectedId: string; setSelectedId: (id: string) => void; onOpen: (c: UiCommit) => void; loading: boolean }) {
+function CommitsTable({ tab, setTab, commits, team, search, setSearch, selectedId, setSelectedId, onOpen, loading, viewMode, setViewMode }: { tab: string; setTab: (t: string) => void; commits: UiCommit[]; team: ReturnType<typeof useDevantData>["team"]; search: string; setSearch: (s: string) => void; selectedId: string; setSelectedId: (id: string) => void; onOpen: (c: UiCommit) => void; loading: boolean; viewMode: "grid" | "list"; setViewMode: (mode: "grid" | "list") => void }) {
   const filtered = commits.filter((c) => !search || c.message.toLowerCase().includes(search.toLowerCase()) || c.author.toLowerCase().includes(search.toLowerCase()) || c.sha.includes(search));
+  const tabs = [
+    { id: "commits", label: "Recent Commits", icon: GitCommit },
+    { id: "team", label: "Team", icon: Users },
+    { id: "alerts", label: "Alerts", icon: Bell },
+  ];
   return (
     <section className="px-6 pb-24 pt-6">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          {[{ id: "commits", label: "Recent Commits" }, { id: "team", label: "Team" }, { id: "alerts", label: "Alerts" }].map((t) => (
-            <button key={t.id} onClick={() => setTab(t.id)} className={cn("cursor-pointer rounded-full px-4 py-1.5 text-sm transition-all duration-200", tab === t.id ? "bg-brand font-semibold text-primary-foreground shadow-sm hover:bg-brand/90" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>{t.label}</button>
-          ))}
+        <div className="flex items-center gap-1.5 border-b border-border/70">
+          {tabs.map((t) => {
+            const Icon = t.icon;
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  "relative flex items-center gap-1.5 px-3 py-2 text-sm font-semibold transition-colors duration-150 ease-out",
+                  active ? "text-foreground after:absolute after:inset-x-2 after:-bottom-px after:h-0.5 after:rounded-full after:bg-brand" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Icon size={16} strokeWidth={1.5} /> {t.label}
+              </button>
+            );
+          })}
         </div>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <div className="flex w-full items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 focus-within:border-brand sm:w-64">
-            <Search size={14} className="text-muted-foreground" />
+          <div className="flex w-full items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 focus-within:border-brand sm:w-64">
+            <Search size={14} strokeWidth={1.5} className="text-muted-foreground" />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search commits..." className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
           </div>
-          <button type="button" aria-label="Grid view" className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"><Grid3x3 size={16} /></button>
-          <button type="button" aria-label="List view" className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md bg-muted text-foreground transition-all duration-200"><List size={16} /></button>
+          <button type="button" aria-label="Grid view" onClick={() => setViewMode("grid")} className={cn("flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-all duration-150 ease-out", viewMode === "grid" ? "bg-brand/10 text-foreground ring-1 ring-brand/20" : "text-muted-foreground hover:bg-muted hover:text-foreground")}><Grid3x3 size={16} strokeWidth={1.5} /></button>
+          <button type="button" aria-label="List view" onClick={() => setViewMode("list")} className={cn("flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-all duration-150 ease-out", viewMode === "list" ? "bg-brand/10 text-foreground ring-1 ring-brand/20" : "text-muted-foreground hover:bg-muted hover:text-foreground")}><List size={16} strokeWidth={1.5} /></button>
         </div>
       </div>
       <div className="overflow-x-auto rounded-lg border border-border/50 bg-card">
@@ -446,7 +561,11 @@ function CommitsTable({ tab, setTab, commits, team, search, setSearch, selectedI
             </tbody>
           </table>
         ) : tab === "alerts" ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">No alert endpoint is returning data yet.</div>
+          <div className="flex flex-col items-center justify-center gap-3 p-8 text-center text-sm text-muted-foreground">
+            <Bell size={32} strokeWidth={1.5} className="text-muted-foreground/60" />
+            <div className="font-semibold text-foreground">No alerts returned for this project yet</div>
+            <div className="max-w-sm">Alerts will appear here when GitHub activity or project issues need attention.</div>
+          </div>
         ) : (
           <table className="min-w-[960px] w-full text-sm">
             <thead>
@@ -469,7 +588,15 @@ function CommitsTable({ tab, setTab, commits, team, search, setSearch, selectedI
                   </tr>
                 ))
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">No commits returned for this project yet</td></tr>
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-sm text-muted-foreground">
+                    <div className="flex flex-col items-center gap-3">
+                      <GitCommit size={32} strokeWidth={1.5} className="text-muted-foreground/60" />
+                      <div className="font-semibold text-foreground">No commits returned for this project yet</div>
+                      <div className="max-w-sm">Push your first commit to see activity here.</div>
+                    </div>
+                  </td>
+                </tr>
               ) : (
                 filtered.map((c) => {
                   const selected = c.id === selectedId;
@@ -633,6 +760,8 @@ export default function Index() {
   const [sort, setSort] = useState("Newest");
   const [showLink, setShowLink] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [disconnectTarget, setDisconnectTarget] = useState<Project | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [drawerCommit, setDrawerCommit] = useState<UiCommit | null>(null);
 
   const activeProject = projects.find((p) => p.id === projectId) || null;
@@ -643,6 +772,20 @@ export default function Index() {
   useEffect(() => {
     if (!selectedId && uiCommits[0]) setSelectedId(uiCommits[0].id);
   }, [selectedId, uiCommits]);
+
+  const handleDisconnect = async () => {
+    if (!disconnectTarget) return;
+
+    try {
+      await apiClient.delete(`/api/projects/${disconnectTarget.id}`);
+      if (disconnectTarget.id === projectId) setProjectId(null);
+      setDisconnectTarget(null);
+      toast({ title: "Repository disconnected", description: getRepoName(disconnectTarget) });
+      refetch();
+    } catch (error) {
+      toast({ title: "Disconnect failed", description: (error as Error).message, variant: "destructive" });
+    }
+  };
 
   if (authLoading) {
     return (
@@ -666,7 +809,7 @@ export default function Index() {
     <div className="flex min-h-screen w-full overflow-hidden bg-background">
       <LoadingSpinner visible={loading} />
       <IconRail tab={tab} setTab={setTab} alertsCount={0} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
-      <MiddleSidebar projects={projects} activeId={projectId} onSelect={setProjectId} onLinkRepo={() => setShowLink(true)} />
+      <MiddleSidebar projects={projects} activeId={projectId} onSelect={setProjectId} />
       <main className="relative min-w-0 flex-1 overflow-y-auto bg-card pb-24">
         <TopBar dark={dark} toggle={toggle} project={activeProject} onBell={() => setTab("alerts")} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
         <ErrorBanner error={error} onRetry={refetch} />
@@ -674,7 +817,7 @@ export default function Index() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             Projects <span className="text-muted-foreground/50">/</span>
             <span className="flex min-w-0 items-center gap-1 text-foreground">{activeProject ? getRepoName(activeProject) : "No linked repo"} <ChevronDown size={13} /></span>
-            <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-brand">{uiCommits.length}</span>
+            {uiCommits.length > 0 && <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-brand">{uiCommits.length}</span>}
           </div>
           <div className="flex items-center gap-2">
             <button type="button" onClick={refetch} className="flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"><RefreshCw size={13} /> Refresh</button>
@@ -687,8 +830,8 @@ export default function Index() {
         ) : (
           <>
             <StatCards health={health} finance={finance} dora={dora} loading={loading} />
-            <ActiveProjects projects={projects} activeId={projectId} onSelect={setProjectId} sort={sort} setSort={setSort} loading={loading} />
-            <CommitsTable tab={tab === "portfolio" ? "commits" : tab} setTab={setTab} commits={uiCommits} team={team} search={search} setSearch={setSearch} selectedId={selected?.id || ""} setSelectedId={setSelectedId} onOpen={setDrawerCommit} loading={loading} />
+            <ActiveProjects projects={projects} activeId={projectId} onSelect={setProjectId} sort={sort} setSort={setSort} loading={loading} onRequestDisconnect={setDisconnectTarget} />
+            <CommitsTable tab={tab === "portfolio" ? "commits" : tab} setTab={setTab} commits={uiCommits} team={team} search={search} setSearch={setSearch} selectedId={selected?.id || ""} setSelectedId={setSelectedId} onOpen={setDrawerCommit} loading={loading} viewMode={viewMode} setViewMode={setViewMode} />
             {selected && <BottomBar commit={selected} />}
           </>
         )}
@@ -697,6 +840,7 @@ export default function Index() {
       <CommitDrawer commit={drawerCommit} onClose={() => setDrawerCommit(null)} />
       <LinkRepoModal open={showLink} onClose={() => setShowLink(false)} onLinked={refetch} />
       <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} onSignOut={signOut} />
+      <DisconnectModal isOpen={Boolean(disconnectTarget)} onClose={() => setDisconnectTarget(null)} onConfirm={handleDisconnect} projectName={disconnectTarget ? getRepoName(disconnectTarget) : ""} />
     </div>
   );
 }

@@ -47,6 +47,8 @@
     --sidebar-tree: 255 38% 15%;
     --sidebar-text: 240 15% 70%;
     --sidebar-label: 240 10% 55%;
+    --sidebar-icon: 240 10% 72%;
+    --sidebar-icon: 240 10% 72%;
     
     --brand: 262 83% 58%;
     --brand-glow: 262 90% 70%;
@@ -117,3 +119,8 @@
   from { width: 0; }
 }
 .animate-fill { animation: fill-bar 1s ease-out; }
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
