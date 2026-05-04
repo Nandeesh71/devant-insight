@@ -43,7 +43,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState<boolean>(!!token && !user);
 
   const refresh = useCallback(async () => {
-    if (!localStorage.getItem(TOKEN_KEY)) { setUser(null); setLoading(false); return; }
+    // Prevent refresh storms: skip if no token, if already refreshing, or if last attempt was very recent
+    const tokenExists = !!localStorage.getItem(TOKEN_KEY);
+    if (!tokenExists) { setUser(null); setLoading(false); return; }
+
+    // module-level guards via refs
+    if ((refresh as any)._inProgress) return;
+    const last = (refresh as any)._lastAttempt || 0;
+    const now = Date.now();
+    if (now - last < 2000) return; // avoid retrying faster than 2s
+    (refresh as any)._lastAttempt = now;
+    (refresh as any)._inProgress = true;
     try {
       setLoading(true);
       const me = await apiClient.get<MeResponse>("/api/auth/me");
@@ -57,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(null);
       setUser(null);
     } finally {
+      (refresh as any)._inProgress = false;
       setLoading(false);
     }
   }, []);
