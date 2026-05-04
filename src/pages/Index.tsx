@@ -865,7 +865,7 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
 
         {/* Repository List */}
         {user?.github_connected && (
-          <div className="flex-1 overflow-y-auto bg-card pb-4">
+          <div className="flex-1 overflow-y-auto bg-card pb-4 max-h-[350px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 dark:[&::-webkit-scrollbar-thumb]:bg-white/10 dark:hover:[&::-webkit-scrollbar-thumb]:bg-white/20">
             {loading && <div className="flex items-center justify-center gap-3 py-16 text-muted-foreground"><Loader2 className="animate-spin" size={20} /> Loading repositories...</div>}
             {error && <div className="p-8"><ErrorBanner error={error} /></div>}
             

@@ -345,90 +345,92 @@ export default function ProjectDetail() {
           <ErrorBanner error={error || summaryError} onRetry={refetch} />
 
           {/* Metrics Row */}
-          <section className="grid grid-cols-1 gap-3 px-6 py-6 md:grid-cols-3">
-            <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Activity size={12} strokeWidth={1.5} /> Project Health
+          <section className="grid grid-cols-1 gap-4 px-6 py-6 md:grid-cols-3">
+            <div className="flex flex-col justify-between rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+                <Activity size={16} strokeWidth={1.5} className="text-purple-500 dark:text-purple-400" />
+                Project Health
               </div>
-              <div className="mt-2 flex items-end gap-1.5">
-                <div className="text-3xl font-bold text-foreground">{health?.score ?? "—"}</div>
-                <div className="mb-1 text-xs font-medium text-muted-foreground">/ 100</div>
+              <div className="mt-4 flex items-baseline gap-1.5">
+                <div className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">{health?.score ?? "—"}</div>
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">/ 100</div>
               </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+              <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800/60">
                 <div
-                  className="h-2 rounded-full bg-brand"
+                  className="h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500 ease-out"
                   style={{ width: `${Math.max(0, Math.min(health?.score ?? 0, 100))}%` }}
                 />
               </div>
-              <div className="mt-2 text-[11px] font-medium text-muted-foreground">
-                {health?.score !== null && (health.score >= 71 ? "Good" : health.score >= 41 ? "Needs Attention" : "Critical")}
+              <div className="mt-3 text-xs font-medium text-gray-500 dark:text-gray-400">
+                {health?.score !== null && (health.score >= 71 ? "Status: Good" : health.score >= 41 ? "Status: Needs Attention" : "Status: Critical")}
               </div>
             </div>
 
-            <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <AlertCircle size={12} strokeWidth={1.5} /> Budget · Burn · Runway
+            <div className="flex flex-col justify-between rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+                <AlertCircle size={16} strokeWidth={1.5} className="text-blue-500 dark:text-blue-400" />
+                Budget & Runway
               </div>
-              <div className="mt-2 text-lg font-semibold text-foreground">
+              <div className="mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                 {finance?.spent ? `₹${finance.spent.toLocaleString()}` : "No budget set"}
               </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+              <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800/60">
                 <div
-                  className="h-2 rounded-full bg-brand"
+                  className="h-full rounded-full bg-blue-500 transition-all duration-500 ease-out"
                   style={{ width: `${Math.max(0, Math.min(finance?.burn_percent ?? 0, 100))}%` }}
                 />
               </div>
-              <div className="mt-1.5 text-[11px] text-muted-foreground">
-                {finance?.burn_percent ?? "—"}% spent · {finance?.runway_months ?? "—"} runway
+              <div className="mt-3 flex items-center justify-between text-xs font-medium text-gray-500 dark:text-gray-400">
+                <span>{finance?.burn_percent ?? "0"}% burned</span>
+                <span>{finance?.runway_months ?? "—"} months runway</span>
               </div>
-              <div className="mt-3">
-                <button onClick={() => setTab('settings')} className="inline-flex items-center gap-2 rounded-md border border-purple-600 px-3 py-1 text-sm font-medium text-purple-600 hover:bg-purple-50">Set Budget →</button>
+              <div className="mt-4">
+                <button onClick={() => setTab('settings')} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Set Budget</button>
               </div>
             </div>
 
-            <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Info size={12} strokeWidth={1.5} /> DORA Metrics
+            <div className="flex flex-col justify-between rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
+                <Info size={16} strokeWidth={1.5} className="text-emerald-500 dark:text-emerald-400" />
+                DORA Metrics
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-0">
-                <div className="border-b border-r border-border/60 bg-card p-2.5 text-[11px]">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
+              <div className="grid grid-cols-2 gap-3 flex-1">
+                <div className="flex flex-col justify-center rounded-lg bg-gray-50 dark:bg-gray-800/30 p-3 border border-gray-100 dark:border-gray-800/50">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400">
                     <Zap size={12} strokeWidth={1.5} /> Deploy Freq
                   </div>
-                  <div className="mt-1 font-semibold text-foreground">{dora?.deployment_frequency?.value ?? "—"}</div>
+                  <div className="mt-1 text-base font-bold text-gray-900 dark:text-white">{dora?.deployment_frequency?.value ?? "—"}</div>
                 </div>
-                <div className="border-b border-border/60 bg-card p-2.5 text-[11px]">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                <div className="flex flex-col justify-center rounded-lg bg-gray-50 dark:bg-gray-800/30 p-3 border border-gray-100 dark:border-gray-800/50">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400">
                     <Clock size={12} strokeWidth={1.5} /> Lead Time
                   </div>
-                  <div className="mt-1 font-semibold text-foreground">
+                  <div className="mt-1 text-base font-bold text-gray-900 dark:text-white">
                     {(typeof dora?.change_lead_time?.value === 'number' && dora.change_lead_time.value >= 0) ? dora.change_lead_time.value : '—'}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">{(dora?.change_lead_time && (dora.change_lead_time.value ?? 0) <= 0) ? 'Lead time requires merged PRs with deployments' : ''}</div>
                 </div>
-                <div className="border-r border-border/60 bg-card p-2.5 text-[11px]">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                <div className="flex flex-col justify-center rounded-lg bg-gray-50 dark:bg-gray-800/30 p-3 border border-gray-100 dark:border-gray-800/50">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400">
                     <AlertTriangle size={12} strokeWidth={1.5} /> Failure Rate
                   </div>
-                  <div className="mt-1 font-semibold text-foreground">{dora?.change_failure_rate?.value ?? "—"}</div>
+                  <div className="mt-1 text-base font-bold text-gray-900 dark:text-white">{dora?.change_failure_rate?.value ?? "—"}</div>
                 </div>
-                <div className="bg-card p-2.5 text-[11px]">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                <div className="flex flex-col justify-center rounded-lg bg-gray-50 dark:bg-gray-800/30 p-3 border border-gray-100 dark:border-gray-800/50">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400">
                     <Star size={12} strokeWidth={1.5} /> Rating
                   </div>
                   <div className="mt-1">
-                    {/* DORA rating badge */}
                     {(() => {
                       const rating = dora?.deployment_frequency?.rating || dora?.rating || null;
-                      if (!rating) return <span className="font-semibold text-foreground">—</span>;
-                      const map: Record<string, {bg:string,color:string,border:string}> = {
-                        Elite: { bg: '#dcfce7', color: '#16a34a', border: '#bbf7d0' },
-                        High: { bg: '#dbeafe', color: '#1d4ed8', border: '#bfdbfe' },
-                        Medium: { bg: '#fef9c3', color: '#854d0e', border: '#fef3c7' },
-                        Low: { bg: '#fee2e2', color: '#dc2626', border: '#fecaca' },
+                      if (!rating) return <span className="text-base font-bold text-gray-900 dark:text-white">—</span>;
+                      const map: Record<string, {bg:string,color:string,border:string,darkBg:string,darkColor:string,darkBorder:string}> = {
+                        Elite: { bg: '#dcfce7', color: '#16a34a', border: '#bbf7d0', darkBg: 'rgba(22,163,74,0.1)', darkColor: '#4ade80', darkBorder: 'rgba(74,222,128,0.2)' },
+                        High: { bg: '#dbeafe', color: '#1d4ed8', border: '#bfdbfe', darkBg: 'rgba(29,78,216,0.1)', darkColor: '#60a5fa', darkBorder: 'rgba(96,165,250,0.2)' },
+                        Medium: { bg: '#fef9c3', color: '#854d0e', border: '#fef3c7', darkBg: 'rgba(161,98,7,0.1)', darkColor: '#facc15', darkBorder: 'rgba(250,204,21,0.2)' },
+                        Low: { bg: '#fee2e2', color: '#dc2626', border: '#fecaca', darkBg: 'rgba(220,38,38,0.1)', darkColor: '#f87171', darkBorder: 'rgba(248,113,113,0.2)' },
                       };
                       const s = map[rating] || map['Low'];
-                      return <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, padding: '4px 8px', borderRadius: 8, fontWeight: 600 }}>{rating}</span>;
+                      return <span className="inline-block rounded-md px-2 py-0.5 text-[11px] font-bold shadow-sm dark:bg-[var(--darkBg)] dark:text-[var(--darkColor)] dark:border-[var(--darkBorder)] border" style={{ background: s.bg, color: s.color, borderColor: s.border, '--darkBg': s.darkBg, '--darkColor': s.darkColor, '--darkBorder': s.darkBorder } as React.CSSProperties}>{rating}</span>;
                     })()}
                   </div>
                 </div>
@@ -555,50 +557,79 @@ export default function ProjectDetail() {
                   </div>
 
                   {((recentCommits.length === 0) && (commitsList.length === 0)) ? (
-                    <div className="py-12 text-center text-muted-foreground">No commits returned for this project yet.</div>
+                    <div className="flex flex-col items-center justify-center py-16 text-center border-t border-gray-100 dark:border-gray-800/50">
+                      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
+                        <GitCommit size={28} strokeWidth={1.5} />
+                      </div>
+                      <h3 className="mb-1 text-base font-semibold text-gray-900 dark:text-white">No commits found</h3>
+                      <p className="max-w-xs text-sm text-gray-500 dark:text-gray-400">
+                        We couldn't find any recent commits for this project. Ensure your repository is active and correctly linked.
+                      </p>
+                      <button onClick={refetch} className="mt-4 inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
+                        <RefreshCw size={14} /> Refresh Data
+                      </button>
+                    </div>
                   ) : (
-                    <div className="space-y-3">
-                      {(recentCommits.length > 0 ? recentCommits : commitsList).map((commit) => {
-                        const key = String((commit as any).sha || (commit as any).id || (commit as any).message);
-                        const msg = String((commit as any).message || 'Untitled commit');
-                        const sha = String((commit as any).sha || (commit as any).id || '').slice(0, 7);
-                        const author = String((commit as any).author_github_username || (commit as any).author || 'Unknown');
-                        const linesAdded = String((commit as any).lines_added || 0);
-                        const linesRemoved = String((commit as any).lines_removed || 0);
-                        const aiTag = String((commit as any).ai_type_tag || '') || null;
-                        const time = String((commit as any).timestamp || (commit as any).date || '—');
-                        return (
-                          <div key={key} className="flex items-start justify-between rounded-lg border border-border/60 p-3">
-                            <div className="flex items-start gap-3 min-w-0">
-                              <GitCommit size={18} className="text-muted-foreground" />
-                              <div className="min-w-0">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <div className="font-medium text-foreground truncate" style={{ maxWidth: 680, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{msg}</div>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top"><div style={{ maxWidth: 420 }}>{msg}</div></TooltipContent>
-                                </Tooltip>
+                    <div className="overflow-hidden flex flex-col">
+                      <style>{`
+                        .scrollable-commits-list::-webkit-scrollbar {
+                          width: 8px;
+                        }
+                        .scrollable-commits-list::-webkit-scrollbar-track {
+                          background: transparent;
+                        }
+                        .scrollable-commits-list::-webkit-scrollbar-thumb {
+                          background: rgba(168, 85, 247, 0.4);
+                          border-radius: 4px;
+                          transition: background 0.2s;
+                        }
+                        .scrollable-commits-list::-webkit-scrollbar-thumb:hover {
+                          background: rgba(168, 85, 247, 0.7);
+                        }
+                      `}</style>
+                      <div className="scrollable-commits-list space-y-3 overflow-y-auto pr-2" style={{ maxHeight: '400px' }}>
+                        {(recentCommits.length > 0 ? recentCommits : commitsList).map((commit) => {
+                          const key = String((commit as any).sha || (commit as any).id || (commit as any).message);
+                          const msg = String((commit as any).message || 'Untitled commit');
+                          const sha = String((commit as any).sha || (commit as any).id || '').slice(0, 7);
+                          const author = String((commit as any).author_github_username || (commit as any).author || 'Unknown');
+                          const linesAdded = String((commit as any).lines_added || 0);
+                          const linesRemoved = String((commit as any).lines_removed || 0);
+                          const aiTag = String((commit as any).ai_type_tag || '') || null;
+                          const time = String((commit as any).timestamp || (commit as any).date || '—');
+                          return (
+                            <div key={key} className="flex items-start justify-between rounded-lg border border-border/60 p-3 bg-muted/30 hover:bg-muted/50 transition-colors">
+                              <div className="flex items-start gap-3 min-w-0">
+                                <GitCommit size={18} className="text-muted-foreground flex-shrink-0" />
+                                <div className="min-w-0">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="font-medium text-foreground truncate" style={{ maxWidth: 680, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{msg}</div>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top"><div style={{ maxWidth: 420 }}>{msg}</div></TooltipContent>
+                                  </Tooltip>
 
-                                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                                  <div className="flex items-center gap-2">
-                                    <div className="h-6 w-6 overflow-hidden rounded-full bg-muted flex items-center justify-center text-xs font-semibold">{author.slice(0,1).toUpperCase()}</div>
-                                    <span>{author}</span>
+                                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                    <div className="flex items-center gap-2">
+                                      <div className="h-6 w-6 overflow-hidden rounded-full bg-muted flex items-center justify-center text-xs font-semibold">{author.slice(0,1).toUpperCase()}</div>
+                                      <span>{author}</span>
+                                    </div>
+                                    <code className="font-mono text-xs px-2 py-0.5 rounded-md border border-border/50">{sha}</code>
+                                    {aiTag ? <span className="rounded-full bg-purple-50 text-purple-600 px-2 py-0.5 text-xs font-semibold">{aiTag}</span> : null}
+                                    <span className="text-xs"><span style={{ color: '#16a34a' }}>+{linesAdded}</span> / <span style={{ color: '#dc2626' }}>-{linesRemoved}</span></span>
                                   </div>
-                                  <code className="font-mono text-xs px-2 py-0.5 rounded-md border border-border/50">{sha}</code>
-                                  {aiTag ? <span className="rounded-full bg-purple-50 text-purple-600 px-2 py-0.5 text-xs font-semibold">{aiTag}</span> : null}
-                                  <span className="text-xs"><span style={{ color: '#16a34a' }}>+{linesAdded}</span> / <span style={{ color: '#dc2626' }}>-{linesRemoved}</span></span>
                                 </div>
                               </div>
+                              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                                <span className="text-xs text-muted-foreground">{time}</span>
+                                <a href={String((commit as any).url || getProjectCommitsUrl(resolvedProject) || `https://github.com/${owner}/${repo}/commit/${(commit as any).sha}`)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
+                                  <ExternalLink size={14} />
+                                </a>
+                              </div>
                             </div>
-                            <div className="flex flex-col items-end gap-2">
-                              <span className="text-xs text-muted-foreground">{time}</span>
-                              <a href={String((commit as any).url || getProjectCommitsUrl(resolvedProject) || `https://github.com/${owner}/${repo}/commit/${(commit as any).sha}`)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
-                                <ExternalLink size={14} />
-                              </a>
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -616,16 +647,52 @@ export default function ProjectDetail() {
                   ) : deploymentsList.length === 0 ? (
                     <div className="py-12 text-center text-muted-foreground">No deployments recorded for this project yet.</div>
                   ) : (
-                    <div className="space-y-3">
-                      {deploymentsList.map((d) => (
-                        <div key={String((d as any).id || (d as any).deployed_at)} className="rounded-lg border border-border/60 p-3">
-                          <div className="flex items-center justify-between">
-                            <div className="font-medium text-foreground">{String((d as any).environment || 'deployment')}</div>
-                            <span className="text-xs text-muted-foreground">{String((d as any).deployed_at || '—')}</span>
+                    <div className="overflow-hidden flex flex-col">
+                      <style>{`
+                        .scrollable-deployments-list::-webkit-scrollbar {
+                          width: 8px;
+                        }
+                        .scrollable-deployments-list::-webkit-scrollbar-track {
+                          background: transparent;
+                        }
+                        .scrollable-deployments-list::-webkit-scrollbar-thumb {
+                          background: rgba(168, 85, 247, 0.4);
+                          border-radius: 4px;
+                          transition: background 0.2s;
+                        }
+                        .scrollable-deployments-list::-webkit-scrollbar-thumb:hover {
+                          background: rgba(168, 85, 247, 0.7);
+                        }
+                      `}</style>
+                      <div className="scrollable-deployments-list space-y-3 overflow-y-auto pr-2" style={{ maxHeight: '400px' }}>
+                        {deploymentsList.map((d) => (
+                          <div key={String((d as any).id || (d as any).deployed_at)} className="rounded-lg border border-border/60 p-4 bg-muted/30 hover:bg-muted/50 transition-colors">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className={`px-2 py-1 rounded-full text-xs font-semibold ${(d as any).status === 'success' || (d as any).status === 'deployed' ? 'bg-emerald-100/50 text-emerald-700' : (d as any).status === 'failed' ? 'bg-red-100/50 text-red-700' : 'bg-amber-100/50 text-amber-700'}`}>
+                                    {String((d as any).status || 'pending').charAt(0).toUpperCase() + String((d as any).status || 'pending').slice(1)}
+                                  </div>
+                                  <span className="font-medium text-foreground">{String((d as any).environment || 'Production').toUpperCase()}</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">{String((d as any).deployed_at || '—')}</p>
+                                {(d as any).description && <p className="text-xs text-muted-foreground mt-1">{String((d as any).description)}</p>}
+                              </div>
+                              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                                {(d as any).log_url && (
+                                  <a href={String((d as any).log_url)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-brand hover:bg-brand/5 transition-colors">
+                                    <ExternalLink size={12} />
+                                    Logs
+                                  </a>
+                                )}
+                                {(d as any).commit_sha && (
+                                  <code className="font-mono text-xs px-2 py-0.5 rounded-md border border-border/50 text-muted-foreground">{String((d as any).commit_sha).slice(0, 7)}</code>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <div className="mt-1 text-xs text-muted-foreground">Status: {String((d as any).status || 'unknown')}{(d as any).log_url ? (<span> · <a href={String((d as any).log_url)} target="_blank" rel="noreferrer" className="text-brand hover:underline">View logs</a></span>) : null}</div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
