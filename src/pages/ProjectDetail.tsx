@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DisconnectModal } from "@/components/ui/disconnect-modal";
 import { LoadingSpinner, ErrorBanner } from "@/components/StatusBanners";
 import { useAuth } from "@/context/AuthContext";
@@ -113,6 +114,14 @@ export default function ProjectDetail() {
     }) || null,
     [projects, owner, repo]
   );
+
+  function formatDateISO(d: string | null | undefined) {
+    if (!d) return '—';
+    try {
+      const dt = new Date(String(d));
+      return dt.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    } catch { return String(d); }
+  }
 
   const summaryProject = (summaryData?.project as Project | undefined) || null;
   const resolvedProject = currentProject || summaryProject;
@@ -248,41 +257,31 @@ export default function ProjectDetail() {
         <div className="border-b border-border/50 bg-card">
           <div className="flex items-center justify-between gap-4 px-6 py-4">
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate("/")}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                aria-label="Back to projects"
-              >
-                <ArrowLeft size={18} strokeWidth={1.5} />
-              </button>
-              <div className="flex items-center gap-2">
                 <button
-                  type="button"
                   onClick={() => navigate("/")}
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium"
+                  style={{ color: '#7c3aed', fontWeight: 500 }}
+                  aria-label="Back to projects"
                 >
+                  <ArrowLeft size={16} strokeWidth={1.5} />
                   <span>Projects</span>
-                  <ChevronRight size={14} />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => navigate("/")}
-                  className="flex items-center gap-1.5 font-semibold text-foreground transition-colors hover:text-brand"
-                  aria-label="Go back to projects"
-                >
-                  <GitFork size={16} strokeWidth={1.5} />
-                  <span>{owner}</span>
-                  <span className="text-muted-foreground">/</span>
-                  <span className="text-brand">{repo}</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span style={{ color: '#8b80a8' }}>{owner}</span>
+                    <ChevronRight size={14} />
+                    <GitFork size={16} strokeWidth={1.5} />
+                    <span style={{ color: '#7c3aed', fontWeight: 600 }}>{repo}</span>
+                  </div>
+                </div>
               </div>
-            </div>
             <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     onClick={refetch}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors"
+                    style={{ width: 32, height: 32 }}
                     aria-label="Refresh"
                   >
                     <RefreshCw size={16} strokeWidth={1.5} />
@@ -332,7 +331,10 @@ export default function ProjectDetail() {
                 />
               </div>
               <div className="mt-1.5 text-[11px] text-muted-foreground">
-                {finance?.burn_percent ?? "—"}% spent · {finance?.runway_months ?? "—"}mo runway
+                {finance?.burn_percent ?? "—"}% spent · {finance?.runway_months ?? "—"} runway
+              </div>
+              <div className="mt-3">
+                <button onClick={() => setTab('settings')} className="inline-flex items-center gap-2 rounded-md border border-purple-600 px-3 py-1 text-sm font-medium text-purple-600 hover:bg-purple-50">Set Budget →</button>
               </div>
             </div>
 
@@ -351,7 +353,10 @@ export default function ProjectDetail() {
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Clock size={12} strokeWidth={1.5} /> Lead Time
                   </div>
-                  <div className="mt-1 font-semibold text-foreground">{dora?.change_lead_time?.value ?? "—"}</div>
+                  <div className="mt-1 font-semibold text-foreground">
+                    {(typeof dora?.change_lead_time?.value === 'number' && dora.change_lead_time.value >= 0) ? dora.change_lead_time.value : '—'}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">{(dora?.change_lead_time && (dora.change_lead_time.value ?? 0) <= 0) ? 'Lead time requires merged PRs with deployments' : ''}</div>
                 </div>
                 <div className="border-r border-border/60 bg-card p-2.5 text-[11px]">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -363,7 +368,21 @@ export default function ProjectDetail() {
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Star size={12} strokeWidth={1.5} /> Rating
                   </div>
-                  <div className="mt-1 font-semibold text-foreground">{dora?.deployment_frequency?.rating ?? "—"}</div>
+                  <div className="mt-1">
+                    {/* DORA rating badge */}
+                    {(() => {
+                      const rating = dora?.deployment_frequency?.rating || dora?.rating || null;
+                      if (!rating) return <span className="font-semibold text-foreground">—</span>;
+                      const map: Record<string, {bg:string,color:string,border:string}> = {
+                        Elite: { bg: '#dcfce7', color: '#16a34a', border: '#bbf7d0' },
+                        High: { bg: '#dbeafe', color: '#1d4ed8', border: '#bfdbfe' },
+                        Medium: { bg: '#fef9c3', color: '#854d0e', border: '#fef3c7' },
+                        Low: { bg: '#fee2e2', color: '#dc2626', border: '#fecaca' },
+                      };
+                      const s = map[rating] || map['Low'];
+                      return <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, padding: '4px 8px', borderRadius: 8, fontWeight: 600 }}>{rating}</span>;
+                    })()}
+                  </div>
                 </div>
               </div>
             </div>
@@ -375,7 +394,7 @@ export default function ProjectDetail() {
               <h3 className="mb-4 text-sm font-semibold text-foreground">Repository Details</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-2">
-                  <ExternalLink size={14} className="text-muted-foreground shrink-0" />
+                  <Github size={14} className="text-muted-foreground shrink-0" />
                   <a
                     href={`https://github.com/${owner}/${repo}`}
                     target="_blank"
@@ -387,15 +406,15 @@ export default function ProjectDetail() {
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar size={14} className="shrink-0" />
-                  <span>Created {(resolvedProject as Record<string, unknown>).created_at as string || "—"}</span>
+                  <span>Created {formatDateISO((resolvedProject as Record<string, unknown>).created_at as string || null)}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Clock size={14} className="shrink-0" />
-                  <span>Updated {(resolvedProject as Record<string, unknown>).updated_at as string || "—"}</span>
+                  <span>Updated {((resolvedProject as Record<string, unknown>).updated_at as string) ? formatDateISO((resolvedProject as Record<string, unknown>).updated_at as string) : 'just now'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <GitBranch size={14} className="shrink-0" />
-                  <span>{(resolvedProject as Record<string, unknown>).default_branch as string || "main"}</span>
+                  <span className="rounded-full border border-border/50 px-2 py-0.5 text-xs font-semibold text-foreground">{(resolvedProject as Record<string, unknown>).default_branch as string || "main"}</span>
                 </div>
               </div>
             </div>
@@ -403,22 +422,25 @@ export default function ProjectDetail() {
             <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
               <h3 className="mb-4 text-sm font-semibold text-foreground">Quick Stats</h3>
               <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Total Commits</span>
-                  <span className="font-semibold text-foreground">{String(((summaryData?.commits as Record<string, unknown> | undefined)?.total as number | string | undefined) ?? "—")}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Contributors</span>
-                  <span className="font-semibold text-foreground">{String(((summaryData?.team as Record<string, unknown> | undefined)?.count as number | string | undefined) ?? "—")}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Open PRs</span>
-                  <span className="font-semibold text-foreground">{String(((summaryData?.pull_requests as Record<string, unknown> | undefined)?.open as number | string | undefined) ?? "—")}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Issues</span>
-                  <span className="font-semibold text-foreground">{String((summaryData?.open_issues as number | string | undefined) ?? "—")}</span>
-                </div>
+                {[
+                  { key: 'commits', icon: GitCommit, label: 'Total Commits', value: String(((summaryData?.commits as Record<string, unknown> | undefined)?.total as number | string | undefined) ?? '—') },
+                  { key: 'contributors', icon: Users, label: 'Contributors', value: String(((summaryData?.team as Record<string, unknown> | undefined)?.count as number | string | undefined) ?? '—') },
+                  { key: 'prs', icon: GitFork, label: 'Open PRs', value: String(((summaryData?.pull_requests as Record<string, unknown> | undefined)?.open as number | string | undefined) ?? '—') },
+                  { key: 'issues', icon: AlertCircle, label: 'Issues', value: String((summaryData?.open_issues as number | string | undefined) ?? '—') },
+                ].map((s) => {
+                  const Icon = s.icon as any;
+                  return (
+                    <div key={s.key} className="flex items-center justify-between rounded-sm hover:bg-[#faf9ff] px-2 py-2">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Icon size={14} strokeWidth={1.5} />
+                        <span>{s.label}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-semibold text-foreground">{s.value}</div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -476,9 +498,9 @@ export default function ProjectDetail() {
                       href={getProjectCommitsUrl(resolvedProject) || `https://github.com/${owner}/${repo}/commits`}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs font-semibold text-brand hover:underline"
+                      className="inline-flex items-center gap-2 rounded-md px-3 py-1 text-xs font-semibold text-brand hover:bg-brand/5"
                     >
-                      Open on GitHub
+                      Open on GitHub <ExternalLink size={12} />
                     </a>
                   </div>
 
@@ -486,20 +508,47 @@ export default function ProjectDetail() {
                     <div className="py-12 text-center text-muted-foreground">No commits returned for this project yet.</div>
                   ) : (
                     <div className="space-y-3">
-                      {recentCommits.map((commit) => (
-                        <div key={String(commit.sha || commit.id || commit.message)} className="rounded-lg border border-border/60 p-3">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="font-medium text-foreground">{String(commit.message || "Untitled commit")}</div>
-                            <span className="text-xs text-muted-foreground">{String(commit.timestamp || commit.date || "—")}</span>
+                      {recentCommits.map((commit) => {
+                        const key = String(commit.sha || commit.id || commit.message);
+                        const msg = String(commit.message || 'Untitled commit');
+                        const sha = String(commit.sha || commit.id || '').slice(0, 7);
+                        const author = String(commit.author_github_username || commit.author || 'Unknown');
+                        const linesAdded = String(commit.lines_added || 0);
+                        const linesRemoved = String(commit.lines_removed || 0);
+                        const aiTag = String(commit.ai_type_tag || '') || null;
+                        const time = String(commit.timestamp || commit.date || '—');
+                        return (
+                          <div key={key} className="flex items-start justify-between rounded-lg border border-border/60 p-3">
+                            <div className="flex items-start gap-3 min-w-0">
+                              <GitCommit size={18} className="text-muted-foreground" />
+                              <div className="min-w-0">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="font-medium text-foreground truncate" style={{ maxWidth: 680, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{msg}</div>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top"><div style={{ maxWidth: 420 }}>{msg}</div></TooltipContent>
+                                </Tooltip>
+
+                                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-6 w-6 overflow-hidden rounded-full bg-muted flex items-center justify-center text-xs font-semibold">{author.slice(0,1).toUpperCase()}</div>
+                                    <span>{author}</span>
+                                  </div>
+                                  <code className="font-mono text-xs px-2 py-0.5 rounded-md border border-border/50">{sha}</code>
+                                  {aiTag ? <span className="rounded-full bg-purple-50 text-purple-600 px-2 py-0.5 text-xs font-semibold">{aiTag}</span> : null}
+                                  <span className="text-xs"><span style={{ color: '#16a34a' }}>+{linesAdded}</span> / <span style={{ color: '#dc2626' }}>-{linesRemoved}</span></span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                              <span className="text-xs text-muted-foreground">{time}</span>
+                              <a href={String(commit.url || getProjectCommitsUrl(resolvedProject) || `https://github.com/${owner}/${repo}/commit/${commit.sha}`)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
+                                <ExternalLink size={14} />
+                              </a>
+                            </div>
                           </div>
-                          <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                            <span>Author: {String(commit.author_github_username || commit.author || "Unknown")}</span>
-                            <span>SHA: {String(commit.sha || commit.id || "—").slice(0, 8)}</span>
-                            <span>AI tag: {String(commit.ai_type_tag || "Commit")}</span>
-                            <span>Lines +{String(commit.lines_added || 0)} / -{String(commit.lines_removed || 0)}</span>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -507,35 +556,46 @@ export default function ProjectDetail() {
                 <div className="space-y-4">
                   <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
                     <h3 className="mb-4 text-sm font-semibold text-foreground">Repository Owner</h3>
-                    {repoOwner ? (
-                      <div className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-brand text-primary-foreground font-semibold">
-                          {String(repoOwner.login || owner || "O").slice(0, 1).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="font-medium text-foreground">{String(repoOwner.login || owner)}</div>
-                          <div className="text-xs text-muted-foreground">{String(repoOwner.type || "Owner")}</div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-sm text-muted-foreground">Owner data not available yet.</div>
-                    )}
+                          {repoOwner ? (
+                            <div className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+                              <Avatar>
+                                {repoOwner.avatar_url ? <AvatarImage src={String(repoOwner.avatar_url)} alt={String(repoOwner.login || owner)} /> : <AvatarFallback>{String((repoOwner.login || owner || 'O')).slice(0,1).toUpperCase()}</AvatarFallback>}
+                              </Avatar>
+                              <div>
+                                <div className="font-medium text-foreground">{String(repoOwner.name || repoOwner.login || owner)}</div>
+                                <div className="text-xs text-muted-foreground">@{String(repoOwner.login || owner)}</div>
+                              </div>
+                              <a href={String(repoOwner.html_url || `https://github.com/${owner}`)} target="_blank" rel="noreferrer" style={{ marginLeft: 'auto' }}>
+                                <button className="inline-flex items-center gap-2 rounded-md border border-border/50 px-3 py-1 text-sm">View Profile</button>
+                              </a>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-muted-foreground">Owner data not available yet.</div>
+                          )}
                   </div>
 
                   <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
                     <h3 className="mb-4 text-sm font-semibold text-foreground">Collaborators</h3>
-                    {repoCollaborators.length === 0 ? (
-                      <div className="text-sm text-muted-foreground">No collaborators returned from GitHub.</div>
-                    ) : (
-                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                        {repoCollaborators.map((person) => (
-                          <div key={String((person as Record<string, unknown>).id || (person as Record<string, unknown>).login)} className="rounded-lg border border-border/60 p-3">
-                            <div className="font-medium text-foreground">{String((person as Record<string, unknown>).login || "Unknown")}</div>
-                            <div className="text-xs text-muted-foreground">{String((person as Record<string, unknown>).type || "User")}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          {repoCollaborators.length === 0 ? (
+                            <div className="text-sm text-muted-foreground">No collaborators returned from GitHub.</div>
+                          ) : (
+                            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
+                              {repoCollaborators.map((person) => (
+                                <div key={String((person as Record<string, unknown>).login)} className="rounded-lg border border-border/60 p-3 flex items-center gap-3">
+                                  <Avatar>
+                                    {(person as any).avatar_url ? <AvatarImage src={String((person as any).avatar_url)} /> : <AvatarFallback>{String(((person as any).login || 'U')).slice(0,1).toUpperCase()}</AvatarFallback>}
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium text-foreground truncate">{String((person as any).login)}</div>
+                                    <div className="text-xs text-muted-foreground mt-1">collaborator</div>
+                                  </div>
+                                  <a href={String((person as any).html_url || `https://github.com/${(person as any).login}`)} target="_blank" rel="noreferrer">
+                                    <ExternalLink size={14} color="#8b80a8" />
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                   </div>
 
                   <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
@@ -543,14 +603,35 @@ export default function ProjectDetail() {
                     {commitContributors.length === 0 ? (
                       <div className="text-sm text-muted-foreground">No contributors returned from GitHub.</div>
                     ) : (
-                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                        {commitContributors.map((person) => (
-                          <div key={String((person as Record<string, unknown>).id || (person as Record<string, unknown>).login)} className="rounded-lg border border-border/60 p-3">
-                            <div className="font-medium text-foreground">{String((person as Record<string, unknown>).login || "Unknown")}</div>
-                            <div className="text-xs text-muted-foreground">Contributions: {String((person as Record<string, unknown>).contributions || (person as Record<string, unknown>).commit_count || 0)}</div>
+                      (() => {
+                        const sorted = [...commitContributors].sort((a: any, b: any) => (b.contributions || b.commit_count || 0) - (a.contributions || a.commit_count || 0));
+                        const max = Math.max(1, ...(sorted.map((s: any) => Number(s.contributions || s.commit_count || 0))));
+                        return (
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            {sorted.map((person: any, i: number) => (
+                              <div key={String(person.login || i)} className="rounded-lg border border-border/60 p-3 flex flex-col items-center gap-3 relative">
+                                {i === 0 && <div style={{ position: 'absolute', top: 8, right: 8 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.09 6.26L20 9.27l-5 3.64L16.18 20 12 16.9 7.82 20 9 12.91 4 9.27l5.91-.99L12 2z" fill="#f59e0b"/></svg></div>}
+                                <div style={{ position: 'relative' }}>
+                                  <Avatar>
+                                    {person.avatar_url ? <AvatarImage src={String(person.avatar_url)} /> : <AvatarFallback>{String((person.login || 'U')).slice(0,1).toUpperCase()}</AvatarFallback>}
+                                  </Avatar>
+                                  {person.type === 'Bot' && <span style={{ position: 'absolute', bottom: -6, right: -6, background: '#6b7280', color: '#fff', fontSize: 10, borderRadius: 4, padding: '2px 4px' }}>BOT</span>}
+                                </div>
+                                <div style={{ textAlign: 'center' }}>
+                                  <div className="font-medium text-foreground">{String(person.login)}</div>
+                                  <div className="text-xs text-muted-foreground">{String(person.contributions || person.commit_count || 0)} commits</div>
+                                </div>
+                                <div className="w-full h-2 bg-[#f4f2f9] rounded-full">
+                                  <div style={{ width: `${Math.round(((Number(person.contributions || person.commit_count || 0) / max) * 100) || 0)}%`, height: '100%', background: '#7c3aed', borderRadius: 2 }} />
+                                </div>
+                                <a href={String(person.html_url || `https://github.com/${person.login}`)} target="_blank" rel="noreferrer">
+                                  <button className="inline-flex items-center gap-2 rounded-md px-3 py-1 text-sm">GitHub</button>
+                                </a>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        );
+                      })()
                     )}
                   </div>
 
@@ -559,16 +640,32 @@ export default function ProjectDetail() {
                     {teamMembers.length === 0 ? (
                       <div className="text-sm text-muted-foreground">No database team members saved yet.</div>
                     ) : (
-                      <div className="space-y-3">
-                        {teamMembers.map((member) => (
-                          <div key={String((member as Record<string, unknown>).id || (member as Record<string, unknown>).github_username)} className="flex items-center justify-between rounded-lg border border-border/60 p-3">
-                            <div>
-                              <div className="font-medium text-foreground">{String((member as Record<string, unknown>).display_name || (member as Record<string, unknown>).github_username || "Member")}</div>
-                              <div className="text-xs text-muted-foreground">@{String((member as Record<string, unknown>).github_username || "unknown")}</div>
-                            </div>
-                            <div className="text-xs text-muted-foreground">{String((member as Record<string, unknown>).role || "developer")}</div>
-                          </div>
-                        ))}
+                      <div className="overflow-x-auto rounded-lg">
+                        <table className="min-w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-border/50 text-left text-[11px] uppercase tracking-wider text-muted-foreground"><th className="px-4 py-3">Member</th><th>Role</th><th className="text-right">Commits</th><th className="text-right">Profile</th></tr>
+                          </thead>
+                          <tbody>
+                            {teamMembers.map((member: any) => (
+                              <tr key={member.id || member.github_username} className="border-b border-border/50 hover:bg-[#faf9ff] last:border-0">
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-3">
+                                    <Avatar>
+                                      {member.avatar_url ? <AvatarImage src={member.avatar_url} /> : <AvatarFallback>{String((member.github_username || 'U')).slice(0,1).toUpperCase()}</AvatarFallback>}
+                                    </Avatar>
+                                    <div>
+                                      <div className="font-medium text-foreground">{member.display_name || member.github_username}</div>
+                                      <div className="text-xs text-muted-foreground">@{member.github_username}</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3"><span className="rounded-md px-2 py-1 text-xs border border-border/50">{member.role}</span></td>
+                                <td className="px-4 py-3 text-right font-semibold">{member.commit_count || '—'}</td>
+                                <td className="px-4 py-3 text-right"><a href={`https://github.com/${member.github_username}`} target="_blank" rel="noreferrer"><ExternalLink size={14} color="#8b80a8" /></a></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     )}
                   </div>
