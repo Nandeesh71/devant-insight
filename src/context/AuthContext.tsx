@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { apiClient } from "@/lib/apiClient";
 import { API_BASE } from "@/config/api";
+import { supabase } from "@/lib/supabase";
 
 export type AuthUser = {
   id: string;
@@ -82,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = () => {
+    void supabase.auth.signOut();
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem("devant.activeProjectId");
@@ -90,17 +92,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = "/login";
   };
 
-  const oauthRedirect = (provider: "google" | "github", mode: "login" | "connect" = "login") => {
+  const oauthRedirect = (provider: "github", mode: "login" | "connect" = "login") => {
     const redirect = encodeURIComponent(`${window.location.origin}/`);
     const t = localStorage.getItem(TOKEN_KEY);
     const tokenParam = mode === "connect" && t ? `&token=${encodeURIComponent(t)}` : "";
     window.location.href = `${API_BASE}/api/auth/${provider}?mode=${mode}&redirect=${redirect}${tokenParam}`;
   };
 
+  const signInGoogle = () => {
+    void supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/#/auth/callback`,
+      },
+    });
+  };
+
   return (
     <AuthContext.Provider value={{
       user, token, loading,
-      signInGoogle: () => oauthRedirect("google", "login"),
+      signInGoogle,
       signInGithub: () => oauthRedirect("github", "login"),
       connectGithub: () => oauthRedirect("github", "connect"),
       signOut, setSession, refresh,
