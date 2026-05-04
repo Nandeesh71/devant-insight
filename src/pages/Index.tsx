@@ -820,28 +820,28 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-[2px]" onClick={onClose}>
-      <div className="flex max-h-[85vh] w-full max-w-[800px] flex-col overflow-hidden rounded-xl border border-border bg-[#0a0a0a] shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card" onClick={(e) => e.stopPropagation()}>
         
         {/* Header Section */}
         <div className="border-b border-border p-8 pb-6">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-[28px] font-bold tracking-tight text-white">Import Git Repository</h2>
-            <button onClick={onClose} className="text-muted-foreground transition-colors hover:text-white"><X size={24} /></button>
+            <h2 className="text-[28px] font-bold tracking-tight text-foreground">Import Git Repository</h2>
+            <button onClick={onClose} className="text-muted-foreground transition-colors hover:text-foreground"><X size={24} /></button>
           </div>
 
           {!user?.github_connected ? (
-             <div className="py-10 text-center">
+             <div className="py-10 text-left">
                <Github className="mx-auto mb-4 text-brand" size={32} />
                <p className="mb-6 text-lg text-muted-foreground">Connect GitHub to import your repositories.</p>
                <button onClick={connectGithub} className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-brand/90"><Github size={18} /> Connect GitHub</button>
              </div>
           ) : (
-            <div className="relative z-10 flex flex-col gap-4 sm:flex-row">
+            <div className="relative z-10 flex flex-col gap-4">
               {/* Account Dropdown */}
-              <div className="relative w-full sm:w-[260px]">
+              <div className="relative w-full">
                 <button 
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                  className="flex w-full items-center justify-between rounded-lg border border-border bg-[#0a0a0a] px-4 py-2.5 text-sm text-white transition-colors hover:bg-white/5"
+                  className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-muted"
                 >
                   <div className="flex items-center gap-3 font-medium">
                     <Github size={16} />
@@ -851,20 +851,20 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
                 </button>
 
                 {accountDropdownOpen && (
-                  <div className="absolute left-0 top-full mt-2 w-full overflow-hidden rounded-lg border border-border bg-[#111] shadow-xl">
-                    <div className="flex items-center justify-between bg-white/5 px-4 py-3">
-                      <div className="flex items-center gap-3 text-sm font-medium text-white">
+                  <div className="absolute left-0 top-full mt-2 w-full overflow-hidden rounded-lg border border-border bg-card shadow-card">
+                    <div className="flex items-center justify-between bg-muted px-4 py-3">
+                      <div className="flex items-center gap-3 text-sm font-medium text-foreground">
                         <Github size={16} />
                         {user.github_login || user.name || "GitHub Account"}
                       </div>
-                      <CheckCircle2 size={16} className="text-white" />
+                      <CheckCircle2 size={16} className="text-foreground" />
                     </div>
                     <div className="border-t border-border">
-                      <button onClick={connectGithub} className="flex w-full items-center gap-3 px-4 py-3 text-sm text-white transition-colors hover:bg-white/5">
+                      <button onClick={connectGithub} className="flex w-full items-center gap-3 px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted">
                         <PlusCircle size={16} className="text-muted-foreground" />
                         Add GitHub Account
                       </button>
-                      <button className="flex w-full items-center gap-3 px-4 py-3 text-sm text-white transition-colors hover:bg-white/5">
+                      <button className="flex w-full items-center gap-3 px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted">
                         <List size={16} className="text-muted-foreground" />
                         Switch Git Provider
                       </button>
@@ -880,7 +880,7 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search..." 
-                  className="w-full rounded-lg border border-border bg-[#0a0a0a] py-2.5 pl-11 pr-4 text-sm text-white outline-none transition-colors focus:border-muted-foreground"
+                  className="w-full rounded-lg border border-border bg-background py-2.5 pl-11 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand focus:ring-2 focus:ring-brand/30"
                 />
               </div>
             </div>
@@ -889,7 +889,7 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
 
         {/* Repository List */}
         {user?.github_connected && (
-          <div className="flex-1 overflow-y-auto bg-[#0a0a0a] pb-4">
+          <div className="flex-1 overflow-y-auto bg-card pb-4">
             {loading && <div className="flex items-center justify-center gap-3 py-16 text-muted-foreground"><Loader2 className="animate-spin" size={20} /> Loading repositories...</div>}
             {error && <div className="p-8"><ErrorBanner error={error} /></div>}
             
@@ -909,14 +909,14 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
               const timeAgo = repo.updated_at ? getRelativeTime(new Date(repo.updated_at)) : "Unknown time";
 
               return (
-                <div key={String(repo.id || fullName)} className="group flex items-center justify-between border-b border-border/50 px-8 py-5 transition-colors hover:bg-white/5">
+                <div key={String(repo.id || fullName)} className="group flex items-center justify-between border-b border-border/50 px-8 py-5 transition-colors hover:bg-muted/50">
                   <div className="flex min-w-0 items-center gap-4">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-primary-foreground shadow-sm">
                        <Zap size={16} className="fill-current text-yellow-300" />
                     </div>
                     <div className="flex min-w-0 flex-col">
                       <div className="flex items-center gap-2">
-                        <span className="truncate text-[15px] font-semibold text-white">{displayName}</span>
+                        <span className="truncate text-[15px] font-semibold text-foreground">{displayName}</span>
                         {isPrivate && <Lock size={13} className="shrink-0 text-muted-foreground" />}
                         <span className="flex shrink-0 items-center gap-1.5 text-[13px] text-muted-foreground">
                           <span className="text-[10px] opacity-50">•</span>
@@ -929,7 +929,7 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
                   <button 
                     onClick={() => linkRepo(repo)} 
                     disabled={!!linking}
-                    className="ml-4 shrink-0 rounded bg-white px-4 py-1.5 text-[13px] font-semibold text-black shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+                    className="ml-4 shrink-0 rounded-md bg-brand px-4 py-1.5 text-[13px] font-semibold text-primary-foreground shadow-sm transition-opacity hover:bg-brand/90 disabled:opacity-50"
                   >
                     {linking === fullName ? "Importing..." : "Import"}
                   </button>
@@ -1061,7 +1061,7 @@ export default function Index() {
           </div>
           <div className="flex items-center gap-2">
             <button type="button" onClick={refetch} className="flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"><RefreshCw size={13} /> Refresh</button>
-            <button type="button" onClick={() => setShowLink(true)} className="flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-brand/90 hover:shadow-md"><Link size={14} /> Link Repository</button>
+            <button type="button" onClick={() => setShowLink(true)} className="flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-brand/90 hover:shadow-md"><Link size={14} /> + New Project</button>
           </div>
         </div>
 
@@ -1071,13 +1071,10 @@ export default function Index() {
           <>
             <StatCards health={health} finance={finance} dora={dora} loading={loading} />
             <ActiveProjects projects={projects} activeId={projectId} onSelect={handleProjectSelect} sort={sort} setSort={setSort} loading={loading} onRequestDisconnect={setDisconnectTarget} />
-            <CommitsTable tab={tab === "portfolio" ? "commits" : tab} setTab={setTab} commits={uiCommits} team={team} search={search} setSearch={setSearch} selectedId={selected?.id || ""} setSelectedId={setSelectedId} onOpen={setDrawerCommit} loading={loading} viewMode={viewMode} setViewMode={setViewMode} />
-            {selected && <BottomBar commit={selected} />}
           </>
         )}
       </main>
 
-      <CommitDrawer commit={drawerCommit} onClose={() => setDrawerCommit(null)} />
       <LinkRepoModal open={showLink} onClose={() => setShowLink(false)} onLinked={refetch} />
       <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} onSignOut={signOut} />
       <DisconnectModal isOpen={Boolean(disconnectTarget)} onClose={() => setDisconnectTarget(null)} onConfirm={handleDisconnect} projectName={disconnectTarget ? getRepoName(disconnectTarget) : ""} />

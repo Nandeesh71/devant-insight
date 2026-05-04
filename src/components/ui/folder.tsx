@@ -48,11 +48,6 @@ export function FolderCard({
   onDisconnect,
   className
 }: FolderCardProps) {
-  // Determine if health is good/bad based on score
-  const isGoodHealth = (healthScore ?? 0) >= 80;
-  const isWarningHealth = (healthScore ?? 0) >= 60 && (healthScore ?? 0) < 80;
-  const isCriticalHealth = (healthScore ?? 0) < 60;
-
   return (
     <article
       role="button"
@@ -85,19 +80,6 @@ export function FolderCard({
             : "bg-[#F3E8FF] border-border/60"
         )} />
         
-        {/* Disconnect Button (Top Right) */}
-        <div className="absolute right-3 top-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            type="button"
-            aria-label="Disconnect repository"
-            title="Disconnect repository"
-            onClick={(e) => { e.stopPropagation(); onDisconnect?.(); }}
-            className="flex h-7 w-7 items-center justify-center rounded-[7px] border border-transparent bg-transparent text-muted-foreground transition-colors duration-150 ease-out hover:border-[#fecaca] hover:bg-[#fff1f2] hover:text-[#ef4444]"
-          >
-            <Unplug size={14} strokeWidth={1.5} />
-          </button>
-        </div>
-
         {/* TOP SECTION: Icon & Links */}
         <div className="flex items-start justify-between relative z-10 mb-4">
           <div className={cn(
@@ -109,23 +91,34 @@ export function FolderCard({
             </svg>
           </div>
 
-          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-3 right-3 z-30 flex flex-col gap-2 items-center opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               type="button"
-              disabled={!repoUrl}
-              onClick={(e) => { e.stopPropagation(); if (repoUrl) window.open(repoUrl, "_blank", "noopener,noreferrer"); }}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-muted-foreground hover:text-foreground disabled:opacity-40"
+              aria-label="Disconnect repository"
+              title="Disconnect repository"
+              onClick={(e) => { e.stopPropagation(); onDisconnect?.(); }}
+              className="flex h-7 w-7 items-center justify-center rounded-[7px] border border-transparent bg-transparent text-muted-foreground transition-colors duration-150 ease-out hover:border-[#fecaca] hover:bg-[#fff1f2] hover:text-[#ef4444]"
             >
-              <Github size={12} strokeWidth={2} />
+              <Unplug size={14} strokeWidth={1.5} />
             </button>
-            <button
-              type="button"
-              disabled={!commitsUrl}
-              onClick={(e) => { e.stopPropagation(); if (commitsUrl) window.open(commitsUrl, "_blank", "noopener,noreferrer"); }}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-muted-foreground hover:text-foreground disabled:opacity-40"
-            >
-              <ExternalLink size={12} strokeWidth={2} />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                disabled={!repoUrl}
+                onClick={(e) => { e.stopPropagation(); if (repoUrl) window.open(repoUrl, "_blank", "noopener,noreferrer"); }}
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-muted-foreground hover:text-foreground disabled:opacity-40"
+              >
+                <Github size={12} strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                disabled={!commitsUrl}
+                onClick={(e) => { e.stopPropagation(); if (commitsUrl) window.open(commitsUrl, "_blank", "noopener,noreferrer"); }}
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-muted-foreground hover:text-foreground disabled:opacity-40"
+              >
+                <ExternalLink size={12} strokeWidth={2} />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -182,10 +175,6 @@ export function FolderCard({
             isActive ? "bg-white/10 text-white" : "bg-black/5 dark:bg-white/10 text-foreground"
           )}>
             <span>{healthScore ?? ""}</span>
-            <span className={cn(
-              "h-2 w-2 rounded-full",
-              isGoodHealth ? "bg-emerald-500" : isWarningHealth ? "bg-amber-500" : isCriticalHealth ? "bg-red-500" : "bg-muted"
-            )} />
           </div>
         </div>
       </div>
