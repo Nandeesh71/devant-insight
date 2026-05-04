@@ -456,6 +456,85 @@ function StatCards({ health, finance, dora, loading }: Pick<ReturnType<typeof us
 
 function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, onRequestDisconnect }: { projects: Project[]; activeId: string | null; onSelect: (project: Project) => void; sort: string; setSort: (s: string) => void; loading: boolean; onRequestDisconnect: (project: Project) => void }) {
   const [open, setOpen] = useState(false);
+  const [cardDataByProjectId, setCardDataByProjectId] = useState<Record<string, {
+    repoName: string;
+    repoFullPath: string;
+    isPrivate: boolean | null;
+    starCount: number | null;
+    lastCommitMessage: string;
+    lastCommitBranch: string;
+    lastCommitTime: string | null;
+    topContributors: Array<{ login: string; avatarUrl: string }>;
+  }>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCardData() {
+      const entries = await Promise.all(projects.map(async (p) => {
+        const full = getRepoFullName(p);
+        const [owner, repo] = String(full || '').split('/');
+        if (!owner || !repo) {
+          return [p.id, {
+            repoName: getRepoName(p) || '—',
+            repoFullPath: full || '—',
+            isPrivate: null,
+            starCount: null,
+            lastCommitMessage: '—',
+            lastCommitBranch: 'main',
+            lastCommitTime: null,
+            topContributors: [],
+          }] as const;
+        }
+
+        try {
+          const card = await apiClient.get<{
+            repoName?: string;
+            repoFullPath?: string;
+            isPrivate?: boolean | null;
+            starCount?: number | null;
+            lastCommitMessage?: string;
+            lastCommitBranch?: string;
+            lastCommitTime?: string | null;
+            topContributors?: Array<{ login?: string; avatarUrl?: string }>;
+          }>(`/api/github/repo-card/${owner}/${repo}`);
+
+          return [p.id, {
+            repoName: card?.repoName || repo,
+            repoFullPath: card?.repoFullPath || full,
+            isPrivate: typeof card?.isPrivate === 'boolean' ? card.isPrivate : null,
+            starCount: typeof card?.starCount === 'number' ? card.starCount : null,
+            lastCommitMessage: card?.lastCommitMessage || '—',
+            lastCommitBranch: card?.lastCommitBranch || 'main',
+            lastCommitTime: card?.lastCommitTime || null,
+            topContributors: Array.isArray(card?.topContributors)
+              ? card.topContributors
+                .filter((c) => c && c.login && c.avatarUrl)
+                .map((c) => ({ login: String(c.login), avatarUrl: String(c.avatarUrl) }))
+              : [],
+          }] as const;
+        } catch {
+          return [p.id, {
+            repoName: getRepoName(p) || repo,
+            repoFullPath: full || `${owner}/${repo}`,
+            isPrivate: null,
+            starCount: null,
+            lastCommitMessage: '—',
+            lastCommitBranch: 'main',
+            lastCommitTime: null,
+            topContributors: [],
+          }] as const;
+        }
+      }));
+
+      if (cancelled) return;
+      setCardDataByProjectId(Object.fromEntries(entries));
+    }
+
+    void loadCardData();
+    return () => { cancelled = true; };
+  }, [projects]);
+
   const sorted = useMemo(() => {
     const copy = [...projects];
     if (sort === "Name") copy.sort((a, b) => getRepoName(a).localeCompare(getRepoName(b)));
@@ -486,6 +565,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
             const repoFull = getRepoFullName(p);
             const repoUrl = getProjectRepoUrl(p);
             const commitsUrl = getProjectCommitsUrl(p);
+            const cardData = cardDataByProjectId[p.id];
             
             // Map the unknown fields carefully
             const raw = p as Record<string, unknown>;
@@ -495,28 +575,27 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
             const budgetStr = budgetNum ? `₹${Math.round(budgetNum).toLocaleString('en-IN')}` : undefined;
             const riskLevel = typeof raw.risk_level === "string" ? raw.risk_level : undefined;
 
-            // build enriched props (falling back to existing fields if new ones are absent)
-            const displayName = (p as any).displayName || (p as any).name || repo?.split('/')[1] || repo;
-            const deploymentUrl = (p as any).deploymentUrl || (p as any).deployment_url || ((p as any).name ? `${(p as any).name}.vercel.app` : null);
-            const repoFullName = (p as any).repoFullName || (p as any).github_repo_full_name || repoFull;
-            const lastCommitMessage = (p as any).lastCommitMessage || (p as any).latest_commit_message || (p as any).last_commit_message || null;
-            const lastCommitTime = (p as any).lastCommitTime || (p as any).last_commit_time || (p as any).last_activity || null;
-            const branchName = (p as any).branchName || (p as any).default_branch || 'main';
+            const lastCommitRelative = cardData?.lastCommitTime
+              ? (() => {
+                  const dt = new Date(cardData.lastCommitTime as string);
+                  return Number.isNaN(dt.getTime()) ? '—' : getRelativeTime(dt);
+                })()
+              : '—';
 
             return (
               <FolderCard
                 key={p.id}
                 id={p.id}
                 title={repo}
-                // keep fullName for compatibility
                 fullName={repoFull}
-                // new fields passed through (FolderCard will use them in existing slots)
-                displayName={displayName}
-                deploymentUrl={deploymentUrl}
-                repoFullName={repoFullName}
-                lastCommitMessage={lastCommitMessage}
-                lastCommitTime={lastCommitTime}
-                branchName={branchName}
+                repoName={cardData?.repoName || repo.split('/').pop() || repo}
+                repoFullPath={cardData?.repoFullPath || repoFull}
+                isPrivate={cardData?.isPrivate ?? null}
+                starCount={cardData?.starCount ?? null}
+                lastCommitMessage={cardData?.lastCommitMessage || '—'}
+                lastCommitTime={lastCommitRelative}
+                lastCommitBranch={cardData?.lastCommitBranch || 'main'}
+                topContributors={cardData?.topContributors || []}
                 commits={commitsCount}
                 healthScore={healthScore}
                 budget={budgetStr}
