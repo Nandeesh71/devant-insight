@@ -25,7 +25,6 @@ import {
   Settings,
   SlidersHorizontal,
   Sun,
-  Trash2,
   User,
   X,
 } from "lucide-react";
@@ -553,7 +552,7 @@ function SettingsModal({ open, onClose, onSignOut }: { open: boolean; onClose: (
 /* ---------------- Page ---------------- */
 export default function Index() {
   const { dark, toggle } = useTheme();
-  const { user, token, loading: authLoading, signOut, connectGithub } = useAuth();
+  const { user, token, loading: authLoading, signOut } = useAuth();
   const { projectId, setProjectId } = useProject();
   const data = useDevantData();
   const { loading, error, refetch, projects, commits, team, finance, dora, health } = data;
