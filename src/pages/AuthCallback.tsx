@@ -128,7 +128,7 @@ export default function AuthCallback() {
           github_connected: false,
         });
         // Silent refresh for the same reason as above.
-        refresh({ silent: true }).finally(() => navigate(normalizeNext(next), { replace: true }));
+        refresh({ silent: true }).finally(() => navigate(normalizeNext(next || "/connect-github"), { replace: true }));
       }).catch((exchangeError) => {
         setError(exchangeError instanceof Error ? exchangeError.message : "Failed to complete Supabase sign-in");
       });

@@ -6,7 +6,19 @@ import { useAuth } from "@/context/AuthContext";
 export default function Login() {
   const { user, signInGoogle, signInGithub, loading } = useAuth();
   const navigate = useNavigate();
-  useEffect(() => { if (user) navigate(user.github_connected ? "/" : "/connect-github", { replace: true }); }, [user, navigate]);
+  useEffect(() => {
+    if (!loading && user) navigate(user.github_connected ? "/" : "/connect-github", { replace: true });
+  }, [loading, user, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-background px-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Activity className="animate-pulse" size={14} /> Restoring session...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background px-4">

@@ -76,7 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  useEffect(() => { if (token) refresh(); }, [token, refresh]);
+  useEffect(() => {
+    if (!token) return;
+    // If we already have user data (from local cache or fresh callback),
+    // refresh silently to avoid clearing a valid in-flight session.
+    void refresh({ silent: !!user });
+  }, [token, user, refresh]);
 
   const setSession = (t: string, u?: AuthUser) => {
     localStorage.setItem(TOKEN_KEY, t);
@@ -111,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/connect-github")}`,
       },
     });
   };
