@@ -89,6 +89,10 @@ export default function ProjectDetail() {
   const data = useDevantData();
   const { loading, error, refetch, projects, health, finance, dora } = data;
   const [tab, setTab] = useState("commits");
+  const [deploymentsList, setDeploymentsList] = useState<Record<string, unknown>[]>([]);
+  const [deploymentsLoading, setDeploymentsLoading] = useState(false);
+  const [commitsList, setCommitsList] = useState<Record<string, unknown>[]>([]);
+  const [commitsLoadingLocal, setCommitsLoadingLocal] = useState(false);
   const [search, setSearch] = useState("");
   const [disconnectTarget, setDisconnectTarget] = useState<Project | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -206,6 +210,50 @@ export default function ProjectDetail() {
       cancelled = true;
     };
   }, [resolvedProjectId, summaryData, summaryLoading, hydrationAttempted]);
+
+  // Fetch deployments when user opens Deployments tab
+  useEffect(() => {
+    let cancelled = false;
+    async function loadDeployments() {
+      if (!resolvedProjectId) return;
+      setDeploymentsLoading(true);
+      try {
+        const rows = await apiClient.get<Record<string, unknown>[]>(`/api/deployments/${resolvedProjectId}`);
+        if (!cancelled) setDeploymentsList(Array.isArray(rows) ? rows : []);
+      } catch {
+        if (!cancelled) setDeploymentsList([]);
+      } finally {
+        if (!cancelled) setDeploymentsLoading(false);
+      }
+    }
+
+    if (tab === 'deployments') loadDeployments();
+    return () => { cancelled = true; };
+  }, [tab, resolvedProjectId, detailTick]);
+
+  // If summary has no recent commits, fetch raw commits as a fallback
+  useEffect(() => {
+    let cancelled = false;
+    async function loadCommitsFallback() {
+      if (!resolvedProjectId) return;
+      setCommitsLoadingLocal(true);
+      try {
+        const rows = await apiClient.get<Record<string, unknown>[]>(`/api/commits/${resolvedProjectId}?limit=5`);
+        if (!cancelled) setCommitsList(Array.isArray(rows) ? rows : []);
+      } catch {
+        if (!cancelled) setCommitsList([]);
+      } finally {
+        if (!cancelled) setCommitsLoadingLocal(false);
+      }
+    }
+
+    const commitTotal = Number(((summaryData?.commits as Record<string, unknown> | undefined)?.total as number | string | undefined) ?? 0);
+    if (tab === 'commits' && commitTotal === 0) {
+      void loadCommitsFallback();
+    }
+
+    return () => { cancelled = true; };
+  }, [tab, resolvedProjectId, summaryData, detailTick]);
 
   const handleDisconnect = async () => {
     if (!resolvedProject) return;
@@ -427,6 +475,7 @@ export default function ProjectDetail() {
                   { key: 'contributors', icon: Users, label: 'Contributors', value: String(((summaryData?.team as Record<string, unknown> | undefined)?.count as number | string | undefined) ?? '—') },
                   { key: 'prs', icon: GitFork, label: 'Open PRs', value: String(((summaryData?.pull_requests as Record<string, unknown> | undefined)?.open as number | string | undefined) ?? '—') },
                   { key: 'issues', icon: AlertCircle, label: 'Issues', value: String((summaryData?.open_issues as number | string | undefined) ?? '—') },
+                  { key: 'deployments', icon: Zap, label: 'Deployments', value: String(((summaryData?.deployments as Record<string, unknown> | undefined)?.total as number | string | undefined) ?? '—') },
                 ].map((s) => {
                   const Icon = s.icon as any;
                   return (
@@ -450,6 +499,7 @@ export default function ProjectDetail() {
             <div className="flex items-center gap-1.5 border-b border-border/70">
               {[
                 { id: "commits", label: "Recent Commits", icon: GitCommit },
+                { id: "deployments", label: "Deployments", icon: Zap },
                 { id: "team", label: "Team", icon: Users },
                 { id: "alerts", label: "Alerts", icon: Bell },
                 { id: "settings", label: "Settings", icon: Settings },
@@ -504,10 +554,11 @@ export default function ProjectDetail() {
                     </a>
                   </div>
 
-                  {recentCommits.length === 0 ? (
+                  {((recentCommits.length === 0) && (commitsList.length === 0)) ? (
                     <div className="py-12 text-center text-muted-foreground">No commits returned for this project yet.</div>
                   ) : (
                     <div className="space-y-3">
+<<<<<<< HEAD
                       {recentCommits.map((commit) => {
                         const key = String(commit.sha || commit.id || commit.message);
                         const msg = String(commit.message || 'Untitled commit');
@@ -549,6 +600,49 @@ export default function ProjectDetail() {
                           </div>
                         );
                       })}
+=======
+                      {(recentCommits.length > 0 ? recentCommits : commitsList).map((commit) => (
+                        <div key={String((commit as any).sha || (commit as any).id || (commit as any).message)} className="rounded-lg border border-border/60 p-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="font-medium text-foreground">{String((commit as any).message || "Untitled commit")}</div>
+                            <span className="text-xs text-muted-foreground">{String((commit as any).timestamp || (commit as any).date || "—")}</span>
+                          </div>
+                          <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                            <span>Author: {String((commit as any).author_github_username || (commit as any).author || "Unknown")}</span>
+                            <span>SHA: {String((commit as any).sha || (commit as any).id || "—").slice(0, 8)}</span>
+                            <span>AI tag: {String((commit as any).ai_type_tag || "Commit")}</span>
+                            <span>Lines +{String((commit as any).lines_added || 0)} / -{String((commit as any).lines_removed || 0)}</span>
+                          </div>
+                        </div>
+                      ))}
+>>>>>>> 2efafaf (feat(ui): show deployments and fallback commit fetch)
+                    </div>
+                  )}
+                </div>
+              ) : tab === "deployments" ? (
+                <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">Deployments</h3>
+                      <p className="text-xs text-muted-foreground">Recent deployments for this project.</p>
+                    </div>
+                  </div>
+
+                  {deploymentsLoading ? (
+                    <div className="py-12 text-center text-muted-foreground">Loading deployments...</div>
+                  ) : deploymentsList.length === 0 ? (
+                    <div className="py-12 text-center text-muted-foreground">No deployments recorded for this project yet.</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {deploymentsList.map((d) => (
+                        <div key={String((d as any).id || (d as any).deployed_at)} className="rounded-lg border border-border/60 p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="font-medium text-foreground">{String((d as any).environment || 'deployment')}</div>
+                            <span className="text-xs text-muted-foreground">{String((d as any).deployed_at || '—')}</span>
+                          </div>
+                          <div className="mt-1 text-xs text-muted-foreground">Status: {String((d as any).status || 'unknown')}{(d as any).log_url ? (<span> · <a href={String((d as any).log_url)} target="_blank" rel="noreferrer" className="text-brand hover:underline">View logs</a></span>) : null}</div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
