@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Database, Folder, ExternalLink, Github, Unplug, GitBranch, Star, Lock, Unlock } from 'lucide-react';
+import { Folder, Github, Unplug, GitBranch, Star, Lock, Unlock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export interface FolderCardProps {
@@ -42,7 +42,6 @@ export function FolderCard({
   budget,
   healthScore,
   repoUrl,
-  commitsUrl,
   isActive,
   onSelect,
   onDisconnect,
@@ -101,24 +100,16 @@ export function FolderCard({
             >
               <Unplug size={14} strokeWidth={1.5} />
             </button>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                disabled={!repoUrl}
-                onClick={(e) => { e.stopPropagation(); if (repoUrl) window.open(repoUrl, "_blank", "noopener,noreferrer"); }}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-muted-foreground hover:text-foreground disabled:opacity-40"
-              >
-                <Github size={12} strokeWidth={2} />
-              </button>
-              <button
-                type="button"
-                disabled={!commitsUrl}
-                onClick={(e) => { e.stopPropagation(); if (commitsUrl) window.open(commitsUrl, "_blank", "noopener,noreferrer"); }}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-muted-foreground hover:text-foreground disabled:opacity-40"
-              >
-                <ExternalLink size={12} strokeWidth={2} />
-              </button>
-            </div>
+            <button
+              type="button"
+              aria-label="View repository on GitHub"
+              title="View repository on GitHub"
+              disabled={!repoUrl}
+              onClick={(e) => { e.stopPropagation(); if (repoUrl) window.open(repoUrl, "_blank", "noopener,noreferrer"); }}
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-black/5 dark:bg-white/10 text-muted-foreground hover:text-foreground disabled:opacity-40"
+            >
+              <Github size={12} strokeWidth={2} />
+            </button>
           </div>
         </div>
 
@@ -169,13 +160,6 @@ export function FolderCard({
             ))}
           </div>
 
-          {/* Health Score Badge */}
-          <div className={cn(
-            "flex items-center gap-2 rounded-full px-3 py-1 font-bold text-[13px]",
-            isActive ? "bg-white/10 text-white" : "bg-black/5 dark:bg-white/10 text-foreground"
-          )}>
-            <span>{healthScore ?? ""}</span>
-          </div>
         </div>
       </div>
     </article>

@@ -16,6 +16,7 @@ import {
   Github,
   GitCommit,
   GitFork,
+  GitPullRequest,
   Grid3x3,
   Info,
   LayoutDashboard,
@@ -337,19 +338,9 @@ function MiddleSidebar({ projects, activeId, onSelect }: { projects: Project[]; 
 
 function TopBar({ dark, toggle, project, onBell, onSettings, onSignOut }: { dark: boolean; toggle: () => void; project: Project | null; onBell: () => void; onSettings: () => void; onSignOut: () => void }) {
   const { user } = useAuth();
-  const repo = getRepoName(project);
   return (
     <TooltipProvider delayDuration={150}>
       <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 sm:px-6">
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-primary-foreground"><Activity size={16} /></div>
-        <div className="min-w-0">
-          <div className="truncate text-[15px] font-semibold text-foreground">{repo}</div>
-          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-            <Github size={12} /> {project ? "Real GitHub project" : "No project selected"}
-          </div>
-        </div>
-      </div>
       <div className="ml-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -388,69 +379,51 @@ function TopBar({ dark, toggle, project, onBell, onSettings, onSignOut }: { dark
 }
 
 /* ---------------- Dashboard sections ---------------- */
-function StatCards({ health, finance, dora, loading }: Pick<ReturnType<typeof useDevantData>, "health" | "finance" | "dora" | "loading">) {
-  const score = typeof health?.score === "number" ? health.score : null;
-  const burn = typeof finance?.burn_percent === "number" ? finance.burn_percent : null;
+type WorkspaceStats = {
+  totalProjects: number | null;
+  totalCommits: number | null;
+  activeRepos: number | null;
+  totalContributors: number | null;
+  openPullRequests: number | null;
+  totalStars: number | null;
+};
 
-  if (loading && !score && !burn) {
-    return (
-      <section className="grid grid-cols-1 gap-3 px-6 pt-6 md:grid-cols-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
-            <Skeleton className="mb-2 h-3 w-24" />
-            <Skeleton className="mb-2 h-8 w-16" />
-            <Skeleton className="h-2 w-full" />
-          </div>
-        ))}
-      </section>
-    );
-  }
+function WorkspaceAnalyticsCards({ loading, stats }: { loading: boolean; stats: WorkspaceStats }) {
+  const cards = [
+    { key: 'projects', icon: Folder, label: 'Total Projects', value: stats.totalProjects, subLabel: '' },
+    { key: 'commits', icon: GitCommit, label: 'Total Commits', value: stats.totalCommits, subLabel: '' },
+    { key: 'active', icon: Activity, label: 'Active Repos', value: stats.activeRepos, subLabel: 'last 30 days' },
+    { key: 'contributors', icon: Users, label: 'Contributors', value: stats.totalContributors, subLabel: '' },
+    { key: 'prs', icon: GitPullRequest, label: 'Open Pull Requests', value: stats.openPullRequests, subLabel: '' },
+    { key: 'stars', icon: Star, label: 'Total Stars', value: stats.totalStars, subLabel: '' },
+  ] as const;
 
   return (
-    <section className="grid grid-cols-1 gap-3 px-6 pt-6 md:grid-cols-3">
-      <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Activity size={12} strokeWidth={1.5} /> Project Health</div>
-        <div className="mt-1 flex items-end gap-1.5"><div className="text-3xl font-bold text-foreground">{score ?? "—"}</div><div className="mb-1 text-xs font-medium text-muted-foreground">/ 100</div></div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-2 rounded-full bg-brand" style={{ width: `${Math.max(0, Math.min(score ?? 0, 100))}%` }} /></div>
-        <div className="mt-2 text-[11px] font-medium text-muted-foreground">
-          {score !== null && (score >= 71 ? "Good" : score >= 41 ? "Needs Attention" : "Critical")}
-        </div>
-      </div>
-      <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><DollarSign size={12} strokeWidth={1.5} /> Budget · Burn · Runway</div>
-        <div className="mt-1 text-lg font-semibold text-foreground">
-          {finance?.budget ? `₹${Math.round(finance.spent || 0).toLocaleString('en-IN')}` : "Not configured"} <span className="text-xs font-medium text-muted-foreground">{finance?.budget ? `/ ₹${Math.round(finance.budget).toLocaleString('en-IN')}` : ""}</span>
-        </div>
-        {finance?.budget && (
-          <>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-2 rounded-full bg-brand" style={{ width: `${Math.max(0, Math.min(burn ?? 0, 100))}%` }} /></div>
-            <div className="mt-1.5 text-[11px] text-muted-foreground">{burn ?? "—"}% spent · {finance?.runway_months == null ? "No runway data" : `${finance.runway_months}mo`}</div>
-          </>
-        )}
-        {!finance?.budget && <button type="button" className="mt-2 text-left text-[13px] font-semibold text-brand transition-opacity hover:opacity-80">Set Budget →</button>}
-      </div>
-      <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Info size={12} strokeWidth={1.5} /> DORA Metrics</div>
-        <div className="mt-3 grid grid-cols-2 gap-0">
-          <div className="border-b border-r border-border/60 bg-card p-2.5 text-[11px]">
-            <div className="flex items-center gap-1.5 text-muted-foreground"><Zap size={12} strokeWidth={1.5} /> Deploy Freq</div>
-            <div className="mt-1 font-semibold text-foreground">{dora?.deployment_frequency?.value ?? "—"}</div>
+    <div className="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3">
+      {cards.map((card) => {
+        const Icon = card.icon;
+        return (
+          <div key={card.key} className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Icon size={14} strokeWidth={1.5} /> {card.label}
+            </div>
+            <div className="mt-4">
+              {loading ? (
+                <>
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="mt-2 h-3 w-28" />
+                </>
+              ) : (
+                <>
+                  <div className="text-3xl font-bold text-foreground">{card.value ?? '—'}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{card.subLabel || card.label}</div>
+                </>
+              )}
+            </div>
           </div>
-          <div className="border-b border-border/60 bg-card p-2.5 text-[11px]">
-            <div className="flex items-center gap-1.5 text-muted-foreground"><Clock3 size={12} strokeWidth={1.5} /> Lead Time</div>
-            <div className="mt-1 font-semibold text-foreground">{dora?.change_lead_time?.value ?? "—"}</div>
-          </div>
-          <div className="border-r border-border/60 bg-card p-2.5 text-[11px]">
-            <div className="flex items-center gap-1.5 text-muted-foreground"><AlertTriangle size={12} strokeWidth={1.5} /> Failure Rate</div>
-            <div className="mt-1 font-semibold text-foreground">{dora?.change_failure_rate?.value ?? "—"}</div>
-          </div>
-          <div className="bg-card p-2.5 text-[11px]">
-            <div className="flex items-center gap-1.5 text-muted-foreground"><Star size={12} strokeWidth={1.5} /> Rating</div>
-            <div className="mt-1 font-semibold text-foreground">{dora?.deployment_frequency?.rating ?? "—"}</div>
-          </div>
-        </div>
-      </div>
-    </section>
+        );
+      })}
+    </div>
   );
 }
 
@@ -976,24 +949,107 @@ export default function Index() {
   const { user, token, loading: authLoading, signOut } = useAuth();
   const { projectId, setProjectId } = useProject();
   const data = useDevantData();
-  const { loading, error, refetch, projects, commits, team, finance, dora, health } = data;
+  const { loading, error, refetch, projects } = data;
   const [tab, setTab] = useState("portfolio");
-  const [search, setSearch] = useState("");
   const [sort, setSort] = useState("Newest");
   const [showLink, setShowLink] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [disconnectTarget, setDisconnectTarget] = useState<Project | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
-  const [drawerCommit, setDrawerCommit] = useState<UiCommit | null>(null);
+  const [workspaceStats, setWorkspaceStats] = useState<WorkspaceStats>({
+    totalProjects: 0,
+    totalCommits: 0,
+    activeRepos: 0,
+    totalContributors: 0,
+    openPullRequests: 0,
+    totalStars: 0,
+  });
+  const [workspaceStatsLoading, setWorkspaceStatsLoading] = useState(false);
 
   const activeProject = projects.find((p) => p.id === projectId) || null;
-  const uiCommits = useMemo(() => commits.map(toUiCommit), [commits]);
-  const [selectedId, setSelectedId] = useState("");
-  const selected = uiCommits.find((c) => c.id === selectedId) || uiCommits[0] || null;
 
   useEffect(() => {
-    if (!selectedId && uiCommits[0]) setSelectedId(uiCommits[0].id);
-  }, [selectedId, uiCommits]);
+    let cancelled = false;
+
+    async function loadWorkspaceStats() {
+      if (!projects.length) {
+        if (!cancelled) {
+          setWorkspaceStats({ totalProjects: 0, totalCommits: 0, activeRepos: 0, totalContributors: 0, openPullRequests: 0, totalStars: 0 });
+        }
+        return;
+      }
+
+      setWorkspaceStatsLoading(true);
+      try {
+        const now = Date.now();
+        const contributorSet = new Set<string>();
+
+        let totalCommits = 0;
+        let activeRepos = 0;
+        let openPullRequests = 0;
+        let totalStars = 0;
+
+        await Promise.all(projects.map(async (p) => {
+          const full = getRepoFullName(p);
+          const [owner, repo] = String(full || '').split('/');
+          if (!owner || !repo) return;
+
+          const [summary, repoCard, teamData] = await Promise.all([
+            apiClient.get<Record<string, unknown>>(`/api/projects/${owner}/${repo}/summary`).catch(() => null),
+            apiClient.get<Record<string, unknown>>(`/api/github/repo-card/${owner}/${repo}`).catch(() => null),
+            apiClient.get<Record<string, unknown>>(`/api/team/${p.id}`).catch(() => null),
+          ]);
+
+          const commitsTotal = Number((summary?.commits as Record<string, unknown> | undefined)?.total ?? 0) || 0;
+          const openPr = Number((summary?.pull_requests as Record<string, unknown> | undefined)?.open ?? 0) || 0;
+          const stars = Number(repoCard?.starCount ?? 0) || 0;
+          const lastActivityRaw = (summary?.last_activity as string | null | undefined) || (repoCard?.lastCommitTime as string | null | undefined) || null;
+
+          totalCommits += commitsTotal;
+          openPullRequests += openPr;
+          totalStars += stars;
+
+          if (lastActivityRaw) {
+            const ts = new Date(lastActivityRaw).getTime();
+            if (!Number.isNaN(ts) && now - ts <= 30 * 24 * 60 * 60 * 1000) {
+              activeRepos += 1;
+            }
+          }
+
+          const contributors = ((teamData?.repo as Record<string, unknown> | undefined)?.contributors as Array<Record<string, unknown>> | undefined) || [];
+          contributors.forEach((c) => {
+            const login = String(c.login || '').trim();
+            if (login) contributorSet.add(login.toLowerCase());
+          });
+        }));
+
+        if (cancelled) return;
+        setWorkspaceStats({
+          totalProjects: projects.length,
+          totalCommits,
+          activeRepos,
+          totalContributors: contributorSet.size,
+          openPullRequests,
+          totalStars,
+        });
+      } catch {
+        if (!cancelled) {
+          setWorkspaceStats({
+            totalProjects: projects.length,
+            totalCommits: null,
+            activeRepos: null,
+            totalContributors: null,
+            openPullRequests: null,
+            totalStars: null,
+          });
+        }
+      } finally {
+        if (!cancelled) setWorkspaceStatsLoading(false);
+      }
+    }
+
+    void loadWorkspaceStats();
+    return () => { cancelled = true; };
+  }, [projects]);
 
   const handleProjectSelect = (p: Project) => {
     setProjectId(p.id);
@@ -1054,10 +1110,9 @@ export default function Index() {
         <TopBar dark={dark} toggle={toggle} project={activeProject} onBell={() => setTab("alerts")} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
         <ErrorBanner error={error} onRetry={refetch} />
         <div className="flex flex-wrap items-center justify-between gap-2 px-6 pt-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            Projects <span className="text-muted-foreground/50">/</span>
-            <span className="flex min-w-0 items-center gap-1 text-foreground">{activeProject ? getRepoName(activeProject) : "No linked repo"} <ChevronDown size={13} /></span>
-            {uiCommits.length > 0 && <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-brand">{uiCommits.length}</span>}
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Overview</h1>
+            <p className="text-sm text-muted-foreground">Your workspace at a glance</p>
           </div>
           <div className="flex items-center gap-2">
             <button type="button" onClick={refetch} className="flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"><RefreshCw size={13} /> Refresh</button>
@@ -1069,7 +1124,7 @@ export default function Index() {
           <EmptyState title="Link your first GitHub repository" description="Your dashboard is empty because mock projects were removed. Choose a real repo from your GitHub account to create a DevANT project." actionLabel="Link GitHub repo" onAction={() => setShowLink(true)} />
         ) : (
           <>
-            <StatCards health={health} finance={finance} dora={dora} loading={loading} />
+            <WorkspaceAnalyticsCards loading={workspaceStatsLoading} stats={workspaceStats} />
             <ActiveProjects projects={projects} activeId={projectId} onSelect={handleProjectSelect} sort={sort} setSort={setSort} loading={loading} onRequestDisconnect={setDisconnectTarget} />
           </>
         )}
