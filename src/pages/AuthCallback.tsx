@@ -9,6 +9,19 @@ export default function AuthCallback() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
+  const normalizeNext = (value: string | null | undefined) => {
+    if (!value) return "/";
+    try {
+      const url = new URL(value, window.location.origin);
+      if (url.origin === window.location.origin) {
+        return `${url.pathname}${url.search}${url.hash}` || "/";
+      }
+    } catch {
+      // value may already be a relative path
+    }
+    return value.startsWith("/") ? value : "/";
+  };
+
   useEffect(() => {
     // Helper: try multiple places for query params — normal search, hash-based query, or encoded path
     const parseParams = () => {
@@ -70,7 +83,7 @@ export default function AuthCallback() {
       try { parsedUser = JSON.parse(decodeURIComponent(rawUser)); } catch { parsedUser = undefined; }
     }
     setSession(token, parsedUser);
-    refresh().finally(() => navigate(next, { replace: true }));
+    refresh().finally(() => navigate(normalizeNext(next), { replace: true }));
   }, [params, setSession, refresh, navigate]);
 
   return (
