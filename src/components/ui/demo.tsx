@@ -1,5 +1,5 @@
-import { Component } from "@/components/ui/bg-gredient";
+import Card from "@/components/ui/folder";
 
 export default function DemoOne() {
-  return <Component />;
+  return <Card />;
 }

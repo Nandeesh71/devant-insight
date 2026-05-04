@@ -32,8 +32,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/Terms-of-Service" element={<Terms />} />
+            <Route path="/Privacy-Policy" element={<Privacy />} />
+            <Route path="/terms" element={<Navigate to="/Terms-of-Service" replace />} />
+            <Route path="/privacy" element={<Navigate to="/Privacy-Policy" replace />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/connect-github" element={<ConnectGithub />} />
             <Route path="/owner/:owner/:repo" element={<LegacyOwnerRouteRedirect />} />

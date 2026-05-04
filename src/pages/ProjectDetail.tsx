@@ -234,16 +234,25 @@ export default function ProjectDetail() {
                 <ArrowLeft size={18} strokeWidth={1.5} />
               </button>
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => navigate("/")}
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
                   <span>Projects</span>
                   <ChevronRight size={14} />
-                </div>
-                <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/")}
+                  className="flex items-center gap-1.5 font-semibold text-foreground transition-colors hover:text-brand"
+                  aria-label="Go back to projects"
+                >
                   <GitFork size={16} strokeWidth={1.5} />
                   <span>{owner}</span>
                   <span className="text-muted-foreground">/</span>
                   <span className="text-brand">{repo}</span>
-                </div>
+                </button>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -259,10 +268,6 @@ export default function ProjectDetail() {
                 </TooltipTrigger>
                 <TooltipContent side="bottom">Refresh</TooltipContent>
               </Tooltip>
-              <button className="inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-brand/90 transition-colors">
-                <LinkIcon size={14} strokeWidth={1.5} />
-                <span>Link Repository</span>
-              </button>
             </div>
           </div>
         </div>

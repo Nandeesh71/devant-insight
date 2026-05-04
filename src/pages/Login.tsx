@@ -43,9 +43,9 @@ export default function Login() {
           <Activity size={12} /> Powered by Perceptronix
         </div>
         <div className="mt-3 text-center text-xs text-muted-foreground">
-          <Link to="/terms" className="text-brand hover:underline">Terms</Link>
+          <Link to="/Terms-of-Service" className="text-brand hover:underline">Terms</Link>
           <span className="mx-2">•</span>
-          <Link to="/privacy" className="text-brand hover:underline">Privacy</Link>
+          <Link to="/Privacy-Policy" className="text-brand hover:underline">Privacy</Link>
         </div>
       </div>
     </div>

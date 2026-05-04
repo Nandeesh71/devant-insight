@@ -35,7 +35,7 @@ export default function Terms() {
         </section>
 
         <div className="mt-8 border-t border-border pt-4 text-sm text-muted-foreground">
-          Questions? Review our <Link to="/privacy" className="font-semibold text-brand hover:underline">Privacy Policy</Link>.
+          Questions? Review our <Link to="/Privacy-Policy" className="font-semibold text-brand hover:underline">Privacy Policy</Link>.
         </div>
       </div>
     </main>

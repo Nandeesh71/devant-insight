@@ -35,7 +35,7 @@ export default function Privacy() {
         </section>
 
         <div className="mt-8 border-t border-border pt-4 text-sm text-muted-foreground">
-          Read our <Link to="/terms" className="font-semibold text-brand hover:underline">Terms of Service</Link> for usage rules.
+          Read our <Link to="/Terms-of-Service" className="font-semibold text-brand hover:underline">Terms of Service</Link> for usage rules.
         </div>
       </div>
     </main>

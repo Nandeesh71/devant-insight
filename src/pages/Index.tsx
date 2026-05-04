@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link as RouterLink, Navigate, useLocation, useNavigate } from "react-router-dom";
 import {
   Activity,
   AlertCircle,
@@ -208,7 +208,7 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
   ];
   return (
     <TooltipProvider delayDuration={150}>
-      <aside className="hidden w-14 shrink-0 flex-col items-center gap-2 bg-rail py-4 lg:flex">
+      <aside className="hidden w-14 shrink-0 flex-col items-center gap-2 bg-rail py-4 lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:h-dvh">
         <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-sm font-semibold text-white shadow-brand">DA</div>
         {items.map((item) => {
           const active = tab === item.id;
@@ -277,7 +277,7 @@ function MiddleSidebar({ projects, activeId, onSelect }: { projects: Project[]; 
     return owner && repo && location.pathname === `/${owner}/${repo}`;
   };
   return (
-    <aside className="hidden w-64 shrink-0 flex-col bg-sidebar-bg text-primary-foreground lg:flex">
+    <aside className="hidden w-64 shrink-0 flex-col bg-sidebar-bg text-primary-foreground lg:fixed lg:inset-y-0 lg:left-14 lg:z-30 lg:flex lg:h-dvh">
       <div className="flex items-center gap-2 px-4 pb-3 pt-4">
         <h2 className="flex-1 text-[15px] font-semibold">Projects</h2>
       </div>
@@ -309,6 +309,13 @@ function MiddleSidebar({ projects, activeId, onSelect }: { projects: Project[]; 
             </button>
           );
         })}
+      </div>
+      <div className="mt-auto border-t border-white/10 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 text-[11px] text-sidebar-label">
+          <RouterLink to="/Terms-of-Service" className="transition-colors hover:text-primary-foreground hover:underline">Terms of Service</RouterLink>
+          <span>•</span>
+          <RouterLink to="/Privacy-Policy" className="transition-colors hover:text-primary-foreground hover:underline">Privacy Policy</RouterLink>
+        </div>
       </div>
     </aside>
   );
@@ -460,7 +467,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
           [1, 2, 3].map((i) => (
             <div key={i} className="relative flex h-full min-h-[240px] flex-col rounded-[18px] border-[1.5px] border-transparent bg-card p-4 shadow-card">
               <div className="flex items-start justify-between gap-3">
-                <Skeleton className="h-[34px] w-[34px] rounded-xl" />
+                <Skeleton className="h-[48px] w-[48px] rounded-xl" />
                 <Skeleton className="h-7 w-7 rounded-lg" />
               </div>
               <div className="mt-3 space-y-2">
@@ -506,8 +513,8 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
                 </button>
 
                 <div className="flex items-center justify-between gap-3 pr-10">
-                  <div className="h-[44px] w-[44px] shrink-0 transition-transform duration-200 ease-out group-hover:-translate-y-0.5">
-                    <FolderIcon3D size={44} />
+                  <div className="h-[48px] w-[48px] shrink-0 transition-transform duration-200 ease-out group-hover:-translate-y-0.5">
+                    <FolderIcon3D size={48} />
                   </div>
                 </div>
 
@@ -893,7 +900,7 @@ export default function Index() {
       <LoadingSpinner visible={loading} />
       <IconRail tab={tab} setTab={setTab} alertsCount={0} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
       <MiddleSidebar projects={projects} activeId={projectId} onSelect={handleProjectSelect} />
-      <main className="relative min-w-0 flex-1 overflow-y-auto bg-card pb-24">
+      <main className="relative min-w-0 flex-1 overflow-y-auto bg-card pb-24 lg:ml-[19.5rem]">
         <TopBar dark={dark} toggle={toggle} project={activeProject} onBell={() => setTab("alerts")} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
         <ErrorBanner error={error} onRetry={refetch} />
         <div className="flex flex-wrap items-center justify-between gap-2 px-6 pt-4">
