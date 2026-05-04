@@ -11,6 +11,8 @@ import { AuthProvider } from "./context/AuthContext";
 import Login from "./pages/Login";
 import AuthCallback from "./pages/AuthCallback";
 import ConnectGithub from "./pages/ConnectGithub";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/connect-github" element={<ConnectGithub />} />
             <Route path="/owner/:owner/:repo" element={<LegacyOwnerRouteRedirect />} />

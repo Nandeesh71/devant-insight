@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { FolderIcon3D } from "@/components/ui/FolderIcon3D";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DisconnectModal } from "@/components/ui/disconnect-modal";
 import { LoadingSpinner, ErrorBanner } from "@/components/StatusBanners";
@@ -488,7 +489,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
                 onClick={() => onSelect(p)}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelect(p); }}
                 className={cn(
-                  "group relative flex h-full min-h-[240px] cursor-pointer flex-col rounded-[18px] border-[1.5px] border-transparent bg-card p-4 text-left shadow-card transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lift",
+                  "group relative flex h-full min-h-[240px] cursor-pointer flex-col rounded-[18px] border-[1.5px] border-transparent bg-card p-4 pt-[18px] text-left shadow-card transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lift",
                   active
                     ? "shadow-[0_0_0_1.5px_#7c3aed,0_4px_20px_rgba(124,58,237,0.12)]"
                     : "shadow-card"
@@ -504,9 +505,9 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
                   <Unplug size={14} strokeWidth={1.5} />
                 </button>
 
-                <div className="flex items-start justify-between gap-3 pr-10">
-                  <div className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-lg bg-[#f5f3ff] text-[#7c3aed]">
-                    <GitFork size={16} strokeWidth={1.5} className="text-[#7c3aed]" />
+                <div className="flex items-center justify-between gap-3 pr-10">
+                  <div className="h-[44px] w-[44px] shrink-0 transition-transform duration-200 ease-out group-hover:-translate-y-0.5">
+                    <FolderIcon3D size={44} />
                   </div>
                 </div>
 

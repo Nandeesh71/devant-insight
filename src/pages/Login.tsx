@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Activity, Github } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -41,6 +41,11 @@ export default function Login() {
 
         <div className="mt-6 pt-4 border-t border-border text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5">
           <Activity size={12} /> Powered by Perceptronix
+        </div>
+        <div className="mt-3 text-center text-xs text-muted-foreground">
+          <Link to="/terms" className="text-brand hover:underline">Terms</Link>
+          <span className="mx-2">•</span>
+          <Link to="/privacy" className="text-brand hover:underline">Privacy</Link>
         </div>
       </div>
     </div>
