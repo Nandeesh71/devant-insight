@@ -14,6 +14,8 @@ import AuthCallback from "./pages/AuthCallback";
 import ConnectGithub from "./pages/ConnectGithub";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +41,8 @@ const App = () => (
             <Route path="/privacy" element={<Navigate to="/Privacy-Policy" replace />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/connect-github" element={<ProtectedRoute><ConnectGithub /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/owner/:owner/:repo" element={<LegacyOwnerRouteRedirect />} />
             <Route path="/:owner/:repo" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />

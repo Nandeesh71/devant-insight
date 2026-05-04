@@ -182,21 +182,6 @@ function useTheme() {
 }
 
 /* ---------------- Shared UI ---------------- */
-function Modal({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode; wide?: boolean }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4" onClick={onClose}>
-      <div className={cn("w-full rounded-lg border border-border bg-card shadow-lift", wide ? "max-w-2xl" : "max-w-md")} onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h3 className="font-semibold text-foreground">{title}</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X size={16} /></button>
-        </div>
-        <div className="p-5">{children}</div>
-      </div>
-    </div>
-  );
-}
-
 function EmptyState({ title, description, actionLabel, onAction, icon: Icon = Github }: { title: string; description: string; actionLabel?: string; onAction?: () => void; icon?: typeof Github }) {
   return (
     <div className="mx-6 mt-8 rounded-lg border border-dashed border-border bg-card p-10 text-center shadow-card">
@@ -213,7 +198,7 @@ function EmptyState({ title, description, actionLabel, onAction, icon: Icon = Gi
 }
 
 /* ---------------- Layout ---------------- */
-function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: string; setTab: (t: string) => void; alertsCount: number; onSettings: () => void; onSignOut: () => void }) {
+function IconRail({ tab, setTab, alertsCount, onSettingsNavigate, onSignOut }: { tab: string; setTab: (t: string) => void; alertsCount: number; onSettingsNavigate: () => void; onSignOut: () => void }) {
   const items = [
     { id: "portfolio", icon: LayoutDashboard, label: "Portfolio" },
     { id: "commits", icon: GitFork, label: "Commits" },
@@ -265,7 +250,7 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
         <div className="mt-auto flex flex-col gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
-              <button type="button" aria-label="Settings" onClick={onSettings} className="flex h-11 w-11 items-center justify-center rounded-lg text-[hsl(var(--sidebar-icon))] transition-all duration-150 ease-out hover:bg-primary/10 hover:text-white"><Settings size={18} strokeWidth={1.5} /></button>
+              <button type="button" aria-label="Settings" onClick={onSettingsNavigate} className="flex h-11 w-11 items-center justify-center rounded-lg text-[hsl(var(--sidebar-icon))] transition-all duration-150 ease-out hover:bg-primary/10 hover:text-white"><Settings size={18} strokeWidth={1.5} /></button>
             </TooltipTrigger>
             <TooltipContent side="right" className="border-border bg-card text-foreground">Settings</TooltipContent>
           </Tooltip>
@@ -336,7 +321,7 @@ function MiddleSidebar({ projects, activeId, onSelect }: { projects: Project[]; 
   );
 }
 
-function TopBar({ dark, toggle, project, onBell }: { dark: boolean; toggle: () => void; project: Project | null; onBell: () => void }) {
+function TopBar({ dark, toggle, project, onBell, onSettingsNavigate, onProfileNavigate, onSignOut }: { dark: boolean; toggle: () => void; project: Project | null; onBell: () => void; onSettingsNavigate: () => void; onProfileNavigate: () => void; onSignOut: () => void }) {
   const { user } = useAuth();
   return (
     <TooltipProvider delayDuration={150}>
@@ -356,11 +341,34 @@ function TopBar({ dark, toggle, project, onBell }: { dark: boolean; toggle: () =
           </TooltipTrigger>
           <TooltipContent side="bottom" className="border-border bg-card text-foreground">Alerts</TooltipContent>
         </Tooltip>
-
-        <Avatar className="h-9 w-9 border border-border/60">
-          <AvatarImage src={user?.avatar_url || ""} alt="User avatar" />
-          <AvatarFallback className="bg-accent text-xs font-bold text-brand">{(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}</AvatarFallback>
-        </Avatar>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" aria-label="Settings" onClick={onSettingsNavigate} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted"><Settings size={18} strokeWidth={1.5} /></button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Settings</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" aria-label="Logout" onClick={onSignOut} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted"><LogOut size={18} strokeWidth={1.5} /></button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Logout</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              aria-label="Profile"
+              onClick={onProfileNavigate}
+              className="rounded-full outline-none ring-offset-2 ring-offset-background focus-visible:ring-2"
+            >
+              <Avatar className="h-9 w-9 border border-border/60">
+                <AvatarImage src={user?.avatar_url || ""} alt="User avatar" />
+                <AvatarFallback className="bg-accent text-xs font-bold text-brand">{(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}</AvatarFallback>
+              </Avatar>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Profile</TooltipContent>
+        </Tooltip>
       </div>
       </div>
     </TooltipProvider>
@@ -908,32 +916,6 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
   );
 }
 
-function SettingsModal({ open, onClose, onSignOut }: { open: boolean; onClose: () => void; onSignOut: () => void }) {
-  const { user, connectGithub, refresh } = useAuth();
-  return (
-    <Modal open={open} onClose={onClose} title="Account Settings">
-      <div className="space-y-4">
-        <div className="rounded-lg border border-border p-3">
-          <div className="text-xs text-muted-foreground">Signed in as</div>
-          <div className="mt-1 font-semibold text-foreground">{user?.name || user?.email || "Unknown user"}</div>
-          <div className="text-xs text-muted-foreground">{user?.email}</div>
-        </div>
-        <div className="rounded-lg border border-border p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <div><div className="font-semibold text-foreground">GitHub</div><div className="text-xs text-muted-foreground">{user?.github_connected ? `Connected${user.github_login ? ` as ${user.github_login}` : ""}` : "Not connected"}</div></div>
-            <span className={cn("rounded-full px-2 py-1 text-xs font-semibold", user?.github_connected ? "bg-accent text-brand" : "bg-muted text-muted-foreground")}>{user?.github_connected ? "Connected" : "Required"}</span>
-          </div>
-          <button onClick={connectGithub} className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"><Github size={13} /> {user?.github_connected ? "Reconnect GitHub" : "Connect GitHub"}</button>
-        </div>
-        <div className="flex justify-between gap-2 border-t border-border pt-3">
-          <button onClick={() => refresh()} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted"><RefreshCw size={14} /> Refresh session</button>
-          <button onClick={onSignOut} className="inline-flex items-center gap-2 rounded-full bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground"><LogOut size={14} /> Logout</button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
 /* ---------------- Page ---------------- */
 export default function Index() {
   const navigate = useNavigate();
@@ -945,7 +927,6 @@ export default function Index() {
   const [tab, setTab] = useState("portfolio");
   const [sort, setSort] = useState("Newest");
   const [showLink, setShowLink] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [disconnectTarget, setDisconnectTarget] = useState<Project | null>(null);
   const [workspaceStats, setWorkspaceStats] = useState<WorkspaceStats>({
     totalProjects: 0,
@@ -1096,10 +1077,18 @@ export default function Index() {
   return (
     <div className="flex min-h-screen w-full overflow-hidden bg-background">
       <LoadingSpinner visible={loading} />
-      <IconRail tab={tab} setTab={setTab} alertsCount={0} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
+      <IconRail tab={tab} setTab={setTab} alertsCount={0} onSettingsNavigate={() => navigate('/settings')} onSignOut={signOut} />
       <MiddleSidebar projects={projects} activeId={projectId} onSelect={handleProjectSelect} />
       <main className="relative min-w-0 flex-1 overflow-y-auto bg-card pb-24 lg:ml-[19.5rem]">
-        <TopBar dark={dark} toggle={toggle} project={activeProject} onBell={() => setTab("alerts")} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
+        <TopBar
+          dark={dark}
+          toggle={toggle}
+          project={activeProject}
+          onBell={() => setTab("alerts")}
+          onSettingsNavigate={() => navigate('/settings')}
+          onProfileNavigate={() => navigate('/profile')}
+          onSignOut={signOut}
+        />
         <ErrorBanner error={error} onRetry={refetch} />
         <div className="flex flex-wrap items-center justify-between gap-2 px-6 pt-4">
           <div>
@@ -1123,8 +1112,7 @@ export default function Index() {
       </main>
 
       <LinkRepoModal open={showLink} onClose={() => setShowLink(false)} onLinked={refetch} />
-      <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} onSignOut={signOut} />
-      <DisconnectModal isOpen={Boolean(disconnectTarget)} onClose={() => setDisconnectTarget(null)} onConfirm={handleDisconnect} repoFullName={disconnectTarget ? getRepoFullName(disconnectTarget) : ""} />
+      <DisconnectModal isOpen={Boolean(disconnectTarget)} onClose={() => setDisconnectTarget(null)} onConfirm={handleDisconnect} projectName={disconnectTarget ? getRepoName(disconnectTarget) : ""} />
     </div>
   );
 }
