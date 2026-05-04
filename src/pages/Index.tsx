@@ -871,8 +871,19 @@ export default function Index() {
     );
   }
   if (!token) return <Navigate to="/login" replace />;
-  if (!user) return <Navigate to="/connect-github" replace />;
-  if (!user.github_connected) return <Navigate to="/connect-github" replace />;
+  if (!user) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-brand text-primary-foreground shadow-brand">
+          <Activity size={24} className="animate-pulse" />
+        </div>
+        <h2 className="text-lg font-semibold text-foreground">Finalizing sign-in</h2>
+        <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 size={14} className="animate-spin text-brand" /> Restoring session...
+        </p>
+      </div>
+    );
+  }
 
   const showEmpty = !loading && projects.length === 0;
 
