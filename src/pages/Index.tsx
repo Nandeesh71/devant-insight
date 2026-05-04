@@ -1135,7 +1135,7 @@ export default function Index() {
 
       <LinkRepoModal open={showLink} onClose={() => setShowLink(false)} onLinked={refetch} />
       <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} onSignOut={signOut} />
-      <DisconnectModal isOpen={Boolean(disconnectTarget)} onClose={() => setDisconnectTarget(null)} onConfirm={handleDisconnect} projectName={disconnectTarget ? getRepoName(disconnectTarget) : ""} />
+      <DisconnectModal isOpen={Boolean(disconnectTarget)} onClose={() => setDisconnectTarget(null)} onConfirm={handleDisconnect} repoFullName={disconnectTarget ? getRepoFullName(disconnectTarget) : ""} />
     </div>
   );
 }

@@ -6,15 +6,15 @@ interface DisconnectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => Promise<void>;
-  projectName: string;
+  repoFullName: string;
 }
 
-export function DisconnectModal({ isOpen, onClose, onConfirm, projectName }: DisconnectModalProps) {
+export function DisconnectModal({ isOpen, onClose, onConfirm, repoFullName }: DisconnectModalProps) {
   const [inputValue, setInputValue] = React.useState("");
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
 
-  const confirmationString = `delete ${projectName}`;
+  const confirmationString = `delete ${repoFullName}`;
   const isMatch = inputValue === confirmationString;
 
   React.useEffect(() => {
@@ -52,61 +52,60 @@ export function DisconnectModal({ isOpen, onClose, onConfirm, projectName }: Dis
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
       <div
-        className="absolute inset-0 bg-[oklch(10%_0.01_350_/_0.5)] transition-opacity duration-200 animate-in fade-in"
+        className="absolute inset-0 bg-transparent transition-opacity duration-200 animate-in fade-in"
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex w-full max-w-full flex-col rounded-t-2xl border border-border bg-background p-6 shadow-[0_24px_64px_rgba(0,0,0,0.18)] duration-200 animate-in slide-in-from-bottom-8 sm:w-[440px] sm:rounded-2xl sm:p-8 sm:zoom-in-95">
+      <div className="relative z-10 w-full max-w-xl rounded-2xl shadow-2xl p-8 bg-white dark:bg-card border border-gray-200 dark:border-gray-700 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
         {isSuccess ? (
           <div className="flex flex-col items-center justify-center py-8 text-center animate-in zoom-in-95">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CheckCircle size={32} strokeWidth={1.5} />
             </div>
-            <h3 className="text-xl font-semibold text-foreground">Disconnected</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Nandeesh71/{projectName} disconnected</p>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Disconnected</h3>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{repoFullName} disconnected</p>
           </div>
         ) : (
           <>
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-                <Unplug size={24} strokeWidth={1.5} />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">Disconnect Repository</h2>
-              <p className="mt-2 max-w-[34ch] text-sm leading-relaxed text-muted-foreground">
-                This will permanently unlink Nandeesh71/{projectName} from your project. This action cannot be undone.
-              </p>
-              
-              <div className="mt-4 flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
-                <GitFork size={14} strokeWidth={1.5} />
-                Nandeesh71/{projectName}
-              </div>
+            <div className="bg-red-50 dark:bg-red-950 rounded-full p-3 w-fit mx-auto">
+              <Unplug className="text-red-500 w-6 h-6" strokeWidth={1.5} />
+            </div>
+            <h2 className="text-xl font-bold text-center text-gray-900 dark:text-white">
+              Disconnect Repository
+            </h2>
+            <p className="text-sm text-center text-gray-600 dark:text-gray-400">
+              This will permanently unlink this repository from your project. This action cannot be undone.
+            </p>
+            
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-mono font-medium mx-auto max-w-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-600 transition-colors cursor-default">
+              <GitFork className="shrink-0 w-4 h-4" />
+              <span className="truncate">{repoFullName}</span>
             </div>
 
-            <div className="mt-8 flex flex-col gap-2">
-              <label className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
-                To confirm, type <span className="rounded-md bg-accent px-1.5 py-0.5 font-mono text-foreground">delete {projectName}</span>
-              </label>
-              <input
-                autoFocus
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                disabled={isDeleting}
-                className={cn(
-                  "w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20",
-                  isMatch ? "border-destructive bg-destructive/5" : ""
-                )}
-                placeholder={`delete ${projectName}`}
-              />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              To confirm, type
+            </p>
+
+            <div className="w-full px-3 py-2 rounded-lg text-sm font-mono bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 select-all break-all">
+              delete {repoFullName}
             </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <input
+              autoFocus
+              className="w-full px-3 py-2 rounded-lg text-sm font-mono bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-400 placeholder:text-gray-400"
+              placeholder={`delete ${repoFullName}`}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              disabled={isDeleting}
+            />
+
+            <div className="flex gap-3 w-full mt-2">
               <button
                 onClick={onClose}
                 disabled={isDeleting}
-                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md border border-border bg-transparent px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 disabled:opacity-50"
               >
                 <X size={16} strokeWidth={1.5} /> Cancel
               </button>
@@ -114,20 +113,16 @@ export function DisconnectModal({ isOpen, onClose, onConfirm, projectName }: Dis
                 onClick={handleConfirm}
                 disabled={!isMatch || isDeleting}
                 className={cn(
-                  "flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors",
+                  "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm text-white transition-colors duration-150",
                   isMatch && !isDeleting
-                    ? "bg-destructive shadow-sm hover:bg-destructive/90"
-                    : "cursor-not-allowed bg-destructive/40"
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-red-500 opacity-50 cursor-not-allowed pointer-events-none"
                 )}
               >
                 {isDeleting ? (
-                  <>
-                    <LoaderCircle size={16} className="animate-spin" strokeWidth={1.5} /> Disconnecting...
-                  </>
+                  <><LoaderCircle size={16} className="animate-spin" strokeWidth={1.5} /> Disconnecting...</>
                 ) : (
-                  <>
-                    <Unplug size={16} strokeWidth={1.5} /> Disconnect
-                  </>
+                  <><Unplug size={16} strokeWidth={1.5} /> Disconnect</>
                 )}
               </button>
             </div>
