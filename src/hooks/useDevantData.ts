@@ -150,7 +150,7 @@ export function useDevantData(): DevantData {
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [projectId, tick, setProjectId, hydratedProjects, projects]);
+  }, [projectId, tick, setProjectId]);
 
   return {
     loading,

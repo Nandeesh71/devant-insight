@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // If we already have user data (from local cache or fresh callback),
     // refresh silently to avoid clearing a valid in-flight session.
     void refresh({ silent: !!user });
-  }, [token, user, refresh]);
+  }, [token, user]);
 
   const setSession = (t: string, u?: AuthUser) => {
     localStorage.setItem(TOKEN_KEY, t);
