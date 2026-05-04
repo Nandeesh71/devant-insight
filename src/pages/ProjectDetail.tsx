@@ -558,16 +558,15 @@ export default function ProjectDetail() {
                     <div className="py-12 text-center text-muted-foreground">No commits returned for this project yet.</div>
                   ) : (
                     <div className="space-y-3">
-<<<<<<< HEAD
-                      {recentCommits.map((commit) => {
-                        const key = String(commit.sha || commit.id || commit.message);
-                        const msg = String(commit.message || 'Untitled commit');
-                        const sha = String(commit.sha || commit.id || '').slice(0, 7);
-                        const author = String(commit.author_github_username || commit.author || 'Unknown');
-                        const linesAdded = String(commit.lines_added || 0);
-                        const linesRemoved = String(commit.lines_removed || 0);
-                        const aiTag = String(commit.ai_type_tag || '') || null;
-                        const time = String(commit.timestamp || commit.date || '—');
+                      {(recentCommits.length > 0 ? recentCommits : commitsList).map((commit) => {
+                        const key = String((commit as any).sha || (commit as any).id || (commit as any).message);
+                        const msg = String((commit as any).message || 'Untitled commit');
+                        const sha = String((commit as any).sha || (commit as any).id || '').slice(0, 7);
+                        const author = String((commit as any).author_github_username || (commit as any).author || 'Unknown');
+                        const linesAdded = String((commit as any).lines_added || 0);
+                        const linesRemoved = String((commit as any).lines_removed || 0);
+                        const aiTag = String((commit as any).ai_type_tag || '') || null;
+                        const time = String((commit as any).timestamp || (commit as any).date || '—');
                         return (
                           <div key={key} className="flex items-start justify-between rounded-lg border border-border/60 p-3">
                             <div className="flex items-start gap-3 min-w-0">
@@ -593,29 +592,13 @@ export default function ProjectDetail() {
                             </div>
                             <div className="flex flex-col items-end gap-2">
                               <span className="text-xs text-muted-foreground">{time}</span>
-                              <a href={String(commit.url || getProjectCommitsUrl(resolvedProject) || `https://github.com/${owner}/${repo}/commit/${commit.sha}`)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
+                              <a href={String((commit as any).url || getProjectCommitsUrl(resolvedProject) || `https://github.com/${owner}/${repo}/commit/${(commit as any).sha}`)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
                                 <ExternalLink size={14} />
                               </a>
                             </div>
                           </div>
                         );
                       })}
-=======
-                      {(recentCommits.length > 0 ? recentCommits : commitsList).map((commit) => (
-                        <div key={String((commit as any).sha || (commit as any).id || (commit as any).message)} className="rounded-lg border border-border/60 p-3">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="font-medium text-foreground">{String((commit as any).message || "Untitled commit")}</div>
-                            <span className="text-xs text-muted-foreground">{String((commit as any).timestamp || (commit as any).date || "—")}</span>
-                          </div>
-                          <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                            <span>Author: {String((commit as any).author_github_username || (commit as any).author || "Unknown")}</span>
-                            <span>SHA: {String((commit as any).sha || (commit as any).id || "—").slice(0, 8)}</span>
-                            <span>AI tag: {String((commit as any).ai_type_tag || "Commit")}</span>
-                            <span>Lines +{String((commit as any).lines_added || 0)} / -{String((commit as any).lines_removed || 0)}</span>
-                          </div>
-                        </div>
-                      ))}
->>>>>>> 2efafaf (feat(ui): show deployments and fallback commit fetch)
                     </div>
                   )}
                 </div>
