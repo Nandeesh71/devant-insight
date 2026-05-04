@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import {
   Activity,
   AlertCircle,
@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Database,
+  DollarSign,
   ExternalLink,
   Clock3,
   Folder,
@@ -40,6 +41,7 @@ import {
   X,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DisconnectModal } from "@/components/ui/disconnect-modal";
 import { LoadingSpinner, ErrorBanner } from "@/components/StatusBanners";
@@ -116,7 +118,23 @@ function getProjectCommitsUrl(project: Project | null) {
 
 function getRepoName(project: Project | null) {
   if (!project) return "—";
-  return String(project.repo_full_name || project.github_repo || project.repository || project.name || "Untitled project");
+  return String(project.github_repo || project.repository || project.name || project.repo_full_name || "Untitled project");
+}
+
+function getRepoFullName(project: Project | null) {
+  if (!project) return "—";
+  return String(project.repo_full_name || project.github_repo_full_name || project.repository || project.name || "Untitled project");
+}
+
+function getOwnerRepo(project: Project | null): { owner: string; repo: string } {
+  const full = getRepoFullName(project);
+  if (full.includes("/")) {
+    const [owner, ...rest] = full.split("/");
+    return { owner, repo: rest.join("/") };
+  }
+  const owner = String(project?.owner || project?.github_owner || "owner");
+  const repo = getRepoName(project);
+  return { owner, repo };
 }
 
 function toUiCommit(commit: Commit): UiCommit {
@@ -247,9 +265,16 @@ function IconRail({ tab, setTab, alertsCount, onSettings, onSignOut }: { tab: st
   );
 }
 
-function MiddleSidebar({ projects, activeId, onSelect }: { projects: Project[]; activeId: string | null; onSelect: (id: string) => void }) {
+function MiddleSidebar({ projects, activeId, onSelect }: { projects: Project[]; activeId: string | null; onSelect: (project: Project) => void }) {
+  const location = useLocation();
   const [query, setQuery] = useState("");
-  const filtered = projects.filter((p) => getRepoName(p).toLowerCase().includes(query.toLowerCase()));
+  const filtered = projects.filter((p) => getRepoFullName(p).toLowerCase().includes(query.toLowerCase()));
+
+  const isRepoActive = (repoFullName: string) => {
+    const [owner, ...repoParts] = repoFullName.split("/");
+    const repo = repoParts.join("/");
+    return owner && repo && location.pathname === `/${owner}/${repo}`;
+  };
   return (
     <aside className="hidden w-64 shrink-0 flex-col bg-sidebar-bg text-primary-foreground lg:flex">
       <div className="flex items-center gap-2 px-4 pb-3 pt-4">
@@ -262,7 +287,7 @@ function MiddleSidebar({ projects, activeId, onSelect }: { projects: Project[]; 
         </div>
       </div>
       <div className="px-3">
-        <button type="button" className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-primary-foreground shadow-brand transition-all duration-150 ease-out hover:bg-brand/90 hover:shadow-lg">
+        <button type="button" className={cn("flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-150 ease-out", location.pathname === "/" ? "bg-brand text-primary-foreground shadow-brand hover:bg-brand/90 hover:shadow-lg" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground")}>
           <PieChart size={14} strokeWidth={1.5} /><span className="flex-1 text-left">Overview</span>
         </button>
       </div>
@@ -274,10 +299,10 @@ function MiddleSidebar({ projects, activeId, onSelect }: { projects: Project[]; 
           <div className="rounded-lg border border-sidebar-tree p-3 text-xs text-sidebar-text">No linked repositories yet.</div>
         )}
         {filtered.map((p) => {
-          const active = activeId === p.id;
-          const repo = getRepoName(p);
+          const active = activeId === p.id || isRepoActive(getRepoFullName(p));
+          const repo = getRepoFullName(p);
           return (
-            <button key={p.id} type="button" onClick={() => onSelect(p.id)} className={cn("mb-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-[13px] transition-all duration-150 ease-out", active ? "bg-primary/15 text-primary-foreground" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground")}>
+            <button key={p.id} type="button" onClick={() => onSelect(p)} className={cn("mb-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-[13px] transition-all duration-150 ease-out", active ? "bg-primary/15 text-primary-foreground" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground")}>
               <Folder size={14} strokeWidth={1.5} className="shrink-0" />
               <span className="min-w-0 flex-1 truncate text-left">{repo}</span>
             </button>
@@ -330,9 +355,10 @@ function TopBar({ dark, toggle, project, onBell, onSettings, onSignOut }: { dark
           </TooltipTrigger>
           <TooltipContent side="bottom" className="border-border bg-card text-foreground">Logout</TooltipContent>
         </Tooltip>
-        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-accent text-xs font-bold text-brand">
-          {user?.avatar_url ? <img src={user.avatar_url} alt="User avatar" className="h-full w-full object-cover" /> : (user?.name || user?.email || "U").slice(0, 1).toUpperCase()}
-        </div>
+        <Avatar className="h-9 w-9 border border-border/60">
+          <AvatarImage src={user?.avatar_url || ""} alt="User avatar" />
+          <AvatarFallback className="bg-accent text-xs font-bold text-brand">{(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}</AvatarFallback>
+        </Avatar>
       </div>
       </div>
     </TooltipProvider>
@@ -369,7 +395,7 @@ function StatCards({ health, finance, dora, loading }: Pick<ReturnType<typeof us
         </div>
       </div>
       <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><AlertCircle size={12} strokeWidth={1.5} /> Budget · Burn · Runway</div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><DollarSign size={12} strokeWidth={1.5} /> Budget · Burn · Runway</div>
         <div className="mt-1 text-lg font-semibold text-foreground">
           {finance?.budget ? `₹${Math.round(finance.spent || 0).toLocaleString('en-IN')}` : "Not configured"} <span className="text-xs font-medium text-muted-foreground">{finance?.budget ? `/ ₹${Math.round(finance.budget).toLocaleString('en-IN')}` : ""}</span>
         </div>
@@ -379,19 +405,20 @@ function StatCards({ health, finance, dora, loading }: Pick<ReturnType<typeof us
             <div className="mt-1.5 text-[11px] text-muted-foreground">{burn ?? "—"}% spent · {finance?.runway_months == null ? "No runway data" : `${finance.runway_months}mo`}</div>
           </>
         )}
+        {!finance?.budget && <button type="button" className="mt-2 text-left text-[13px] font-semibold text-brand transition-opacity hover:opacity-80">Set Budget →</button>}
       </div>
       <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card transition-all duration-200 hover:shadow-lift">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Info size={12} strokeWidth={1.5} /> DORA Metrics</div>
-        <div className="mt-3 grid grid-cols-2 gap-0 border border-border/50 divide-x divide-border/50 divide-y divide-border/50">
-          <div className="bg-card p-2.5 text-[11px]">
+        <div className="mt-3 grid grid-cols-2 gap-0">
+          <div className="border-b border-r border-border/60 bg-card p-2.5 text-[11px]">
             <div className="flex items-center gap-1.5 text-muted-foreground"><Zap size={12} strokeWidth={1.5} /> Deploy Freq</div>
             <div className="mt-1 font-semibold text-foreground">{dora?.deployment_frequency?.value ?? "—"}</div>
           </div>
-          <div className="bg-card p-2.5 text-[11px]">
+          <div className="border-b border-border/60 bg-card p-2.5 text-[11px]">
             <div className="flex items-center gap-1.5 text-muted-foreground"><Clock3 size={12} strokeWidth={1.5} /> Lead Time</div>
             <div className="mt-1 font-semibold text-foreground">{dora?.change_lead_time?.value ?? "—"}</div>
           </div>
-          <div className="bg-card p-2.5 text-[11px]">
+          <div className="border-r border-border/60 bg-card p-2.5 text-[11px]">
             <div className="flex items-center gap-1.5 text-muted-foreground"><AlertTriangle size={12} strokeWidth={1.5} /> Failure Rate</div>
             <div className="mt-1 font-semibold text-foreground">{dora?.change_failure_rate?.value ?? "—"}</div>
           </div>
@@ -427,7 +454,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
           )}
         </div>
       </div>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] items-stretch gap-4 pb-2">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] items-stretch gap-4 pb-2">
         {loading && projects.length === 0 ? (
           [1, 2, 3].map((i) => (
             <div key={i} className="relative flex h-full min-h-[240px] flex-col rounded-[18px] border-[1.5px] border-transparent bg-card p-4 shadow-card">
@@ -450,6 +477,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
           sorted.map((p) => {
             const active = p.id === activeId;
             const repo = getRepoName(p);
+            const repoFull = getRepoFullName(p);
             const repoUrl = getProjectRepoUrl(p);
             const commitsUrl = getProjectCommitsUrl(p);
             return (
@@ -471,20 +499,25 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
                   aria-label="Disconnect repository"
                   title="Disconnect repository"
                   onClick={(e) => { e.stopPropagation(); onRequestDisconnect(p); }}
-                  className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors duration-150 ease-out hover:bg-destructive/10 hover:text-destructive"
+                  className="absolute right-[10px] top-[10px] z-10 flex h-7 w-7 items-center justify-center rounded-[7px] border border-transparent bg-transparent text-muted-foreground transition-colors duration-150 ease-out hover:border-[#fecaca] hover:bg-[#fff1f2] hover:text-[#ef4444]"
                 >
                   <Unplug size={14} strokeWidth={1.5} />
                 </button>
 
                 <div className="flex items-start justify-between gap-3 pr-10">
-                  <div className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-lg bg-accent text-brand">
-                    <GitFork size={16} strokeWidth={1.5} className={cn("transition-colors", active ? "text-brand" : "text-muted-foreground")} />
+                  <div className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-lg bg-[#f5f3ff] text-[#7c3aed]">
+                    <GitFork size={16} strokeWidth={1.5} className="text-[#7c3aed]" />
                   </div>
                 </div>
 
                 <div className="mt-3 space-y-1.5">
                   <div className="truncate text-[13px] font-semibold text-foreground">{repo}</div>
-                  <div className="truncate text-[11px] leading-4 text-muted-foreground">{String(p.description || p.default_branch || p.status || "Linked from GitHub")}</div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <p className="truncate text-[11px] leading-4 text-muted-foreground">{repoFull}</p>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="border-border bg-card text-foreground">{repoFull}</TooltipContent>
+                  </Tooltip>
                 </div>
 
                 <div className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-[10px] py-[3px] text-[12px] font-semibold text-[#7c3aed]">
@@ -492,7 +525,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
                   <span>Real data</span>
                 </div>
 
-                <div className="mt-auto flex items-center gap-1.5 pt-4">
+                <div className="mt-auto flex items-center gap-1.5 pt-[10px]">
                   <button
                     type="button"
                     aria-label="Open GitHub repository"
@@ -806,8 +839,7 @@ export default function Index() {
 
   const handleProjectSelect = (p: Project) => {
     setProjectId(p.id);
-    const repo = getRepoName(p);
-    const owner = p.owner || "owner";
+    const { owner, repo } = getOwnerRepo(p);
     navigate(`/${owner}/${repo}`);
   };
 
@@ -847,7 +879,7 @@ export default function Index() {
     <div className="flex min-h-screen w-full overflow-hidden bg-background">
       <LoadingSpinner visible={loading} />
       <IconRail tab={tab} setTab={setTab} alertsCount={0} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
-      <MiddleSidebar projects={projects} activeId={projectId} onSelect={setProjectId} />
+      <MiddleSidebar projects={projects} activeId={projectId} onSelect={handleProjectSelect} />
       <main className="relative min-w-0 flex-1 overflow-y-auto bg-card pb-24">
         <TopBar dark={dark} toggle={toggle} project={activeProject} onBell={() => setTab("alerts")} onSettings={() => setShowSettings(true)} onSignOut={signOut} />
         <ErrorBanner error={error} onRetry={refetch} />

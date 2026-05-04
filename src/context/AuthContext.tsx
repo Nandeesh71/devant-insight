@@ -102,13 +102,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInGoogle = () => {
     if (!isSupabaseConfigured) {
       const message = encodeURIComponent("Supabase auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.");
-      window.location.href = `${window.location.origin}/#/auth/callback?error=${message}`;
+      window.location.href = `${window.location.origin}/auth/callback?error=${message}`;
       return;
     }
     void supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/#/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
   };

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +14,12 @@ import ConnectGithub from "./pages/ConnectGithub";
 
 const queryClient = new QueryClient();
 
+const LegacyOwnerRouteRedirect = () => {
+  const { owner, repo } = useParams<{ owner: string; repo: string }>();
+  if (!owner || !repo) return <Navigate to="/" replace />;
+  return <Navigate to={`/${owner}/${repo}`} replace />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -21,17 +27,15 @@ const App = () => (
       <Sonner />
       <ProjectProvider>
         <AuthProvider>
-          <HashRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/:owner/:repo" element={<ProjectDetail />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/auth/callback/*" element={<AuthCallback />} />
-              <Route path="/connect-github" element={<ConnectGithub />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </HashRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/connect-github" element={<ConnectGithub />} />
+            <Route path="/owner/:owner/:repo" element={<LegacyOwnerRouteRedirect />} />
+            <Route path="/:owner/:repo" element={<ProjectDetail />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </AuthProvider>
       </ProjectProvider>
     </TooltipProvider>

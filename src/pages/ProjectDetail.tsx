@@ -84,6 +84,9 @@ export default function ProjectDetail() {
   const [tab, setTab] = useState("commits");
   const [search, setSearch] = useState("");
   const [disconnectTarget, setDisconnectTarget] = useState<Project | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [summaryData, setSummaryData] = useState<Record<string, unknown> | null>(null);
 
   // Find the current project by repo name
   const currentProject = useMemo(
@@ -100,6 +103,31 @@ export default function ProjectDetail() {
     }
   }, [owner, repo, navigate]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchProjectDetail(repoOwner: string, repoName: string) {
+      setSummaryLoading(true);
+      setSummaryError(null);
+      try {
+        const summary = await apiClient.get<Record<string, unknown>>(`/api/projects/${repoOwner}/${repoName}/summary`);
+        if (!cancelled) setSummaryData(summary);
+      } catch (e) {
+        if (!cancelled) setSummaryError((e as Error).message);
+      } finally {
+        if (!cancelled) setSummaryLoading(false);
+      }
+    }
+
+    if (owner && repo) {
+      fetchProjectDetail(owner, repo);
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [owner, repo]);
+
   const handleDisconnect = async () => {
     if (!currentProject) return;
 
@@ -113,7 +141,7 @@ export default function ProjectDetail() {
     }
   };
 
-  if (loading) {
+  if (loading || summaryLoading) {
     return <ProjectDetailSkeleton />;
   }
 
@@ -184,7 +212,7 @@ export default function ProjectDetail() {
         </div>
 
         <main className="pb-24">
-          <ErrorBanner error={error} onRetry={refetch} />
+          <ErrorBanner error={error || summaryError} onRetry={refetch} />
 
           {/* Metrics Row */}
           <section className="grid grid-cols-1 gap-3 px-6 py-6 md:grid-cols-3">
@@ -229,20 +257,20 @@ export default function ProjectDetail() {
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Info size={12} strokeWidth={1.5} /> DORA Metrics
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-0 border border-border/50 divide-x divide-border/50 divide-y divide-border/50">
-                <div className="bg-card p-2.5 text-[11px]">
+              <div className="mt-3 grid grid-cols-2 gap-0">
+                <div className="border-b border-r border-border/60 bg-card p-2.5 text-[11px]">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Zap size={12} strokeWidth={1.5} /> Deploy Freq
                   </div>
                   <div className="mt-1 font-semibold text-foreground">{dora?.deployment_frequency?.value ?? "—"}</div>
                 </div>
-                <div className="bg-card p-2.5 text-[11px]">
+                <div className="border-b border-border/60 bg-card p-2.5 text-[11px]">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Clock size={12} strokeWidth={1.5} /> Lead Time
                   </div>
                   <div className="mt-1 font-semibold text-foreground">{dora?.change_lead_time?.value ?? "—"}</div>
                 </div>
-                <div className="bg-card p-2.5 text-[11px]">
+                <div className="border-r border-border/60 bg-card p-2.5 text-[11px]">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <AlertTriangle size={12} strokeWidth={1.5} /> Failure Rate
                   </div>
@@ -294,19 +322,19 @@ export default function ProjectDetail() {
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Total Commits</span>
-                  <span className="font-semibold text-foreground">—</span>
+                  <span className="font-semibold text-foreground">{String(((summaryData?.commits as Record<string, unknown> | undefined)?.total as number | string | undefined) ?? "—")}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Contributors</span>
-                  <span className="font-semibold text-foreground">—</span>
+                  <span className="font-semibold text-foreground">{String(((summaryData?.team as Record<string, unknown> | undefined)?.count as number | string | undefined) ?? "—")}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Open PRs</span>
-                  <span className="font-semibold text-foreground">—</span>
+                  <span className="font-semibold text-foreground">{String(((summaryData?.pull_requests as Record<string, unknown> | undefined)?.open as number | string | undefined) ?? "—")}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Issues</span>
-                  <span className="font-semibold text-foreground">—</span>
+                  <span className="font-semibold text-foreground">{String((summaryData?.open_issues as number | string | undefined) ?? "—")}</span>
                 </div>
               </div>
             </div>
