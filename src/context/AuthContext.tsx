@@ -70,7 +70,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const oauthRedirect = (provider: "google" | "github", mode: "login" | "connect" = "login") => {
-    const { API_BASE } = require("@/config/api");
     const redirect = encodeURIComponent(`${window.location.origin}/auth/callback`);
     const t = localStorage.getItem(TOKEN_KEY);
     const tokenParam = mode === "connect" && t ? `&token=${encodeURIComponent(t)}` : "";
