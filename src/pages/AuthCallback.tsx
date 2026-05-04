@@ -69,12 +69,20 @@ export default function AuthCallback() {
             try { const url = new URL(decoded); const q = new URLSearchParams(url.search); return { token: param(q, "token") || param(q, "access_token") || param(q, "jwt"), code: param(q, "code"), error: param(q, "error"), next: param(q, "next") }; } catch {}
           } catch {}
         }
+        // Handle Supabase style fragment: #/auth/callback#access_token=...
+        if (after.startsWith("#")) {
+          try {
+            const q = new URLSearchParams(after.slice(1));
+            return { token: param(q, "access_token") || param(q, "token") || param(q, "jwt"), code: param(q, "code"), error: param(q, "error"), next: param(q, "next") };
+          } catch {}
+        }
       }
 
       // last resort: parse any query-like segment in the hash
-      const hashQIdx = hash.indexOf("?");
+      const hashQIdx = Math.max(hash.indexOf("?"), hash.indexOf("#access_token"), hash.indexOf("#token"));
       if (hashQIdx !== -1) {
-        const q = new URLSearchParams(hash.slice(hashQIdx + 1));
+        const frag = hash.slice(hashQIdx + 1);
+        const q = new URLSearchParams(frag);
         return { token: param(q, "token") || param(q, "access_token") || param(q, "jwt"), code: param(q, "code"), error: param(q, "error"), next: param(q, "next") };
       }
 
