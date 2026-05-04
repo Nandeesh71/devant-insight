@@ -99,7 +99,9 @@ export default function AuthCallback() {
 
     if (token) {
       setSession(token, parsedUser);
-      refresh().finally(() => navigate(normalizeNext(next), { replace: true }));
+      // Use silent refresh so a transient backend validation failure doesn't
+      // immediately clear the session and send the user back to login.
+      refresh({ silent: true }).finally(() => navigate(normalizeNext(next), { replace: true }));
       return;
     }
 
@@ -125,7 +127,8 @@ export default function AuthCallback() {
           provider: "google",
           github_connected: false,
         });
-        refresh().finally(() => navigate(normalizeNext(next), { replace: true }));
+        // Silent refresh for the same reason as above.
+        refresh({ silent: true }).finally(() => navigate(normalizeNext(next), { replace: true }));
       }).catch((exchangeError) => {
         setError(exchangeError instanceof Error ? exchangeError.message : "Failed to complete Supabase sign-in");
       });
