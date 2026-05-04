@@ -50,6 +50,7 @@ export function useDevantData(): DevantData {
   const [dora, setDora] = useState<Dora | null>(null);
   const [health, setHealth] = useState<Health | null>(null);
   const [tick, setTick] = useState(0);
+  const [hydratedProjects, setHydratedProjects] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -101,6 +102,22 @@ export function useDevantData(): DevantData {
         setFinance(f);
         setDora(d);
         setHealth(h);
+
+        const commitTotal = Number((s as Record<string, unknown> | null)?.commits && typeof (s as Record<string, unknown>).commits === "object" ? ((s as Record<string, unknown>).commits as Record<string, unknown>).total : 0) || 0;
+        const needsHydration = commitTotal === 0 && !hydratedProjects[activeId];
+        const activeProject = ps.find((p) => p.id === activeId) as Record<string, unknown> | undefined;
+        const repoFullName = String(activeProject?.github_repo_full_name || activeProject?.repo_full_name || "");
+        if (needsHydration && repoFullName) {
+          try {
+            await apiClient.post(`/api/github/sync/${activeId}`);
+            if (cancelled) return;
+            setHydratedProjects((current) => ({ ...current, [activeId]: true }));
+            setTick((current) => current + 1);
+            return;
+          } catch {
+            setHydratedProjects((current) => ({ ...current, [activeId]: true }));
+          }
+        }
       } catch (e) {
         if (!cancelled) setError((e as Error).message);
       } finally {
@@ -111,7 +128,7 @@ export function useDevantData(): DevantData {
     return () => {
       cancelled = true;
     };
-  }, [projectId, tick, setProjectId]);
+  }, [projectId, tick, setProjectId, hydratedProjects, projects]);
 
   return {
     loading,
