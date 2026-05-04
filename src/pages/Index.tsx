@@ -42,7 +42,7 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { FolderIcon3D } from "@/components/ui/FolderIcon3D";
+import { FolderCard, FolderSkeleton } from "@/components/ui/folder";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DisconnectModal } from "@/components/ui/disconnect-modal";
 import { LoadingSpinner, ErrorBanner } from "@/components/StatusBanners";
@@ -464,23 +464,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] items-stretch gap-4 pb-2">
         {loading && projects.length === 0 ? (
-          [1, 2, 3].map((i) => (
-            <div key={i} className="relative flex h-full min-h-[240px] flex-col rounded-[18px] border-[1.5px] border-transparent bg-card p-4 shadow-card">
-              <div className="flex items-start justify-between gap-3">
-                <Skeleton className="h-[48px] w-[48px] rounded-xl" />
-                <Skeleton className="h-7 w-7 rounded-lg" />
-              </div>
-              <div className="mt-3 space-y-2">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-3 w-28" />
-              </div>
-              <Skeleton className="mt-3 h-6 w-24 rounded-full" />
-              <div className="mt-auto flex items-center gap-2 pt-4">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <Skeleton className="h-8 w-8 rounded-full" />
-              </div>
-            </div>
-          ))
+          [1, 2, 3].map((i) => <FolderSkeleton key={i} />)
         ) : (
           sorted.map((p) => {
             const active = p.id === activeId;
@@ -488,74 +472,31 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
             const repoFull = getRepoFullName(p);
             const repoUrl = getProjectRepoUrl(p);
             const commitsUrl = getProjectCommitsUrl(p);
+            
+            // Map the unknown fields carefully
+            const raw = p as Record<string, unknown>;
+            const commitsCount = typeof raw.commits_count === "number" ? raw.commits_count : 0;
+            const healthScore = typeof raw.health_score === "number" ? raw.health_score : undefined;
+            const budgetNum = typeof raw.budget === "number" ? raw.budget : undefined;
+            const budgetStr = budgetNum ? `₹${Math.round(budgetNum).toLocaleString('en-IN')}` : undefined;
+            const riskLevel = typeof raw.risk_level === "string" ? raw.risk_level : undefined;
+
             return (
-              <article
+              <FolderCard
                 key={p.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => onSelect(p)}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelect(p); }}
-                className={cn(
-                  "group relative flex h-full min-h-[240px] cursor-pointer flex-col rounded-[18px] border-[1.5px] border-transparent bg-card p-4 pt-[18px] text-left shadow-card transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lift",
-                  active
-                    ? "shadow-[0_0_0_1.5px_#7c3aed,0_4px_20px_rgba(124,58,237,0.12)]"
-                    : "shadow-card"
-                )}
-              >
-                <button
-                  type="button"
-                  aria-label="Disconnect repository"
-                  title="Disconnect repository"
-                  onClick={(e) => { e.stopPropagation(); onRequestDisconnect(p); }}
-                  className="absolute right-[10px] top-[10px] z-10 flex h-7 w-7 items-center justify-center rounded-[7px] border border-transparent bg-transparent text-muted-foreground transition-colors duration-150 ease-out hover:border-[#fecaca] hover:bg-[#fff1f2] hover:text-[#ef4444]"
-                >
-                  <Unplug size={14} strokeWidth={1.5} />
-                </button>
-
-                <div className="flex items-center justify-between gap-3 pr-10">
-                  <div className="h-[48px] w-[48px] shrink-0 transition-transform duration-200 ease-out group-hover:-translate-y-0.5">
-                    <FolderIcon3D size={48} />
-                  </div>
-                </div>
-
-                <div className="mt-3 space-y-1.5">
-                  <div className="truncate text-[13px] font-semibold text-foreground">{repo}</div>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <p className="truncate text-[11px] leading-4 text-muted-foreground">{repoFull}</p>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="border-border bg-card text-foreground">{repoFull}</TooltipContent>
-                  </Tooltip>
-                </div>
-
-                <div className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-[10px] py-[3px] text-[12px] font-semibold text-[#7c3aed]">
-                  <Database size={11} strokeWidth={1.8} />
-                  <span>Real data</span>
-                </div>
-
-                <div className="mt-auto flex items-center gap-1.5 pt-[10px]">
-                  <button
-                    type="button"
-                    aria-label="Open GitHub repository"
-                    title="Open GitHub repository"
-                    disabled={!repoUrl}
-                    onClick={(e) => { e.stopPropagation(); if (repoUrl) window.open(repoUrl, "_blank", "noopener,noreferrer"); }}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-transparent text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <Github size={14} strokeWidth={1.5} />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Open commit history"
-                    title="Open commit history"
-                    disabled={!commitsUrl}
-                    onClick={(e) => { e.stopPropagation(); if (commitsUrl) window.open(commitsUrl, "_blank", "noopener,noreferrer"); }}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-transparent text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <ExternalLink size={14} strokeWidth={1.5} />
-                  </button>
-                </div>
-              </article>
+                id={p.id}
+                title={repo}
+                fullName={repoFull}
+                commits={commitsCount}
+                healthScore={healthScore}
+                budget={budgetStr}
+                riskLevel={riskLevel}
+                repoUrl={repoUrl}
+                commitsUrl={commitsUrl}
+                isActive={active}
+                onSelect={() => onSelect(p)}
+                onDisconnect={() => onRequestDisconnect(p)}
+              />
             );
           })
         )}
