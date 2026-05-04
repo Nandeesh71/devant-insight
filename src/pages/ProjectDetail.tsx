@@ -75,6 +75,12 @@ function getProjectCommitsUrl(p: Project | undefined) {
   return repo ? `https://github.com/${owner}/${repo}/commits` : null;
 }
 
+function getRepoFullName(p: Project | undefined) {
+  if (!p) return "";
+  const raw = p as Record<string, unknown>;
+  return String(raw.repo_full_name || raw.github_repo_full_name || p.github_repo || p.name || p.repository_name || "");
+}
+
 export default function ProjectDetail() {
   const { owner, repo } = useParams<{ owner: string; repo: string }>();
   const navigate = useNavigate();
@@ -87,15 +93,28 @@ export default function ProjectDetail() {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [summaryData, setSummaryData] = useState<Record<string, unknown> | null>(null);
+  const [teamData, setTeamData] = useState<Record<string, unknown> | null>(null);
+  const [contributorsData, setContributorsData] = useState<Record<string, unknown>[]>([]);
 
   // Find the current project by repo name
   const currentProject = useMemo(
     () => projects.find((p) => {
+      const fullName = getRepoFullName(p);
       const name = getRepoName(p);
-      return name === repo || p.github_repo === repo;
+      return (
+        fullName === `${owner}/${repo}` ||
+        fullName.endsWith(`/${repo}`) ||
+        name === repo ||
+        p.github_repo === repo ||
+        p.repository_name === repo
+      );
     }) || null,
-    [projects, repo]
+    [projects, owner, repo]
   );
+
+  const summaryProject = (summaryData?.project as Project | undefined) || null;
+  const resolvedProject = currentProject || summaryProject;
+  const resolvedProjectId = resolvedProject?.id || null;
 
   useEffect(() => {
     if (!owner || !repo) {
@@ -128,24 +147,53 @@ export default function ProjectDetail() {
     };
   }, [owner, repo]);
 
+  useEffect(() => {
+    if (!resolvedProjectId) return;
+
+    let cancelled = false;
+    async function fetchPeople() {
+      try {
+        const [team, contributors] = await Promise.all([
+          apiClient.get<Record<string, unknown>>(`/api/team/${resolvedProjectId}`),
+          apiClient.get<Record<string, unknown>[]>(`/api/commits/${resolvedProjectId}/contributors`),
+        ]);
+
+        if (cancelled) return;
+        setTeamData(team);
+        setContributorsData(Array.isArray(contributors) ? contributors : []);
+      } catch {
+        if (!cancelled) {
+          setTeamData(null);
+          setContributorsData([]);
+        }
+      }
+    }
+
+    void fetchPeople();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvedProjectId]);
+
   const handleDisconnect = async () => {
-    if (!currentProject) return;
+    if (!resolvedProject) return;
 
     try {
-      await apiClient.delete(`/api/projects/${currentProject.id}`);
+      await apiClient.delete(`/api/projects/${resolvedProject.id}`);
       setDisconnectTarget(null);
-      toast({ title: "Repository disconnected", description: getRepoName(currentProject) });
+      toast({ title: "Repository disconnected", description: getRepoName(resolvedProject) });
       navigate("/");
     } catch (error) {
       toast({ title: "Disconnect failed", description: (error as Error).message, variant: "destructive" });
     }
   };
 
-  if (loading || summaryLoading) {
+  if (loading || (summaryLoading && !summaryData)) {
     return <ProjectDetailSkeleton />;
   }
 
-  if (!currentProject) {
+  if (!resolvedProject) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
@@ -160,6 +208,14 @@ export default function ProjectDetail() {
       </div>
     );
   }
+
+  const recentCommits = ((summaryData?.commits as Record<string, unknown> | undefined)?.recent as Record<string, unknown>[] | undefined) || [];
+  const teamMembers = (teamData?.members as Record<string, unknown>[] | undefined) || ((summaryData?.team as Record<string, unknown> | undefined)?.members as Record<string, unknown>[] | undefined) || [];
+  const repoMeta = teamData?.repo as Record<string, unknown> | undefined;
+  const repoOwner = repoMeta?.owner as Record<string, unknown> | undefined;
+  const repoCollaborators = (repoMeta?.collaborators as Record<string, unknown>[] | undefined) || [];
+  const repoContributors = (repoMeta?.contributors as Record<string, unknown>[] | undefined) || [];
+  const commitContributors = repoContributors.length > 0 ? repoContributors : contributorsData;
 
   return (
     <div className="min-h-screen bg-background">
@@ -304,15 +360,15 @@ export default function ProjectDetail() {
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar size={14} className="shrink-0" />
-                  <span>Created {currentProject.created_at || "—"}</span>
+                  <span>Created {(resolvedProject as Record<string, unknown>).created_at as string || "—"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Clock size={14} className="shrink-0" />
-                  <span>Updated {currentProject.updated_at || "—"}</span>
+                  <span>Updated {(resolvedProject as Record<string, unknown>).updated_at as string || "—"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <GitBranch size={14} className="shrink-0" />
-                  <span>{currentProject.default_branch || "main"}</span>
+                  <span>{(resolvedProject as Record<string, unknown>).default_branch as string || "main"}</span>
                 </div>
               </div>
             </div>
@@ -374,12 +430,120 @@ export default function ProjectDetail() {
                     <h3 className="mb-3 font-semibold text-destructive">Danger Zone</h3>
                     <p className="mb-4 text-sm text-muted-foreground">Permanently disconnect this repository from DevANT.</p>
                     <button
-                      onClick={() => setDisconnectTarget(currentProject)}
+                      onClick={() => setDisconnectTarget(resolvedProject)}
                       className="inline-flex items-center gap-2 rounded-lg bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground hover:bg-destructive/90 transition-colors"
                     >
                       <Unplug size={14} strokeWidth={1.5} />
                       Disconnect Repository
                     </button>
+                  </div>
+                </div>
+              ) : tab === "commits" ? (
+                <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">Recent Commits</h3>
+                      <p className="text-xs text-muted-foreground">Latest commits pulled from the project summary.</p>
+                    </div>
+                    <a
+                      href={getProjectCommitsUrl(resolvedProject) || `https://github.com/${owner}/${repo}/commits`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs font-semibold text-brand hover:underline"
+                    >
+                      Open on GitHub
+                    </a>
+                  </div>
+
+                  {recentCommits.length === 0 ? (
+                    <div className="py-12 text-center text-muted-foreground">No commits returned for this project yet.</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {recentCommits.map((commit) => (
+                        <div key={String(commit.sha || commit.id || commit.message)} className="rounded-lg border border-border/60 p-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="font-medium text-foreground">{String(commit.message || "Untitled commit")}</div>
+                            <span className="text-xs text-muted-foreground">{String(commit.timestamp || commit.date || "—")}</span>
+                          </div>
+                          <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                            <span>Author: {String(commit.author_github_username || commit.author || "Unknown")}</span>
+                            <span>SHA: {String(commit.sha || commit.id || "—").slice(0, 8)}</span>
+                            <span>AI tag: {String(commit.ai_type_tag || "Commit")}</span>
+                            <span>Lines +{String(commit.lines_added || 0)} / -{String(commit.lines_removed || 0)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : tab === "team" ? (
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
+                    <h3 className="mb-4 text-sm font-semibold text-foreground">Repository Owner</h3>
+                    {repoOwner ? (
+                      <div className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-brand text-primary-foreground font-semibold">
+                          {String(repoOwner.login || owner || "O").slice(0, 1).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="font-medium text-foreground">{String(repoOwner.login || owner)}</div>
+                          <div className="text-xs text-muted-foreground">{String(repoOwner.type || "Owner")}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">Owner data not available yet.</div>
+                    )}
+                  </div>
+
+                  <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
+                    <h3 className="mb-4 text-sm font-semibold text-foreground">Collaborators</h3>
+                    {repoCollaborators.length === 0 ? (
+                      <div className="text-sm text-muted-foreground">No collaborators returned from GitHub.</div>
+                    ) : (
+                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        {repoCollaborators.map((person) => (
+                          <div key={String((person as Record<string, unknown>).id || (person as Record<string, unknown>).login)} className="rounded-lg border border-border/60 p-3">
+                            <div className="font-medium text-foreground">{String((person as Record<string, unknown>).login || "Unknown")}</div>
+                            <div className="text-xs text-muted-foreground">{String((person as Record<string, unknown>).type || "User")}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
+                    <h3 className="mb-4 text-sm font-semibold text-foreground">Contributors</h3>
+                    {commitContributors.length === 0 ? (
+                      <div className="text-sm text-muted-foreground">No contributors returned from GitHub.</div>
+                    ) : (
+                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        {commitContributors.map((person) => (
+                          <div key={String((person as Record<string, unknown>).id || (person as Record<string, unknown>).login)} className="rounded-lg border border-border/60 p-3">
+                            <div className="font-medium text-foreground">{String((person as Record<string, unknown>).login || "Unknown")}</div>
+                            <div className="text-xs text-muted-foreground">Contributions: {String((person as Record<string, unknown>).contributions || (person as Record<string, unknown>).commit_count || 0)}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-lg border border-border/50 bg-card p-4 shadow-card">
+                    <h3 className="mb-4 text-sm font-semibold text-foreground">Team Members</h3>
+                    {teamMembers.length === 0 ? (
+                      <div className="text-sm text-muted-foreground">No database team members saved yet.</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {teamMembers.map((member) => (
+                          <div key={String((member as Record<string, unknown>).id || (member as Record<string, unknown>).github_username)} className="flex items-center justify-between rounded-lg border border-border/60 p-3">
+                            <div>
+                              <div className="font-medium text-foreground">{String((member as Record<string, unknown>).display_name || (member as Record<string, unknown>).github_username || "Member")}</div>
+                              <div className="text-xs text-muted-foreground">@{String((member as Record<string, unknown>).github_username || "unknown")}</div>
+                            </div>
+                            <div className="text-xs text-muted-foreground">{String((member as Record<string, unknown>).role || "developer")}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
