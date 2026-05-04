@@ -528,7 +528,7 @@ function ActiveProjects({ projects, activeId, onSelect, sort, setSort, loading, 
           )}
         </div>
       </div>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] items-stretch gap-4 pb-2">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] items-stretch gap-6 pb-2">
         {loading && projects.length === 0 ? (
           [1, 2, 3].map((i) => <FolderSkeleton key={i} />)
         ) : (
