@@ -336,7 +336,7 @@ function MiddleSidebar({ projects, activeId, onSelect }: { projects: Project[]; 
   );
 }
 
-function TopBar({ dark, toggle, project, onBell, onSettings, onSignOut }: { dark: boolean; toggle: () => void; project: Project | null; onBell: () => void; onSettings: () => void; onSignOut: () => void }) {
+function TopBar({ dark, toggle, project, onBell }: { dark: boolean; toggle: () => void; project: Project | null; onBell: () => void }) {
   const { user } = useAuth();
   return (
     <TooltipProvider delayDuration={150}>
@@ -356,18 +356,7 @@ function TopBar({ dark, toggle, project, onBell, onSettings, onSignOut }: { dark
           </TooltipTrigger>
           <TooltipContent side="bottom" className="border-border bg-card text-foreground">Alerts</TooltipContent>
         </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" aria-label="Settings" onClick={onSettings} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted"><Settings size={18} strokeWidth={1.5} /></button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Settings</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" aria-label="Logout" onClick={onSignOut} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted"><LogOut size={18} strokeWidth={1.5} /></button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Logout</TooltipContent>
-        </Tooltip>
+
         <Avatar className="h-9 w-9 border border-border/60">
           <AvatarImage src={user?.avatar_url || ""} alt="User avatar" />
           <AvatarFallback className="bg-accent text-xs font-bold text-brand">{(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}</AvatarFallback>
