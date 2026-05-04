@@ -10,12 +10,17 @@ export default function AuthCallback() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = params.get("token");
+    const token = params.get("token") || params.get("access_token") || params.get("jwt");
     const err = params.get("error");
     const next = params.get("next") || "/";
     if (err) { setError(err); return; }
     if (!token) { setError("Missing auth token in callback"); return; }
-    setSession(token);
+    const rawUser = params.get("user");
+    let parsedUser;
+    if (rawUser) {
+      try { parsedUser = JSON.parse(decodeURIComponent(rawUser)); } catch { parsedUser = undefined; }
+    }
+    setSession(token, parsedUser);
     refresh().finally(() => navigate(next, { replace: true }));
   }, [params, setSession, refresh, navigate]);
 
