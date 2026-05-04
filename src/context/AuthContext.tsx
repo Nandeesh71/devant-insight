@@ -14,6 +14,11 @@ export type AuthUser = {
 
 type MeResponse = AuthUser | { user: AuthUser };
 
+function unwrapUser(me: MeResponse | null): AuthUser | null {
+  if (!me) return null;
+  return typeof me === "object" && "user" in me ? me.user : me;
+}
+
 type Ctx = {
   user: AuthUser | null;
   token: string | null;
@@ -42,7 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const me = await apiClient.get<MeResponse>("/api/auth/me");
-      const nextUser = "user" in me ? me.user : me;
+      const nextUser = unwrapUser(me);
+      if (!nextUser) throw new Error("No user returned");
       setUser(nextUser);
       localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
     } catch {
