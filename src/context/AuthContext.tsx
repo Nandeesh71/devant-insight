@@ -12,6 +12,13 @@ export type AuthUser = {
   provider?: "google" | "github";
 };
 
+type MeResponse = AuthUser | { user: AuthUser };
+
+function unwrapUser(me: MeResponse | null): AuthUser | null {
+  if (!me) return null;
+  return typeof me === "object" && "user" in me ? me.user : me;
+}
+
 type Ctx = {
   user: AuthUser | null;
   token: string | null;
@@ -39,9 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!localStorage.getItem(TOKEN_KEY)) { setUser(null); setLoading(false); return; }
     try {
       setLoading(true);
-      const me = await apiClient.get<AuthUser>("/api/auth/me");
-      setUser(me);
-      localStorage.setItem(USER_KEY, JSON.stringify(me));
+      const me = await apiClient.get<MeResponse>("/api/auth/me");
+      const nextUser = unwrapUser(me);
+      if (!nextUser) throw new Error("No user returned");
+      setUser(nextUser);
+      localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
     } catch {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
@@ -57,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setSession = (t: string, u?: AuthUser) => {
     localStorage.setItem(TOKEN_KEY, t);
     setToken(t);
+    setLoading(!u);
     if (u) { localStorage.setItem(USER_KEY, JSON.stringify(u)); setUser(u); }
   };
 

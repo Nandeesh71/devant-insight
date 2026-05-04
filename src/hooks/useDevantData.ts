@@ -54,18 +54,37 @@ export function useDevantData(): DevantData {
   useEffect(() => {
     let cancelled = false;
     async function load() {
+      if (typeof window !== "undefined" && !localStorage.getItem("devant.token")) {
+        setProjects([]);
+        setSummary(null);
+        setCommits([]);
+        setTeam([]);
+        setFinance(null);
+        setDora(null);
+        setHealth(null);
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       setError(null);
       try {
         const ps = await apiClient.get<Project[]>("/api/projects");
         if (cancelled) return;
         setProjects(ps);
-        const activeId = projectId || ps[0]?.id;
+        const storedProjectExists = projectId ? ps.some((p) => p.id === projectId) : false;
+        const activeId = storedProjectExists ? projectId : ps[0]?.id;
         if (!activeId) {
+          setProjectId(null);
+          setSummary(null);
+          setCommits([]);
+          setTeam([]);
+          setFinance(null);
+          setDora(null);
+          setHealth(null);
           setLoading(false);
           return;
         }
-        if (!projectId && ps[0]?.id) setProjectId(ps[0].id);
+        if (!storedProjectExists) setProjectId(activeId);
 
         const [s, c, t, f, d, h] = await Promise.all([
           apiClient.get<Summary>(`/api/projects/${activeId}/summary`).catch(() => null),

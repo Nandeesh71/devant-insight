@@ -10,12 +10,17 @@ export default function AuthCallback() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = params.get("token");
+    const token = params.get("token") || params.get("access_token") || params.get("jwt");
     const err = params.get("error");
     const next = params.get("next") || "/";
     if (err) { setError(err); return; }
     if (!token) { setError("Missing auth token in callback"); return; }
-    setSession(token);
+    const rawUser = params.get("user");
+    let parsedUser;
+    if (rawUser) {
+      try { parsedUser = JSON.parse(decodeURIComponent(rawUser)); } catch { parsedUser = undefined; }
+    }
+    setSession(token, parsedUser);
     refresh().finally(() => navigate(next, { replace: true }));
   }, [params, setSession, refresh, navigate]);
 
@@ -24,7 +29,7 @@ export default function AuthCallback() {
       <div className="bg-card border border-border rounded-2xl p-8 max-w-sm w-full text-center shadow-lift">
         {error ? (
           <>
-            <AlertTriangle className="mx-auto text-red-500 mb-3" />
+            <AlertTriangle className="mx-auto text-destructive mb-3" />
             <h2 className="font-bold text-foreground mb-1">Sign-in failed</h2>
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
             <a href="/login" className="text-sm text-brand hover:underline">← Back to login</a>
