@@ -4,9 +4,12 @@ type Json = Record<string, unknown> | unknown[] | null;
 
 async function request<T>(method: string, path: string, body?: Json): Promise<T> {
   const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
-  const init: RequestInit = { method };
+  const headers: Record<string, string> = {};
+  const token = typeof window !== "undefined" ? localStorage.getItem("devant.token") : null;
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const init: RequestInit = { method, headers };
   if (body !== undefined && (method === "POST" || method === "PUT")) {
-    init.headers = { "Content-Type": "application/json" };
+    headers["Content-Type"] = "application/json";
     init.body = JSON.stringify(body);
   }
 
