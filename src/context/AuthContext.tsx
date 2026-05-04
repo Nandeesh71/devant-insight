@@ -29,7 +29,7 @@ type Ctx = {
   connectGithub: () => void;
   signOut: () => void;
   setSession: (token: string, user?: AuthUser) => void;
-  refresh: () => Promise<void>;
+  refresh: (opts?: { silent?: boolean }) => Promise<void>;
 };
 
 const TOKEN_KEY = "devant.token";
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const [loading, setLoading] = useState<boolean>(!!token && !user);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (opts?: { silent?: boolean }) => {
     // Prevent refresh storms: skip if no token, if already refreshing, or if last attempt was very recent
     const tokenExists = !!localStorage.getItem(TOKEN_KEY);
     if (!tokenExists) { setUser(null); setLoading(false); return; }
@@ -55,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (now - last < 2000) return; // avoid retrying faster than 2s
     (refresh as any)._lastAttempt = now;
     (refresh as any)._inProgress = true;
+    const silent = opts?.silent === true;
     try {
       setLoading(true);
       const me = await apiClient.get<MeResponse>("/api/auth/me");
@@ -63,10 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(nextUser);
       localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
     } catch {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      setToken(null);
-      setUser(null);
+      if (!silent) {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+        setToken(null);
+        setUser(null);
+      }
     } finally {
       (refresh as any)._inProgress = false;
       setLoading(false);
