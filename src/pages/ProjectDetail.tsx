@@ -95,6 +95,8 @@ export default function ProjectDetail() {
   const [summaryData, setSummaryData] = useState<Record<string, unknown> | null>(null);
   const [teamData, setTeamData] = useState<Record<string, unknown> | null>(null);
   const [contributorsData, setContributorsData] = useState<Record<string, unknown>[]>([]);
+  const [detailTick, setDetailTick] = useState(0);
+  const [hydrationAttempted, setHydrationAttempted] = useState(false);
 
   // Find the current project by repo name
   const currentProject = useMemo(
@@ -145,7 +147,7 @@ export default function ProjectDetail() {
     return () => {
       cancelled = true;
     };
-  }, [owner, repo]);
+  }, [owner, repo, detailTick]);
 
   useEffect(() => {
     if (!resolvedProjectId) return;
@@ -174,7 +176,27 @@ export default function ProjectDetail() {
     return () => {
       cancelled = true;
     };
-  }, [resolvedProjectId]);
+  }, [resolvedProjectId, detailTick]);
+
+  useEffect(() => {
+    if (!resolvedProjectId || summaryLoading || hydrationAttempted) return;
+
+    const commitTotal = Number(((summaryData?.commits as Record<string, unknown> | undefined)?.total as number | string | undefined) ?? 0);
+    if (commitTotal > 0) return;
+
+    let cancelled = false;
+    setHydrationAttempted(true);
+    void apiClient.post(`/api/github/sync/${resolvedProjectId}`).then(() => {
+      if (cancelled) return;
+      setDetailTick((current) => current + 1);
+    }).catch(() => {
+      if (!cancelled) setDetailTick((current) => current + 1);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvedProjectId, summaryData, summaryLoading, hydrationAttempted]);
 
   const handleDisconnect = async () => {
     if (!resolvedProject) return;
@@ -545,6 +567,63 @@ export default function ProjectDetail() {
                       </div>
                     )}
                   </div>
+                </div>
+              ) : tab === "alerts" ? (
+                <div className="space-y-3 rounded-lg border border-border/50 bg-card p-4 shadow-card">
+                  {[
+                    !(recentCommits.length > 0) && {
+                      title: "No recent commits",
+                      message: "GitHub commit history is still empty or sync has not completed yet.",
+                    },
+                    (health?.score ?? 0) < 60 && {
+                      title: "Health score needs attention",
+                      message: `Current health score is ${health?.score ?? 0}/100.`,
+                    },
+                    teamMembers.length === 0 && {
+                      title: "No team members stored",
+                      message: "Repository owner, collaborators, and contributors were not saved in the team table yet.",
+                    },
+                    ((summaryData?.pull_requests as Record<string, unknown> | undefined)?.open as number | string | undefined) && Number((summaryData?.pull_requests as Record<string, unknown> | undefined)?.open ?? 0) > 0 && {
+                      title: "Open pull requests",
+                      message: `${String(((summaryData?.pull_requests as Record<string, unknown> | undefined)?.open as number | string | undefined) ?? 0)} PRs are still open.`,
+                    },
+                    (finance?.burn_percent ?? 0) > 70 && {
+                      title: "Budget burn rising",
+                      message: `Burn is at ${finance?.burn_percent ?? 0}% with ${finance?.runway_months ?? "—"} months runway.`,
+                    },
+                  ].filter(Boolean).length === 0 ? (
+                    <div className="py-12 text-center text-muted-foreground">No active alerts for this project.</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {[
+                        !(recentCommits.length > 0) && {
+                          title: "No recent commits",
+                          message: "GitHub commit history is still empty or sync has not completed yet.",
+                        },
+                        (health?.score ?? 0) < 60 && {
+                          title: "Health score needs attention",
+                          message: `Current health score is ${health?.score ?? 0}/100.`,
+                        },
+                        teamMembers.length === 0 && {
+                          title: "No team members stored",
+                          message: "Repository owner, collaborators, and contributors were not saved in the team table yet.",
+                        },
+                        ((summaryData?.pull_requests as Record<string, unknown> | undefined)?.open as number | string | undefined) && Number((summaryData?.pull_requests as Record<string, unknown> | undefined)?.open ?? 0) > 0 && {
+                          title: "Open pull requests",
+                          message: `${String(((summaryData?.pull_requests as Record<string, unknown> | undefined)?.open as number | string | undefined) ?? 0)} PRs are still open.`,
+                        },
+                        (finance?.burn_percent ?? 0) > 70 && {
+                          title: "Budget burn rising",
+                          message: `Burn is at ${finance?.burn_percent ?? 0}% with ${finance?.runway_months ?? "—"} months runway.`,
+                        },
+                      ].filter(Boolean).map((alert) => (
+                        <div key={(alert as { title: string }).title} className="rounded-lg border border-border/60 p-3">
+                          <div className="font-medium text-foreground">{(alert as { title: string }).title}</div>
+                          <div className="text-sm text-muted-foreground">{(alert as { message: string }).message}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center text-muted-foreground">

@@ -741,7 +741,10 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
     const fullName = repo.full_name || repo.name;
     setLinking(fullName);
     try {
-      await apiClient.post("/api/github/link-repo", { repo: fullName, repo_full_name: fullName, github_repo_id: repo.id });
+      const result = await apiClient.post<{ success: boolean; project?: { id?: string } }>("/api/github/link-repo", { repo: fullName, repo_full_name: fullName, github_repo_id: repo.id });
+      if (result?.project?.id) {
+        await apiClient.post(`/api/github/sync/${result.project.id}`).catch(() => null);
+      }
       toast({ title: "Repository linked", description: fullName });
       onLinked();
       onClose();
