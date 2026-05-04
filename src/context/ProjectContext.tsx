@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 
 type Ctx = {
   projectId: string | null;
-  setProjectId: (id: string) => void;
+  setProjectId: (id: string | null) => void;
 };
 
 const ProjectContext = createContext<Ctx | undefined>(undefined);
@@ -15,10 +15,11 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     return localStorage.getItem(STORAGE_KEY);
   });
 
-  const setProjectId = (id: string) => {
+  const setProjectId = (id: string | null) => {
     setProjectIdState(id);
     try {
-      localStorage.setItem(STORAGE_KEY, id);
+      if (id) localStorage.setItem(STORAGE_KEY, id);
+      else localStorage.removeItem(STORAGE_KEY);
     } catch {
       /* ignore */
     }
