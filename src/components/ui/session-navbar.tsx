@@ -2,10 +2,11 @@
 
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import {
   Blocks,
+  ChevronLeft,
+  ChevronRight,
   ChevronsUpDown,
   FileClock,
   GraduationCap,
@@ -22,7 +23,7 @@ import {
   UserCog,
   UserSearch,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,382 +35,328 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-
 import { useAuth } from "@/context/AuthContext";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const sidebarVariants = {
-  open: {
-    width: "20rem",
-  },
-  closed: {
-    width: "3.05rem",
-  },
-};
-
-const contentVariants = {
-  open: { display: "block", opacity: 1 },
-  closed: { display: "block", opacity: 1 },
-};
-
-const variants = {
-  open: {
-    x: 0,
-    opacity: 1,
-    transition: {
-      x: { stiffness: 1000, velocity: -100 },
-    },
-  },
-  closed: {
-    x: -20,
-    opacity: 0,
-    transition: {
-      x: { stiffness: 100 },
-    },
-  },
-};
-
-const transitionProps = {
-  type: "tween",
-  ease: "easeOut",
-  duration: 0.2,
-  staggerChildren: 0.1,
-};
-
-const staggerVariants = {
-  open: {
-    transition: { staggerChildren: 0.03, delayChildren: 0.02 },
-  },
-};
-
-
 export function SessionNavBar() {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const location = useLocation();
   const pathname = location.pathname;
   const { user, signOut } = useAuth();
 
   useEffect(() => {
-    const isDarkMode = document.documentElement.classList.contains('dark');
+    const isDarkMode = document.documentElement.classList.contains("dark");
     setIsDark(isDarkMode);
   }, []);
 
   const handleThemeToggle = () => {
-    const root = document.documentElement;
-    root.classList.toggle('dark');
-    setIsDark(!isDark);
+    document.documentElement.classList.toggle("dark");
+    setIsDark((prev) => !prev);
   };
 
   const handleSignOut = async () => {
     await signOut();
   };
-  
-  return (
-    <motion.div
-      className={cn(
-        "sidebar fixed left-0 z-40 h-full shrink-0 border-r border-[#302b59] overflow-hidden",
-      )}
-      initial={isCollapsed ? "closed" : "open"}
-      animate={isCollapsed ? "closed" : "open"}
-      variants={sidebarVariants}
-      transition={transitionProps}
-      onMouseEnter={() => setIsCollapsed(false)}
-      onMouseLeave={() => setIsCollapsed(true)}
-    >
-      <motion.div
-        className={`relative z-40 flex h-full shrink-0 flex-col bg-[#1a1a2e] text-slate-200 transition-all overflow-hidden`}
-        variants={contentVariants}
-      >
-        <motion.ul variants={staggerVariants} className="flex h-full flex-col">
-          <div className="flex grow flex-col items-center">
-            <div className="flex h-[54px] w-full shrink-0  border-b p-2">
-              <div className=" mt-[1.5px] flex w-full">
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger className="w-full" asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex w-fit items-center gap-2  px-2" 
-                    >
-                      <Avatar className='rounded size-4'>
-                        <AvatarFallback>O</AvatarFallback>
-                      </Avatar>
-                      <motion.li
-                        variants={variants}
-                        className="flex w-fit items-center gap-2"
-                      >
-                        {!isCollapsed && (
-                          <>
-                            <p className="text-sm font-medium  ">
-                              {"Organization"}
-                            </p>
-                            <ChevronsUpDown className="h-4 w-4 text-muted-foreground/50" />
-                          </>
-                        )}
-                      </motion.li>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem
-                      asChild
-                      className="flex items-center gap-2"
-                    >
-                      <RouterLink to="/settings/members">
-                        <UserCog className="h-4 w-4" /> Manage members
-                      </RouterLink>
-                    </DropdownMenuItem>{" "}
-                    <DropdownMenuItem
-                      asChild
-                      className="flex items-center gap-2"
-                    >
-                      <RouterLink to="/settings/integrations">
-                        <Blocks className="h-4 w-4" /> Integrations
-                      </RouterLink>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <RouterLink
-                        to="/select-org"
-                        className="flex items-center gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Create or join an organization
-                      </RouterLink>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
 
-            <div className=" flex h-full w-full flex-col">
-              <div className="flex grow flex-col gap-4">
-                <ScrollArea className="h-16 grow p-2">
-                  <div className={cn("flex w-full flex-col gap-1")}>
-                    <RouterLink
-                      to="/dashboard"
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
-                        pathname === "/dashboard" ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      <LayoutDashboard className="h-5 w-5" />
-                      <motion.li variants={variants}>
-                        {!isCollapsed && (
-                          <p className="text-[15px] font-medium">Dashboard</p>
-                        )}
-                      </motion.li>
-                    </RouterLink>
-                    <RouterLink
-                      to="/reports"
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
-                        pathname?.startsWith("/reports") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      <FileClock className="h-5 w-5" />
-                      <motion.li variants={variants}>
-                        {!isCollapsed && (
-                          <p className="text-[15px] font-medium">Reports</p>
-                        )}
-                      </motion.li>
-                    </RouterLink>
-                    <RouterLink
-                      to="/chat"
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
-                        pathname?.startsWith("/chat") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      <MessagesSquare className="h-5 w-5" />
-                      <motion.li variants={variants}>
-                        {!isCollapsed && (
-                          <div className="flex items-center gap-3">
-                            <p className="text-[15px] font-medium">Chat</p>
-                            <Badge className="flex h-fit w-fit items-center gap-1.5 rounded border-none bg-blue-50 px-1.5 text-blue-600" variant="outline">BETA</Badge>
-                          </div>
-                        )}
-                      </motion.li>
-                    </RouterLink>
-                    <Separator className="w-full" />
-                    <RouterLink
-                      to="/deals"
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
-                        pathname?.startsWith("/deals") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      <Layout className="h-5 w-5" />
-                      <motion.li variants={variants}>
-                        {!isCollapsed && (
-                          <p className="text-[15px] font-medium">Deals</p>
-                        )}
-                      </motion.li>
-                    </RouterLink>
-                    <RouterLink
-                      to="/accounts"
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
-                        pathname?.startsWith("/accounts") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      <UserCircle className="h-5 w-5" />
-                      <motion.li variants={variants}>
-                        {!isCollapsed && (
-                          <p className="text-[15px] font-medium">Accounts</p>
-                        )}
-                      </motion.li>
-                    </RouterLink>
-                    <RouterLink
-                      to="/competitors"
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
-                        pathname?.startsWith("/competitors") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      <UserSearch className="h-5 w-5" />
-                      <motion.li variants={variants}>
-                        {!isCollapsed && (
-                          <p className="text-[15px] font-medium">Competitors</p>
-                        )}
-                      </motion.li>
-                    </RouterLink>
-                    <Separator className="w-full" />
-                    <RouterLink
-                      to="/knowledge-base"
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
-                        pathname?.startsWith("/knowledge-base") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      <GraduationCap className="h-5 w-5" />
-                      <motion.li variants={variants}>
-                        {!isCollapsed && (
-                          <p className="text-[15px] font-medium">Knowledge Base</p>
-                        )}
-                      </motion.li>
-                    </RouterLink>
-                    <RouterLink
-                      to="/feedback"
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
-                        pathname?.startsWith("/feedback") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      <MessageSquareText className="h-5 w-5" />
-                      <motion.li variants={variants}>
-                        {!isCollapsed && (
-                          <p className="text-[15px] font-medium">Feedback</p>
-                        )}
-                      </motion.li>
-                    </RouterLink>
-                    <RouterLink
-                      to="/document-review"
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
-                        pathname?.startsWith("/document-review") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      <FileClock className="h-5 w-5" />
-                      <motion.li variants={variants}>
-                        {!isCollapsed && (
-                          <p className="text-[15px] font-medium">Document Review</p>
-                        )}
-                      </motion.li>
-                    </RouterLink>
-                  </div>
-                </ScrollArea>
-              </div>
-              <div className="flex flex-col gap-2 p-2">
-                <TooltipProvider delayDuration={150}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={handleThemeToggle}
-                        className="flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-white/10 hover:text-white"
-                        aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-                      >
-                        {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                      </button>
-                    </TooltipTrigger>
-                    {isCollapsed && <TooltipContent side="right">{isDark ? 'Light theme' : 'Dark theme'}</TooltipContent>}
-                  </Tooltip>
-                </TooltipProvider>
-                <RouterLink
-                  to="/settings"
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
-                    pathname?.startsWith("/settings") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
-                  )}
-                >
-                  <Settings className="h-5 w-5 shrink-0" />
-                  <motion.li variants={variants}>
-                    {!isCollapsed && (
-                      <p className="text-[15px] font-medium">Settings</p>
-                    )}
-                  </motion.li>
-                </RouterLink>
-                <div>
-                  <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="w-full">
-                      <div className="flex h-8 w-full flex-row items-center gap-2 rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-white/10 hover:text-white">
-                        <Avatar className="size-4">
-                          <AvatarFallback>
-                            {user?.name?.slice(0, 1).toUpperCase() || user?.email?.slice(0, 1).toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <motion.li
-                          variants={variants}
-                          className="flex w-full items-center gap-2"
-                        >
-                          {!isCollapsed && (
-                            <>
-                              <p className="text-sm font-medium truncate">{user?.name || user?.email?.split('@')[0] || 'User'}</p>
-                              <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground/50" />
-                            </>
-                          )}
-                        </motion.li>
-                      </div>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent sideOffset={5}>
-                      <div className="flex flex-row items-center gap-2 p-2">
-                        <Avatar className="size-6">
-                          <AvatarFallback>
-                            {user?.name?.slice(0, 2).toUpperCase() || user?.email?.slice(0, 2).toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col text-left">
-                          <span className="text-sm font-medium">
-                            {user?.name || 'User'}
-                          </span>
-                          <span className="line-clamp-1 text-xs text-muted-foreground">
-                            {user?.email || 'No email'}
-                          </span>
-                        </div>
-                      </div>
-                      <DropdownMenuSeparator />
-                      
-                      <DropdownMenuItem
-                        asChild
-                        className="flex items-center gap-2"
-                      >
-                        <RouterLink to="/profile">
-                          <UserCircle className="h-4 w-4" /> Profile
-                        </RouterLink>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2"
-                        onClick={handleSignOut}
-                      >
-                        <LogOut className="h-4 w-4" /> Sign out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+  // Reusable nav item — handles both expanded and collapsed layouts
+  const NavItem = ({
+    to,
+    icon: Icon,
+    label,
+    badge,
+    isActive,
+  }: {
+    to: string;
+    icon: React.ElementType;
+    label: string;
+    badge?: React.ReactNode;
+    isActive: boolean;
+  }) => (
+    <RouterLink
+      to={to}
+      className={cn(
+        "flex w-full rounded-lg cursor-pointer transition-colors duration-150",
+        isCollapsed
+          ? "items-center justify-center py-2.5 px-0"
+          : "items-center gap-3 px-3 py-2.5",
+        isActive
+          ? "bg-[#7c3aed] text-white"
+          : "text-slate-300 hover:bg-white/10 hover:text-white"
+      )}
+    >
+      <Icon className="w-5 h-5 shrink-0" />
+      {!isCollapsed && (
+        <span className="text-sm font-medium flex items-center gap-2 truncate">
+          {label}
+          {badge}
+        </span>
+      )}
+    </RouterLink>
+  );
+
+  return (
+    <aside
+      className={cn(
+        "fixed left-0 top-0 z-40 h-full flex flex-col",
+        "bg-[#1a1a2e] border-r border-[#302b59]",
+        "transition-all duration-300 ease-in-out overflow-hidden",
+        isCollapsed ? "w-[72px]" : "w-56"
+      )}
+    >
+      {/* Toggle button — floats on the sidebar edge */}
+      <button
+        onClick={() => setIsCollapsed((prev) => !prev)}
+        className={cn(
+          "absolute -right-3 top-6 w-6 h-6 rounded-full z-50 shadow-md",
+          "bg-[#1e1e3a] border border-white/20",
+          "flex items-center justify-center",
+          "hover:bg-[#7c3aed] transition-colors duration-150",
+          "overflow-visible"
+        )}
+        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        {isCollapsed ? (
+          <ChevronRight className="w-3 h-3 text-white" />
+        ) : (
+          <ChevronLeft className="w-3 h-3 text-white" />
+        )}
+      </button>
+
+      {/* ── Organization Header ── */}
+      <div className="flex h-[54px] w-full shrink-0 border-b border-[#302b59] items-center px-2">
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "flex items-center gap-2 px-2 w-full",
+                isCollapsed ? "justify-center" : "justify-start"
+              )}
+            >
+              <Avatar className="rounded size-5 shrink-0">
+                <AvatarFallback className="text-[10px]">O</AvatarFallback>
+              </Avatar>
+              {!isCollapsed && (
+                <>
+                  <span className="text-sm font-medium truncate">Organization</span>
+                  <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground/50" />
+                </>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-52">
+            <DropdownMenuItem asChild className="flex items-center gap-2">
+              <RouterLink to="/settings/members">
+                <UserCog className="h-4 w-4" /> Manage members
+              </RouterLink>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="flex items-center gap-2">
+              <RouterLink to="/settings/integrations">
+                <Blocks className="h-4 w-4" /> Integrations
+              </RouterLink>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <RouterLink to="/select-org" className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Create or join an org
+              </RouterLink>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* ── Nav Links ── */}
+      <ScrollArea className="flex-1">
+        <nav className="flex flex-col gap-0.5 p-2">
+          <NavItem
+            to="/dashboard"
+            icon={LayoutDashboard}
+            label="Dashboard"
+            isActive={pathname === "/dashboard"}
+          />
+          <NavItem
+            to="/reports"
+            icon={FileClock}
+            label="Reports"
+            isActive={pathname.startsWith("/reports")}
+          />
+          <NavItem
+            to="/chat"
+            icon={MessagesSquare}
+            label="Chat"
+            badge={
+              <Badge
+                className="h-fit px-1.5 text-[10px] rounded border-none bg-blue-50 text-blue-600"
+                variant="outline"
+              >
+                BETA
+              </Badge>
+            }
+            isActive={pathname.startsWith("/chat")}
+          />
+
+          <div className="border-t border-white/10 my-1.5" />
+
+          <NavItem
+            to="/deals"
+            icon={Layout}
+            label="Deals"
+            isActive={pathname.startsWith("/deals")}
+          />
+          <NavItem
+            to="/accounts"
+            icon={UserCircle}
+            label="Accounts"
+            isActive={pathname.startsWith("/accounts")}
+          />
+          <NavItem
+            to="/competitors"
+            icon={UserSearch}
+            label="Competitors"
+            isActive={pathname.startsWith("/competitors")}
+          />
+
+          <div className="border-t border-white/10 my-1.5" />
+
+          <NavItem
+            to="/knowledge-base"
+            icon={GraduationCap}
+            label="Knowledge Base"
+            isActive={pathname.startsWith("/knowledge-base")}
+          />
+          <NavItem
+            to="/feedback"
+            icon={MessageSquareText}
+            label="Feedback"
+            isActive={pathname.startsWith("/feedback")}
+          />
+          <NavItem
+            to="/document-review"
+            icon={FileClock}
+            label="Document Review"
+            isActive={pathname.startsWith("/document-review")}
+          />
+        </nav>
+      </ScrollArea>
+
+      {/* ── Bottom Controls ── */}
+      <div className="flex flex-col gap-0.5 p-2 border-t border-[#302b59]">
+        {/* Theme toggle */}
+        <TooltipProvider delayDuration={150}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleThemeToggle}
+                aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+                className={cn(
+                  "flex w-full rounded-lg cursor-pointer transition-colors duration-150",
+                  "text-slate-300 hover:bg-white/10 hover:text-white",
+                  isCollapsed
+                    ? "items-center justify-center py-2.5 px-0"
+                    : "items-center gap-3 px-3 py-2.5"
+                )}
+              >
+                {isDark ? (
+                  <Sun className="w-5 h-5 shrink-0" />
+                ) : (
+                  <Moon className="w-5 h-5 shrink-0" />
+                )}
+                {!isCollapsed && (
+                  <span className="text-sm font-medium">
+                    {isDark ? "Light" : "Dark"}
+                  </span>
+                )}
+              </button>
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="right">
+                {isDark ? "Light theme" : "Dark theme"}
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* Settings */}
+        <RouterLink
+          to="/settings"
+          className={cn(
+            "flex w-full rounded-lg cursor-pointer transition-colors duration-150",
+            isCollapsed
+              ? "items-center justify-center py-2.5 px-0"
+              : "items-center gap-3 px-3 py-2.5",
+            pathname.startsWith("/settings")
+              ? "bg-[#7c3aed] text-white"
+              : "text-slate-300 hover:bg-white/10 hover:text-white"
+          )}
+        >
+          <Settings className="w-5 h-5 shrink-0" />
+          {!isCollapsed && <span className="text-sm font-medium">Settings</span>}
+        </RouterLink>
+
+        {/* User profile */}
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={cn(
+                "flex w-full rounded-lg cursor-pointer transition-colors duration-150",
+                "text-slate-300 hover:bg-white/10 hover:text-white",
+                isCollapsed
+                  ? "items-center justify-center py-2.5 px-0"
+                  : "items-center gap-2 px-3 py-2.5"
+              )}
+            >
+              <Avatar className="size-5 shrink-0">
+                <AvatarFallback className="text-[10px]">
+                  {user?.name?.slice(0, 1).toUpperCase() ||
+                    user?.email?.slice(0, 1).toUpperCase() ||
+                    "U"}
+                </AvatarFallback>
+              </Avatar>
+              {!isCollapsed && (
+                <>
+                  <span className="text-sm font-medium truncate flex-1 text-left">
+                    {user?.name || user?.email?.split("@")[0] || "User"}
+                  </span>
+                  <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                </>
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent sideOffset={6} align="end" className="w-52">
+            <div className="flex flex-row items-center gap-2 p-2">
+              <Avatar className="size-7">
+                <AvatarFallback>
+                  {user?.name?.slice(0, 2).toUpperCase() ||
+                    user?.email?.slice(0, 2).toUpperCase() ||
+                    "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col text-left min-w-0">
+                <span className="text-sm font-medium truncate">
+                  {user?.name || "User"}
+                </span>
+                <span className="text-xs text-muted-foreground truncate">
+                  {user?.email || "No email"}
+                </span>
               </div>
             </div>
-          </div>
-        </motion.ul>
-      </motion.div>
-    </motion.div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="flex items-center gap-2">
+              <RouterLink to="/profile">
+                <UserCircle className="h-4 w-4" /> Profile
+              </RouterLink>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="flex items-center gap-2"
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-4 w-4" /> Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </aside>
   );
 }

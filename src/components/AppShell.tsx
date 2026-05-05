@@ -5,7 +5,7 @@ export default function AppShell() {
   return (
     <div className="min-h-screen w-full bg-background">
       <SessionNavBar />
-      <div className="min-h-screen ml-[3.05rem]">
+      <div className="min-h-screen ml-[72px]">
         <Outlet />
       </div>
     </div>
