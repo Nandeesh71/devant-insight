@@ -35,6 +35,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DisconnectModal } from "@/components/ui/disconnect-modal";
 import { LoadingSpinner, ErrorBanner } from "@/components/StatusBanners";
+import { SessionNavBar } from "@/components/ui/session-navbar";
 import { useAuth } from "@/context/AuthContext";
 import { useDevantData, type Project } from "@/hooks/useDevantData";
 import { apiClient } from "@/lib/apiClient";
@@ -298,7 +299,9 @@ export default function ProjectDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <TooltipProvider delayDuration={150}>
+      <SessionNavBar />
+      <div className="min-h-screen ml-[3.05rem]">
+        <TooltipProvider delayDuration={150}>
         <LoadingSpinner visible={loading} />
 
         {/* Header */}
@@ -886,7 +889,8 @@ export default function ProjectDetail() {
           onConfirm={handleDisconnect}
           projectName={disconnectTarget ? String(getRepoName(disconnectTarget)) : ""}
         />
-      </TooltipProvider>
+        </TooltipProvider>
+      </div>
     </div>
   );
 }
