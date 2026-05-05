@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { apiClient } from "@/lib/apiClient";
 import { API_BASE } from "@/config/api";
-import { supabase } from "@/lib/supabase";
 
 export type AuthUser = {
   id: string;
