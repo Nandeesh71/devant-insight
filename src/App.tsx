@@ -33,9 +33,24 @@ const App = () => (
       <Toaster />
       <Sonner
           position="top-right"
-          richColors
+          richColors={false}
           closeButton
-          duration={4000}
+          duration={3000}
+          toastOptions={{
+            style: {
+              background: '#1e1b3a',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              color: '#e9d5ff',
+              borderRadius: '10px',
+              fontSize: '14px',
+              boxShadow: '0 4px 24px rgba(109, 40, 217, 0.15)',
+            },
+            classNames: {
+              success: '',
+              error: '',
+              info: '',
+            }
+          }}
         />
       <ProjectProvider>
         <AuthProvider>

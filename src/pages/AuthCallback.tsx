@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -15,6 +15,7 @@ export default function AuthCallback() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const hasToasted = useRef(false);
   const maxRetries = 3;
 
   const normalizeNext = (value: string | null | undefined) => {
@@ -117,7 +118,17 @@ export default function AuthCallback() {
       // Use silent refresh so a transient backend validation failure doesn't
       // immediately clear the session and send the user back to login.
       refresh({ silent: true }).finally(() => {
-        toast.success("Welcome back!");
+        if (!hasToasted.current) {
+          hasToasted.current = true;
+          toast.success("Welcome back!", {
+            style: {
+              background: "#1e1b3a",
+              border: "1px solid rgba(139, 92, 246, 0.4)",
+              color: "#ddd6fe",
+            },
+            icon: "✦",
+          });
+        }
         navigate(normalizeNext(next), { replace: true });
       });
       return;
@@ -147,7 +158,17 @@ export default function AuthCallback() {
         });
         // Silent refresh for the same reason as above.
         refresh({ silent: true }).finally(() => {
-          toast.success("Welcome back!");
+          if (!hasToasted.current) {
+            hasToasted.current = true;
+            toast.success("Welcome back!", {
+              style: {
+                background: "#1e1b3a",
+                border: "1px solid rgba(139, 92, 246, 0.4)",
+                color: "#ddd6fe",
+              },
+              icon: "✦",
+            });
+          }
           navigate(normalizeNext(next || "/dashboard"), { replace: true });
         });
       }).catch((exchangeError) => {

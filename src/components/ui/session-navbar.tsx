@@ -131,9 +131,9 @@ export function SessionNavBar() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="flex w-fit items-center gap-2 px-2 hover:bg-white/10 hover:text-white"
+                      className={cn("flex h-10 w-full items-center gap-2 hover:bg-white/10 hover:text-white transition-colors duration-150", isCollapsed ? "justify-center px-0" : "justify-start px-2")}
                     >
-                      <Avatar className="rounded size-4 shrink-0">
+                      <Avatar className="rounded size-5 shrink-0">
                         <AvatarFallback className="text-[10px]">O</AvatarFallback>
                       </Avatar>
                       <motion.li variants={itemVariants} className="flex w-fit items-center gap-2">
@@ -178,7 +178,7 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/dashboard"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150",
+                        "flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150", isCollapsed ? "justify-center px-0" : "px-2",
                         pathname === "/dashboard"
                           ? "bg-[#7c3aed] text-white"
                           : "text-slate-300 hover:bg-white/10 hover:text-white"
@@ -194,7 +194,7 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/reports"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150",
+                        "flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150", isCollapsed ? "justify-center px-0" : "px-2",
                         pathname.startsWith("/reports")
                           ? "bg-[#7c3aed] text-white"
                           : "text-slate-300 hover:bg-white/10 hover:text-white"
@@ -210,7 +210,7 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/chat"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150",
+                        "flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150", isCollapsed ? "justify-center px-0" : "px-2",
                         pathname.startsWith("/chat")
                           ? "bg-[#7c3aed] text-white"
                           : "text-slate-300 hover:bg-white/10 hover:text-white"
@@ -238,7 +238,7 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/deals"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150",
+                        "flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150", isCollapsed ? "justify-center px-0" : "px-2",
                         pathname.startsWith("/deals")
                           ? "bg-[#7c3aed] text-white"
                           : "text-slate-300 hover:bg-white/10 hover:text-white"
@@ -254,7 +254,7 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/accounts"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150",
+                        "flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150", isCollapsed ? "justify-center px-0" : "px-2",
                         pathname.startsWith("/accounts")
                           ? "bg-[#7c3aed] text-white"
                           : "text-slate-300 hover:bg-white/10 hover:text-white"
@@ -270,7 +270,7 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/competitors"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150",
+                        "flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150", isCollapsed ? "justify-center px-0" : "px-2",
                         pathname.startsWith("/competitors")
                           ? "bg-[#7c3aed] text-white"
                           : "text-slate-300 hover:bg-white/10 hover:text-white"
@@ -288,7 +288,7 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/knowledge-base"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150",
+                        "flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150", isCollapsed ? "justify-center px-0" : "px-2",
                         pathname.startsWith("/knowledge-base")
                           ? "bg-[#7c3aed] text-white"
                           : "text-slate-300 hover:bg-white/10 hover:text-white"
@@ -304,7 +304,7 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/feedback"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150",
+                        "flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150", isCollapsed ? "justify-center px-0" : "px-2",
                         pathname.startsWith("/feedback")
                           ? "bg-[#7c3aed] text-white"
                           : "text-slate-300 hover:bg-white/10 hover:text-white"
@@ -320,7 +320,7 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/document-review"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150",
+                        "flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150", isCollapsed ? "justify-center px-0" : "px-2",
                         pathname.startsWith("/document-review")
                           ? "bg-[#7c3aed] text-white"
                           : "text-slate-300 hover:bg-white/10 hover:text-white"
@@ -340,31 +340,22 @@ export function SessionNavBar() {
               <div className="flex flex-col gap-1 p-2">
 
                 {/* Theme toggle — icon only, no label */}
-                <TooltipProvider delayDuration={150}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={handleThemeToggle}
-                        aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-                        className="flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150 text-slate-300 hover:bg-white/10 hover:text-white"
-                      >
-                        {isDark
-                          ? <Sun className="h-4 w-4 shrink-0" />
-                          : <Moon className="h-4 w-4 shrink-0" />
-                        }
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      {isDark ? "Light theme" : "Dark theme"}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <button
+                  onClick={handleThemeToggle}
+                  aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+                  className={cn("flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150 text-slate-300 hover:bg-white/10 hover:text-white", isCollapsed ? "justify-center px-0" : "px-2")}
+                >
+                  {isDark
+                    ? <Sun className="h-4 w-4 shrink-0" />
+                    : <Moon className="h-4 w-4 shrink-0" />
+                  }
+                </button>
 
                 {/* Settings */}
                 <RouterLink
                   to="/settings"
                   className={cn(
-                    "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150",
+                    "flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150", isCollapsed ? "justify-center px-0" : "px-2",
                     pathname.startsWith("/settings")
                       ? "bg-[#7c3aed] text-white"
                       : "text-slate-300 hover:bg-white/10 hover:text-white"
@@ -379,8 +370,8 @@ export function SessionNavBar() {
                 {/* User profile dropdown */}
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger className="w-full">
-                    <div className="flex h-8 w-full flex-row items-center gap-2 rounded-md px-2 py-1.5 transition-colors duration-150 text-slate-300 hover:bg-white/10 hover:text-white">
-                      <Avatar className="size-4 shrink-0">
+                    <div className={cn("flex h-10 w-full flex-row items-center gap-2 rounded-md py-1.5 transition-colors duration-150 text-slate-300 hover:bg-white/10 hover:text-white", isCollapsed ? "justify-center px-0" : "px-2")}>
+                      <Avatar className="size-5 shrink-0">
                         <AvatarImage src={avatarUrl} alt={displayName} />
                         <AvatarFallback className="text-[10px]">{initial1}</AvatarFallback>
                       </Avatar>
