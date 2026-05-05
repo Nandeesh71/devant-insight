@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import ProjectDetail from "./pages/ProjectDetail.tsx";
+import CommitDetail from "./pages/CommitDetail.tsx";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppShell from "./components/AppShell";
 import NotFound from "./pages/NotFound.tsx";
@@ -77,6 +78,7 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/owner/:owner/:repo" element={<LegacyOwnerRouteRedirect />} />
               <Route path="/:owner/:repo" element={<ProjectDetail />} />
+              <Route path="/:owner/:repo/commit/:sha" element={<CommitDetail />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

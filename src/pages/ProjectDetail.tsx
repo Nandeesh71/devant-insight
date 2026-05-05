@@ -230,6 +230,16 @@ export default function ProjectDetail() {
 
       setDetailTick((current) => current + 1);
       refetch();
+
+      // also proactively refresh the project summary to update quick-stats immediately
+      (async () => {
+        try {
+          const fresh = await apiClient.get<Record<string, unknown>>(`/api/projects/${owner}/${repo}/summary`);
+          setSummaryData(fresh);
+        } catch (e) {
+          // ignore
+        }
+      })();
     };
 
     return () => {
@@ -648,9 +658,14 @@ export default function ProjectDetail() {
                               </div>
                               <div className="flex flex-col items-end gap-2 flex-shrink-0">
                                 <span className="text-xs text-muted-foreground">{time}</span>
-                                <a href={String((commit as any).url || getProjectCommitsUrl(resolvedProject) || `https://github.com/${owner}/${repo}/commit/${(commit as any).sha}`)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
-                                  <ExternalLink size={14} />
-                                </a>
+                                <div className="flex items-center gap-2">
+                                  <button onClick={() => navigate(`/${owner}/${repo}/commit/${String((commit as any).sha || '').slice(0,40)}`)} className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
+                                    View
+                                  </button>
+                                  <a href={String((commit as any).url || getProjectCommitsUrl(resolvedProject) || `https://github.com/${owner}/${repo}/commit/${(commit as any).sha}`)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
+                                    <ExternalLink size={14} />
+                                  </a>
+                                </div>
                               </div>
                             </div>
                           );
