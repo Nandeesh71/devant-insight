@@ -24,7 +24,7 @@ import {
   UserSearch,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -88,9 +88,8 @@ export function SessionNavBar() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isDark, setIsDark] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
   const pathname = location.pathname;
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const isDarkMode = document.documentElement.classList.contains('dark');
@@ -104,14 +103,13 @@ export function SessionNavBar() {
   };
 
   const handleSignOut = async () => {
-    await logout();
-    navigate('/login', { replace: true });
+    await signOut();
   };
   
   return (
     <motion.div
       className={cn(
-        "sidebar fixed left-0 z-40 h-full shrink-0 border-r fixed",
+        "sidebar fixed left-0 z-40 h-full shrink-0 border-r border-[#302b59]",
       )}
       initial={isCollapsed ? "closed" : "open"}
       animate={isCollapsed ? "closed" : "open"}
@@ -121,7 +119,7 @@ export function SessionNavBar() {
       onMouseLeave={() => setIsCollapsed(true)}
     >
       <motion.div
-        className={`relative z-40 flex text-muted-foreground h-full shrink-0 flex-col bg-white dark:bg-black transition-all`}
+        className={`relative z-40 flex h-full shrink-0 flex-col bg-[#1a1a2e] text-slate-200 transition-all`}
         variants={contentVariants}
       >
         <motion.ul variants={staggerVariants} className="flex h-full flex-col">
@@ -191,9 +189,9 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/dashboard"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5   transition hover:bg-muted hover:text-primary",
-                        pathname?.includes("dashboard") &&
-                          "bg-muted text-blue-600",
+                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
+                        pathname === "/dashboard" &&
+                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
                       )}
                     >
                       <LayoutDashboard className="h-4 w-4" />{" "}
@@ -206,10 +204,10 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/reports"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-muted hover:text-primary",
+                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
 
-                        pathname?.includes("reports") &&
-                          "bg-muted text-blue-600",
+                        pathname?.startsWith("/reports") &&
+                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
                       )}
                     >
                       <FileClock className="h-4 w-4" />{" "}
@@ -224,8 +222,8 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/chat"
                       className={cn(
-                        "flex h-8 flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-muted hover:text-primary",
-                        pathname?.includes("chat") && "bg-muted text-blue-600",
+                        "flex h-8 flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
+                        pathname?.startsWith("/chat") && "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
                       )}
                     >
                       <MessagesSquare className="h-4 w-4" />
@@ -249,9 +247,9 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/deals"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5   transition hover:bg-muted hover:text-primary",
+                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
 
-                        pathname?.includes("deals") && "bg-muted text-blue-600",
+                        pathname?.startsWith("/deals") && "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
                       )}
                     >
                       <Layout className="h-4 w-4" />{" "}
@@ -264,10 +262,10 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/accounts"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5   transition hover:bg-muted hover:text-primary",
+                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
 
-                        pathname?.includes("accounts") &&
-                          "bg-muted text-blue-600",
+                        pathname?.startsWith("/accounts") &&
+                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
                       )}
                     >
                       <UserCircle className="h-4 w-4" />{" "}
@@ -280,10 +278,10 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/competitors"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5   transition hover:bg-muted hover:text-primary",
+                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
 
-                        pathname?.includes("competitors") &&
-                          "bg-muted text-blue-600",
+                        pathname?.startsWith("/competitors") &&
+                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
                       )}
                     >
                       <UserSearch className="h-4 w-4" />
@@ -297,12 +295,12 @@ export function SessionNavBar() {
                     </RouterLink>
                     <Separator className="w-full" />
                     <RouterLink
-                      to="/library/knowledge"
+                      to="/knowledge-base"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5   transition hover:bg-muted hover:text-primary",
+                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
 
-                        pathname?.includes("library") &&
-                          "bg-muted text-blue-600",
+                        pathname?.startsWith("/knowledge-base") &&
+                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
                       )}
                     >
                       <GraduationCap className="h-4 w-4" />{" "}
@@ -317,9 +315,9 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/feedback"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5   transition hover:bg-muted hover:text-primary",
-                        pathname?.includes("feedback") &&
-                          "bg-muted text-blue-600",
+                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
+                        pathname?.startsWith("/feedback") &&
+                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
                       )}
                     >
                       <MessageSquareText className="h-4 w-4" />{" "}
@@ -330,12 +328,12 @@ export function SessionNavBar() {
                       </motion.li>
                     </RouterLink>
                     <RouterLink
-                      to="/review"
+                      to="/document-review"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5   transition hover:bg-muted hover:text-primary",
+                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
 
-                        pathname?.includes("review") &&
-                          "bg-muted text-blue-600",
+                        pathname?.startsWith("/document-review") &&
+                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
                       )}
                     >
                       <FileClock className="h-4 w-4" />{" "}
@@ -371,8 +369,8 @@ export function SessionNavBar() {
                   </Tooltip>
                 </TooltipProvider>
                 <RouterLink
-                  to="/settings/integrations"
-                  className="flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-muted hover:text-primary"
+                  to="/settings"
+                  className="flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white"
                 >
                   <Settings className="h-4 w-4 shrink-0" />{" "}
                   <motion.li variants={variants}>
@@ -424,7 +422,15 @@ export function SessionNavBar() {
                         asChild
                         className="flex items-center gap-2"
                       >
-                        <RouterLink to="/settings/profile">
+                        <RouterLink to="/account">
+                          <UserCircle className="h-4 w-4" /> Account
+                        </RouterLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        asChild
+                        className="flex items-center gap-2"
+                      >
+                        <RouterLink to="/profile">
                           <UserCircle className="h-4 w-4" /> Profile
                         </RouterLink>
                       </DropdownMenuItem>

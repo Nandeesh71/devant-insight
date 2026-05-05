@@ -14,7 +14,7 @@ export default function ConnectGithub() {
   }, [token, user, refresh]);
 
   useEffect(() => {
-    if (!loading && user?.github_connected) navigate("/", { replace: true });
+    if (!loading && user?.github_connected) navigate("/dashboard", { replace: true });
   }, [loading, user?.github_connected, navigate]);
 
   if (loading || (token && !user)) {

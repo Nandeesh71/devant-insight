@@ -7,7 +7,7 @@ export default function Login() {
   const { user, signInGoogle, signInGithub, loading } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
-    if (!loading && user) navigate(user.github_connected ? "/" : "/connect-github", { replace: true });
+    if (!loading && user) navigate("/dashboard", { replace: true });
   }, [loading, user, navigate]);
 
   if (loading) {

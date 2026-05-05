@@ -17,12 +17,13 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import SectionPage from "./pages/SectionPage";
 
 const queryClient = new QueryClient();
 
 const LegacyOwnerRouteRedirect = () => {
   const { owner, repo } = useParams<{ owner: string; repo: string }>();
-  if (!owner || !repo) return <Navigate to="/" replace />;
+  if (!owner || !repo) return <Navigate to="/dashboard" replace />;
   return <Navigate to={`/${owner}/${repo}`} replace />;
 };
 
@@ -41,9 +42,19 @@ const App = () => (
             <Route path="/privacy" element={<Navigate to="/Privacy-Policy" replace />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<Index />} />
+              <Route path="/reports" element={<SectionPage title="Reports" description="Reports and delivery summaries live here." />} />
+              <Route path="/chat" element={<SectionPage title="Chat" description="Chat workspace is coming soon." badge="BETA" />} />
+              <Route path="/deals" element={<SectionPage title="Deals" description="Deal tracking and pipeline insights live here." />} />
+              <Route path="/accounts" element={<SectionPage title="Accounts" description="Account management and relationship views live here." />} />
+              <Route path="/competitors" element={<SectionPage title="Competitors" description="Competitor tracking and comparisons live here." />} />
+              <Route path="/knowledge-base" element={<SectionPage title="Knowledge Base" description="Docs, notes, and internal knowledge live here." />} />
+              <Route path="/feedback" element={<SectionPage title="Feedback" description="Feedback intake and review live here." />} />
+              <Route path="/document-review" element={<SectionPage title="Document Review" description="Review documents and generated summaries here." />} />
               <Route path="/connect-github" element={<ConnectGithub />} />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/settings/*" element={<Settings />} />
+              <Route path="/account" element={<Profile />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/owner/:owner/:repo" element={<LegacyOwnerRouteRedirect />} />
               <Route path="/:owner/:repo" element={<ProjectDetail />} />

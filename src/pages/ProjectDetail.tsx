@@ -133,7 +133,7 @@ export default function ProjectDetail() {
 
   useEffect(() => {
     if (!owner || !repo) {
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [owner, repo, navigate]);
 
@@ -262,7 +262,7 @@ export default function ProjectDetail() {
       await apiClient.delete(`/api/projects/${resolvedProject.id}`);
       setDisconnectTarget(null);
       toast({ title: "Repository disconnected", description: String(getRepoName(resolvedProject)) });
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       toast({ title: "Disconnect failed", description: (error as Error).message, variant: "destructive" });
     }
@@ -278,7 +278,7 @@ export default function ProjectDetail() {
         <div className="text-center">
           <div className="mb-4 text-lg font-semibold text-foreground">Project not found</div>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
             className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
           >
             <ArrowLeft size={14} /> Back to dashboard
@@ -306,7 +306,7 @@ export default function ProjectDetail() {
           <div className="flex items-center justify-between gap-4 px-6 py-4">
             <div className="flex items-center gap-4">
                 <button
-                  onClick={() => navigate("/")}
+                  onClick={() => navigate("/dashboard")}
                   className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium"
                   style={{ color: '#7c3aed', fontWeight: 500 }}
                   aria-label="Back to projects"
@@ -421,7 +421,7 @@ export default function ProjectDetail() {
                   </div>
                   <div className="mt-1">
                     {(() => {
-                      const rating = dora?.deployment_frequency?.rating || dora?.rating || null;
+                      const rating = dora?.deployment_frequency?.rating || null;
                       if (!rating) return <span className="text-base font-bold text-gray-900 dark:text-white">—</span>;
                       const map: Record<string, {bg:string,color:string,border:string,darkBg:string,darkColor:string,darkBorder:string}> = {
                         Elite: { bg: '#dcfce7', color: '#16a34a', border: '#bbf7d0', darkBg: 'rgba(22,163,74,0.1)', darkColor: '#4ade80', darkBorder: 'rgba(74,222,128,0.2)' },
@@ -884,7 +884,7 @@ export default function ProjectDetail() {
           isOpen={Boolean(disconnectTarget)}
           onClose={() => setDisconnectTarget(null)}
           onConfirm={handleDisconnect}
-          projectName={disconnectTarget ? String(getRepoName(disconnectTarget)) : ""}
+          repoFullName={disconnectTarget ? String(getRepoName(disconnectTarget)) : ""}
         />
       </TooltipProvider>
     </div>

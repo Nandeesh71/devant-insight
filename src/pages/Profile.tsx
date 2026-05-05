@@ -11,7 +11,7 @@ export default function Profile() {
     <div className="min-h-screen bg-background px-4 py-8 sm:px-6 ml-[3.05rem]">
       <div className="mx-auto w-full max-w-3xl">
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/dashboard")}
           className="mb-4 inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted"
         >
           <ArrowLeft size={14} /> Back to Dashboard

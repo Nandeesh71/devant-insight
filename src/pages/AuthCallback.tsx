@@ -17,7 +17,7 @@ export default function AuthCallback() {
   const maxRetries = 3;
 
   const normalizeNext = (value: string | null | undefined) => {
-    if (!value) return "/";
+    if (!value) return "/dashboard";
     try {
       const url = new URL(value, window.location.origin);
       if (url.origin === window.location.origin) {
@@ -26,7 +26,7 @@ export default function AuthCallback() {
     } catch {
       // value may already be a relative path
     }
-    return value.startsWith("/") ? value : "/";
+    return value.startsWith("/") ? value : "/dashboard";
   };
 
   useEffect(() => {
@@ -142,7 +142,7 @@ export default function AuthCallback() {
           github_connected: false,
         });
         // Silent refresh for the same reason as above.
-        refresh({ silent: true }).finally(() => navigate(normalizeNext(next || "/connect-github"), { replace: true }));
+        refresh({ silent: true }).finally(() => navigate(normalizeNext(next || "/dashboard"), { replace: true }));
       }).catch((exchangeError) => {
         setError(exchangeError instanceof Error ? exchangeError.message : "Failed to complete Supabase sign-in");
       });
