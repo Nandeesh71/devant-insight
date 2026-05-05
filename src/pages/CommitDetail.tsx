@@ -51,6 +51,7 @@ export default function CommitDetail() {
 
   const files = commit.files_changed || commit.files || [];
 
+
   return (
     <div className="min-h-screen bg-background p-6 ml-[3.05rem]">
       <div className="mb-4 flex items-center gap-3">
@@ -79,11 +80,18 @@ export default function CommitDetail() {
         <div className="mt-4">
           <h4 className="font-semibold text-sm">Files changed</h4>
           {Array.isArray(files) && files.length > 0 ? (
-            <ul className="mt-2 space-y-2 text-sm">
+            <div className="mt-2 space-y-4 text-sm">
               {files.map((f: any, i: number) => (
-                <li key={i} className="rounded-md border border-border/50 px-3 py-2 bg-muted/20">{typeof f === 'string' ? f : (f.filename || f.path || JSON.stringify(f))}</li>
+                <div key={i} className="rounded-md border border-border/50 p-3 bg-muted/20">
+                  <div className="mb-2 font-medium">{typeof f === 'string' ? f : (f.filename || f.path || JSON.stringify(f))}</div>
+                  {f.patch ? (
+                    <pre className="max-h-[360px] overflow-auto rounded bg-black/5 p-3 text-xs font-mono whitespace-pre-wrap">{f.patch}</pre>
+                  ) : (
+                    <div className="text-xs text-muted-foreground">No patch available for this file</div>
+                  )}
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
             <div className="mt-2 text-sm text-muted-foreground">No file list available</div>
           )}
