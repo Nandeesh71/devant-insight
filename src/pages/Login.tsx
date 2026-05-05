@@ -116,45 +116,17 @@ export default function Login() {
     signInGithub();
   };
 
-  if (loading) {
+  // SILENT blank screen — matches app background, zero flash
+  if (loading || user) {
     return (
       <div
         style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          position: "fixed",
+          inset: 0,
           background: "#0d0d1a",
-          fontFamily: "'Space Grotesk', -apple-system, sans-serif",
+          zIndex: 9999,
         }}
-      >
-        <style>{`@keyframes devant-spin { to { transform: rotate(360deg); } }`}</style>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 16,
-          }}
-        >
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 12,
-              background: "#7c3aed",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <ActivityIcon />
-          </div>
-          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
-            Restoring session...
-          </p>
-        </div>
-      </div>
+      />
     );
   }
 

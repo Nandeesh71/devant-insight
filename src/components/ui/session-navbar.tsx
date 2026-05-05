@@ -69,9 +69,8 @@ const itemVariants = {
 
 const transitionProps = {
   type: "tween",
-  ease: "easeOut",
-  duration: 0.2,
-  staggerChildren: 0.1,
+  ease: [0.4, 0, 0.2, 1],
+  duration: 0.3,
 };
 
 const staggerVariants = {
@@ -117,7 +116,7 @@ export function SessionNavBar() {
       onMouseLeave={() => setIsCollapsed(true)}
     >
       <motion.div
-        className="relative z-40 flex h-full shrink-0 flex-col bg-[#1a1a2e] text-slate-200 transition-all overflow-hidden"
+        className="relative z-40 flex h-full shrink-0 flex-col bg-[#1a1a2e] text-slate-200 transition-all overflow-hidden will-change-transform"
         variants={contentVariants}
       >
         <motion.ul variants={staggerVariants} className="flex h-full flex-col">
@@ -369,21 +368,26 @@ export function SessionNavBar() {
 
                 {/* User profile dropdown */}
                 <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger className="w-full">
-                    <div className={cn("flex h-10 w-full flex-row items-center gap-2 rounded-md py-1.5 transition-colors duration-150 text-slate-300 hover:bg-white/10 hover:text-white", isCollapsed ? "justify-center px-0" : "px-2")}>
-                      <Avatar className="size-5 shrink-0">
+                  <DropdownMenuTrigger className="w-full" asChild>
+                    <button
+                      className={cn(
+                        "flex h-10 w-full flex-row items-center rounded-md py-1.5 transition-colors duration-150 text-slate-300 hover:bg-white/10 hover:text-white",
+                        isCollapsed ? "justify-center px-0" : "gap-2 px-2"
+                      )}
+                    >
+                      <Avatar className="size-5 shrink-0 mx-auto flex-none" style={isCollapsed ? {} : { margin: 0 }}>
                         <AvatarImage src={avatarUrl} alt={displayName} />
                         <AvatarFallback className="text-[10px]">{initial1}</AvatarFallback>
                       </Avatar>
-                      <motion.li variants={itemVariants} className="flex w-full items-center gap-2">
+                      <motion.li variants={itemVariants} className="flex w-full items-center gap-2 overflow-hidden">
                         {!isCollapsed && (
                           <>
-                            <p className="text-sm font-medium truncate">{displayName}</p>
+                            <p className="text-sm font-medium truncate transition-all duration-200">{displayName}</p>
                             <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground/50" />
                           </>
                         )}
                       </motion.li>
-                    </div>
+                    </button>
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent sideOffset={5} className="w-56">
