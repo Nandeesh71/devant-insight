@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useCallback 
 import { apiClient } from "@/lib/apiClient";
 import { API_BASE } from "@/config/api";
 import { supabase } from "@/lib/supabase";
+import { toast } from "@/components/ui/sonner";
 
 export type AuthUser = {
   id: string;
@@ -97,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("devant.activeProjectId");
     setToken(null);
     setUser(null);
+    toast.success("Signed out successfully");
     window.location.href = "/login";
   };
 

@@ -46,7 +46,7 @@ import {
 
 const sidebarVariants = {
   open:   { width: "15rem" },
-  closed: { width: "3.05rem" },
+  closed: { width: "4rem" },
 };
 
 const contentVariants = {

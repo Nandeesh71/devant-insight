@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { toast } from "@/components/ui/sonner";
 
 function param(params: URLSearchParams, key: string) {
   return params.get(key) || undefined;
@@ -115,7 +116,10 @@ export default function AuthCallback() {
       setSession(token, parsedUser);
       // Use silent refresh so a transient backend validation failure doesn't
       // immediately clear the session and send the user back to login.
-      refresh({ silent: true }).finally(() => navigate(normalizeNext(next), { replace: true }));
+      refresh({ silent: true }).finally(() => {
+        toast.success("Welcome back!");
+        navigate(normalizeNext(next), { replace: true });
+      });
       return;
     }
 
@@ -142,7 +146,10 @@ export default function AuthCallback() {
           github_connected: false,
         });
         // Silent refresh for the same reason as above.
-        refresh({ silent: true }).finally(() => navigate(normalizeNext(next || "/dashboard"), { replace: true }));
+        refresh({ silent: true }).finally(() => {
+          toast.success("Welcome back!");
+          navigate(normalizeNext(next || "/dashboard"), { replace: true });
+        });
       }).catch((exchangeError) => {
         setError(exchangeError instanceof Error ? exchangeError.message : "Failed to complete Supabase sign-in");
       });
