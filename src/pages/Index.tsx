@@ -564,14 +564,13 @@ function BottomBar({ commit }: { commit: UiCommit }) {
 }
 
 /* ---------------- Repo linking ---------------- */
-function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: () => void; onLinked: () => void }) {
+function LinkRepoModal({ open, onClose, onLinked, projects }: { open: boolean; onClose: () => void; onLinked: () => void; projects: Project[] }) {
   const { user, connectGithub } = useAuth();
   const [repos, setRepos] = useState<GithubRepo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [linking, setLinking] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (!open || !user?.github_connected) return;
@@ -579,11 +578,18 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
     setLoading(true);
     setError(null);
     apiClient.get<GithubRepo[]>("/api/github/repos")
-      .then((data) => { if (!cancelled) setRepos(Array.isArray(data) ? data : []); })
+      .then((data) => {
+        if (!cancelled) {
+          const allRepos = Array.isArray(data) ? data : [];
+          const linkedRepoNames = new Set(projects.map(p => getRepoFullName(p)));
+          const availableRepos = allRepos.filter(repo => !linkedRepoNames.has(repo.full_name || repo.name));
+          setRepos(availableRepos);
+        }
+      })
       .catch((e) => { if (!cancelled) setError((e as Error).message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [open, user?.github_connected]);
+  }, [open, user?.github_connected, projects]);
 
   async function linkRepo(repo: GithubRepo) {
     const fullName = repo.full_name || repo.name;
@@ -609,126 +615,117 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-[2px]" onClick={onClose}>
-      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-[520px] max-h-[600px] flex flex-col overflow-hidden border border-gray-100" onClick={(e) => e.stopPropagation()}>
         
         {/* Header Section */}
-        <div className="border-b border-border px-6 pb-5 pt-5">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-[20px] font-bold tracking-tight text-foreground">Import Git Repository</h2>
-            <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><X size={18} /></button>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <div>
+            <h2 className="text-[15px] font-semibold text-gray-900">Import Git Repository</h2>
+            <p className="text-xs text-gray-400 mt-0.5">Select a repository to link to your project</p>
           </div>
+          <button onClick={onClose}
+            className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-          {!user?.github_connected ? (
-             <div className="flex flex-col items-center justify-center py-10 text-center">
-               <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/10 text-brand">
-                 <Github size={28} strokeWidth={1.5} />
-               </div>
-               <p className="mb-1 text-[15px] font-semibold text-foreground">Connect your GitHub account</p>
-               <p className="mb-6 text-[13px] text-muted-foreground">Link GitHub to import and track your repositories.</p>
-               <button onClick={connectGithub} className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-brand/90"><Github size={15} strokeWidth={1.5} /> Connect GitHub</button>
+        {!user?.github_connected ? (
+           <div className="flex flex-col items-center justify-center py-10 text-center">
+             <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+               <Github size={28} strokeWidth={1.5} />
              </div>
-          ) : (
-            <div className="relative z-10 flex flex-col gap-4 px-6 pb-4 sm:flex-row">
-              {/* Account Dropdown */}
-              <div className="relative w-full sm:w-[260px]">
-                <button 
-                  onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                  className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-muted"
-                >
-                  <div className="flex items-center gap-3 font-medium">
-                    <Github size={16} />
-                    <span>{user.github_login || user.name || "GitHub Account"}</span>
-                  </div>
-                  <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", accountDropdownOpen && "rotate-180")} />
-                </button>
-
-                {accountDropdownOpen && (
-                  <div className="absolute left-0 top-full mt-2 w-full overflow-hidden rounded-lg border border-border bg-card shadow-card">
-                    <div className="flex items-center justify-between bg-muted px-4 py-3">
-                      <div className="flex items-center gap-3 text-sm font-medium text-foreground">
-                        <Github size={16} />
-                        {user.github_login || user.name || "GitHub Account"}
-                      </div>
-                      <CheckCircle2 size={16} className="text-foreground" />
-                    </div>
-                    <div className="border-t border-border">
-                      <button onClick={connectGithub} className="flex w-full items-center gap-3 px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted">
-                         <PlusCircle size={16} className="text-muted-foreground" />
-                         Add GitHub Account
-                      </button>
-                      <button className="flex w-full items-center gap-3 px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted">
-                        <List size={16} className="text-muted-foreground" />
-                        Switch Git Provider
-                      </button>
-                    </div>
-                  </div>
-                )}
+             <p className="mb-1 text-[15px] font-semibold text-gray-900">Connect your GitHub account</p>
+             <p className="mb-6 text-[13px] text-gray-500">Link GitHub to import and track your repositories.</p>
+             <button onClick={connectGithub} className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-6 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-gray-800"><Github size={15} strokeWidth={1.5} /> Connect GitHub</button>
+           </div>
+        ) : (
+          <>
+            {/* Filter Bar (account dropdown + search) */}
+            <div className="flex gap-2 px-6 py-4 border-b border-gray-50">
+              {/* Account selector */}
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 cursor-pointer hover:border-gray-300 transition-colors min-w-[140px]">
+                <Github className="w-4 h-4 text-gray-500" />
+                <span className="flex-1 text-sm">{user.github_login || user.name || "GitHub"}</span>
+                <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
               </div>
 
-              {/* Search Bar */}
-              <div className="relative flex-1">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input 
+              {/* Search */}
+              <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                <Search className="w-4 h-4 text-gray-400 shrink-0" />
+                <input
+                  type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search..." 
-                  className="w-full rounded-lg border border-border bg-background py-2.5 pl-11 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground focus:ring-2 focus:ring-foreground/20"
+                  placeholder="Search repositories..."
+                  className="flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
                 />
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Repository List */}
-        {user?.github_connected && (
-          <div className="flex-1 overflow-y-auto bg-card pb-4 max-h-[350px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 dark:[&::-webkit-scrollbar-thumb]:bg-white/10 dark:hover:[&::-webkit-scrollbar-thumb]:bg-white/20">
-            {loading && <div className="flex items-center justify-center gap-3 py-16 text-muted-foreground"><Loader2 className="animate-spin" size={20} /> Loading repositories...</div>}
-            {error && <div className="p-8"><ErrorBanner error={error} /></div>}
-            
-            {!loading && !error && repos.length === 0 && (
-              <div className="py-16 text-center text-muted-foreground">No repositories found.</div>
-            )}
-
-            {!loading && !error && repos.length > 0 && filteredRepos.length === 0 && (
-              <div className="py-16 text-center text-muted-foreground">No repositories match your search.</div>
-            )}
-
-            {!loading && !error && filteredRepos.map((repo) => {
-              const fullName = repo.full_name || repo.name;
-              // Attempt to parse just the repo name if it has owner/repo format
-              const displayName = fullName.split("/").pop() || fullName;
-              const isPrivate = repo.private;
-              const timeAgo = repo.updated_at ? getRelativeTime(new Date(repo.updated_at)) : "Unknown time";
-
-              return (
-                <div key={String(repo.id || fullName)} className="group flex items-center justify-between border-b border-border/50 px-5 py-4 transition-colors hover:bg-foreground/5 dark:hover:bg-white/5">
-                  <div className="flex min-w-0 items-center gap-4">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-purple-600 to-blue-500 text-white shadow-sm">
-                       <Zap size={16} className="fill-current text-yellow-300" />
-                    </div>
-                    <div className="flex min-w-0 flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="truncate text-[15px] font-semibold text-foreground group-hover:text-foreground">{displayName}</span>
-                        {isPrivate && <Lock size={13} className="shrink-0 text-muted-foreground" />}
-                        <span className="flex shrink-0 items-center gap-1.5 text-[13px] text-muted-foreground">
-                          <span className="text-[10px] opacity-50">•</span>
-                          {timeAgo}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <button 
-                    onClick={() => linkRepo(repo)} 
-                    disabled={!!linking}
-                    className="ml-4 shrink-0 rounded-md bg-foreground px-4 py-1.5 text-[13px] font-semibold text-background shadow-sm transition-opacity hover:opacity-80 disabled:opacity-50"
-                  >
-                    {linking === fullName ? "Importing..." : "Import"}
-                  </button>
+            {/* Repository List & States */}
+            <div className="flex-1 overflow-y-auto divide-y divide-gray-50 bg-white [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-200 hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
+              {loading && (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
                 </div>
-              );
-            })}
-          </div>
+              )}
+              
+              {error && <div className="p-8"><ErrorBanner error={error} /></div>}
+              
+              {!loading && !error && repos.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 gap-2">
+                  <CheckCircle2 className="w-6 h-6 text-gray-300" />
+                  <p className="text-sm text-gray-400">All repositories are already linked.</p>
+                </div>
+              )}
+
+              {!loading && !error && repos.length > 0 && filteredRepos.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 gap-2">
+                  <Search className="w-6 h-6 text-gray-300" />
+                  <p className="text-sm text-gray-400">No repositories match your search.</p>
+                </div>
+              )}
+
+              {!loading && !error && filteredRepos.map((repo) => {
+                const fullName = repo.full_name || repo.name;
+                const displayName = fullName.split("/").pop() || fullName;
+                const isPrivate = repo.private;
+                const timeAgo = repo.updated_at ? getRelativeTime(new Date(repo.updated_at)) : "Unknown time";
+
+                return (
+                  <div key={String(repo.id || fullName)}
+                    className="flex items-center gap-3 px-6 py-3.5 hover:bg-gray-50 transition-colors group">
+                    
+                    {/* Icon */}
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                      <Github className="w-4 h-4 text-gray-500" />
+                    </div>
+
+                    {/* Repo info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium text-gray-800 truncate">
+                          {displayName}
+                        </span>
+                        {isPrivate && (
+                          <Lock className="w-3 h-3 text-gray-400 shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">{timeAgo}</p>
+                    </div>
+
+                    {/* Import button */}
+                    <button
+                      onClick={() => linkRepo(repo)}
+                      disabled={!!linking}
+                      className="px-4 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium hover:bg-gray-700 transition-colors shrink-0 opacity-0 group-hover:opacity-100 duration-150 disabled:opacity-50">
+                      {linking === fullName ? "Importing..." : "Import"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -917,7 +914,7 @@ export default function Index() {
         )}
       </main>
 
-      <LinkRepoModal open={showLink} onClose={() => setShowLink(false)} onLinked={refetch} />
+      <LinkRepoModal open={showLink} onClose={() => setShowLink(false)} onLinked={refetch} projects={projects} />
       <DisconnectModal isOpen={Boolean(disconnectTarget)} onClose={() => setDisconnectTarget(null)} onConfirm={handleDisconnect} projectName={disconnectTarget ? getRepoName(disconnectTarget) : ""} />
     </div>
   );
