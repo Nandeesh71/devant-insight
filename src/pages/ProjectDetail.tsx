@@ -884,7 +884,7 @@ export default function ProjectDetail() {
           isOpen={Boolean(disconnectTarget)}
           onClose={() => setDisconnectTarget(null)}
           onConfirm={handleDisconnect}
-          repoFullName={disconnectTarget ? String(getRepoName(disconnectTarget)) : ""}
+          repoFullName={disconnectTarget ? String(getRepoFullName(disconnectTarget)) : ""}
         />
       </TooltipProvider>
     </div>

@@ -14,7 +14,7 @@ export function DisconnectModal({ isOpen, onClose, onConfirm, repoFullName }: Di
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
 
-  const confirmationString = `delete ${repoFullName}`;
+  const confirmationString = `disconnect ${repoFullName}`;
   const isMatch = inputValue === confirmationString;
 
   React.useEffect(() => {
@@ -89,13 +89,13 @@ export function DisconnectModal({ isOpen, onClose, onConfirm, repoFullName }: Di
             </p>
 
             <div className="w-full px-3 py-2 rounded-lg text-sm font-mono bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 select-all break-all">
-              delete {repoFullName}
+              disconnect {repoFullName}
             </div>
 
             <input
               autoFocus
               className="w-full px-3 py-2 rounded-lg text-sm font-mono bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-400 placeholder:text-gray-400"
-              placeholder={`delete ${repoFullName}`}
+              placeholder={`disconnect ${repoFullName}`}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               disabled={isDeleting}

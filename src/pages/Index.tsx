@@ -915,7 +915,7 @@ export default function Index() {
       </main>
 
       <LinkRepoModal open={showLink} onClose={() => setShowLink(false)} onLinked={refetch} projects={projects} />
-      <DisconnectModal isOpen={Boolean(disconnectTarget)} onClose={() => setDisconnectTarget(null)} onConfirm={handleDisconnect} projectName={disconnectTarget ? getRepoName(disconnectTarget) : ""} />
+      <DisconnectModal isOpen={Boolean(disconnectTarget)} onClose={() => setDisconnectTarget(null)} onConfirm={handleDisconnect} repoFullName={disconnectTarget ? getRepoFullName(disconnectTarget) : ""} />
     </div>
   );
 }
