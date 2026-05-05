@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge"
 import {
+  Bell,
   Blocks,
   ChevronsUpDown,
   FileClock,
@@ -14,15 +15,17 @@ import {
   LogOut,
   MessageSquareText,
   MessagesSquare,
+  Moon,
   Plus,
   Settings,
+  Sun,
   UserCircle,
   UserCog,
   UserSearch,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Link as RouterLink, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -33,6 +36,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton"
+import { useAuth } from "@/context/AuthContext";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const sidebarVariants = {
   open: {
@@ -81,8 +86,27 @@ const staggerVariants = {
 
 export function SessionNavBar() {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isDark, setIsDark] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const pathname = location.pathname;
+  const { user, logout } = useAuth();
+
+  useEffect(() => {
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    setIsDark(isDarkMode);
+  }, []);
+
+  const handleThemeToggle = () => {
+    const root = document.documentElement;
+    root.classList.toggle('dark');
+    setIsDark(!isDark);
+  };
+
+  const handleSignOut = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
   
   return (
     <motion.div
@@ -326,10 +350,29 @@ export function SessionNavBar() {
                   </div>
                 </ScrollArea>
               </div>
-              <div className="flex flex-col p-2">
+              <div className="flex flex-col gap-2 p-2">
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={handleThemeToggle}
+                        className="flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-muted hover:text-primary"
+                        aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+                      >
+                        {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                        <motion.span variants={variants}>
+                          {!isCollapsed && (
+                            <p className="ml-2 text-sm font-medium">{isDark ? 'Light' : 'Dark'}</p>
+                          )}
+                        </motion.span>
+                      </button>
+                    </TooltipTrigger>
+                    {isCollapsed && <TooltipContent side="right">{isDark ? 'Light theme' : 'Dark theme'}</TooltipContent>}
+                  </Tooltip>
+                </TooltipProvider>
                 <RouterLink
                   to="/settings/integrations"
-                  className="mt-auto flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5   transition hover:bg-muted hover:text-primary"
+                  className="flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-muted hover:text-primary"
                 >
                   <Settings className="h-4 w-4 shrink-0" />{" "}
                   <motion.li variants={variants}>
@@ -341,10 +384,10 @@ export function SessionNavBar() {
                 <div>
                   <DropdownMenu modal={false}>
                     <DropdownMenuTrigger className="w-full">
-                      <div className="flex h-8 w-full flex-row items-center gap-2 rounded-md px-2 py-1.5  transition hover:bg-muted hover:text-primary">
+                      <div className="flex h-8 w-full flex-row items-center gap-2 rounded-md px-2 py-1.5 transition hover:bg-muted hover:text-primary">
                         <Avatar className="size-4">
                           <AvatarFallback>
-                            A
+                            {user?.name?.slice(0, 1).toUpperCase() || user?.email?.slice(0, 1).toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         <motion.li
@@ -364,15 +407,15 @@ export function SessionNavBar() {
                       <div className="flex flex-row items-center gap-2 p-2">
                         <Avatar className="size-6">
                           <AvatarFallback>
-                            AL
+                            {user?.name?.slice(0, 2).toUpperCase() || user?.email?.slice(0, 2).toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col text-left">
                           <span className="text-sm font-medium">
-                            {`Andrew Luo`}
+                            {user?.name || 'User'}
                           </span>
                           <span className="line-clamp-1 text-xs text-muted-foreground">
-                            {`andrew@usehindsight.com`}
+                            {user?.email || 'No email'}
                           </span>
                         </div>
                       </div>
@@ -387,6 +430,7 @@ export function SessionNavBar() {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="flex items-center gap-2"
+                        onClick={handleSignOut}
                       >
                         <LogOut className="h-4 w-4" /> Sign out
                       </DropdownMenuItem>

@@ -171,16 +171,6 @@ function toUiCommit(commit: Commit): UiCommit {
   };
 }
 
-function useTheme() {
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
-  const toggle = () => {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle("dark", next);
-  };
-  return { dark, toggle };
-}
-
 /* ---------------- Shared UI ---------------- */
 function EmptyState({ title, description, actionLabel, onAction, icon: Icon = Github }: { title: string; description: string; actionLabel?: string; onAction?: () => void; icon?: typeof Github }) {
   return (
@@ -198,182 +188,11 @@ function EmptyState({ title, description, actionLabel, onAction, icon: Icon = Gi
 }
 
 /* ---------------- Layout ---------------- */
-function IconRail({ tab, setTab, alertsCount, onSettingsNavigate, onSignOut }: { tab: string; setTab: (t: string) => void; alertsCount: number; onSettingsNavigate: () => void; onSignOut: () => void }) {
-  const items = [
-    { id: "portfolio", icon: LayoutDashboard, label: "Portfolio" },
-    { id: "commits", icon: GitFork, label: "Commits" },
-    { id: "team", icon: User, label: "Team" },
-  ];
-  return (
-    <TooltipProvider delayDuration={150}>
-      <aside className="hidden w-14 shrink-0 flex-col items-center gap-2 bg-rail py-4 lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:h-dvh">
-        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg">
-          <img src="/devant-logo.svg" alt="DevANT" className="h-full w-full text-[#1e293b]" />
-        </div>
-        {items.map((item) => {
-          const active = tab === item.id;
-          return (
-            <Tooltip key={item.id}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  aria-label={item.label}
-                  onClick={() => setTab(item.id)}
-                  className={cn(
-                    "relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-[hsl(var(--sidebar-icon))] transition-all duration-150 ease-out",
-                    active
-                      ? "bg-brand/10 text-white ring-1 ring-brand/30 shadow-sm"
-                      : "hover:bg-primary/10 hover:text-white hover:shadow-sm"
-                  )}
-                >
-                  <item.icon size={18} strokeWidth={1.5} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="border-border bg-card text-foreground">{item.label}</TooltipContent>
-            </Tooltip>
-          );
-        })}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label="Alerts"
-              onClick={() => setTab("alerts")}
-              className="relative flex h-11 w-11 items-center justify-center rounded-lg text-[hsl(var(--sidebar-icon))] transition-all duration-150 ease-out hover:bg-primary/10 hover:text-white"
-            >
-              <Bell size={18} strokeWidth={1.5} />
-              {alertsCount > 0 && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-destructive" />}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="right" className="border-border bg-card text-foreground">Alerts</TooltipContent>
-        </Tooltip>
-        <div className="mt-auto flex flex-col gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button type="button" aria-label="Settings" onClick={onSettingsNavigate} className="flex h-11 w-11 items-center justify-center rounded-lg text-[hsl(var(--sidebar-icon))] transition-all duration-150 ease-out hover:bg-primary/10 hover:text-white"><Settings size={18} strokeWidth={1.5} /></button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="border-border bg-card text-foreground">Settings</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button type="button" aria-label="Logout" onClick={onSignOut} className="flex h-11 w-11 items-center justify-center rounded-lg text-[hsl(var(--sidebar-icon))] transition-all duration-150 ease-out hover:bg-primary/10 hover:text-white"><LogOut size={18} strokeWidth={1.5} /></button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="border-border bg-card text-foreground">Logout</TooltipContent>
-          </Tooltip>
-        </div>
-      </aside>
-    </TooltipProvider>
-  );
-}
 
-function MiddleSidebar({ projects, activeId, onSelect }: { projects: Project[]; activeId: string | null; onSelect: (project: Project) => void }) {
-  const location = useLocation();
-  const [query, setQuery] = useState("");
-  const filtered = projects.filter((p) => getRepoFullName(p).toLowerCase().includes(query.toLowerCase()));
 
-  const isRepoActive = (repoFullName: string) => {
-    const [owner, ...repoParts] = repoFullName.split("/");
-    const repo = repoParts.join("/");
-    return owner && repo && location.pathname === `/${owner}/${repo}`;
-  };
-  return (
-    <aside className="hidden w-64 shrink-0 flex-col bg-sidebar-bg text-primary-foreground lg:fixed lg:inset-y-0 lg:left-14 lg:z-30 lg:flex lg:h-dvh">
-      <div className="flex items-center gap-2 px-4 pb-3 pt-4">
-        <h2 className="flex-1 text-[15px] font-semibold">Projects</h2>
-      </div>
-      <div className="px-3 pb-3">
-        <div className="flex items-center gap-2 rounded-lg bg-sidebar-search px-3 py-2">
-          <Search size={14} strokeWidth={1.5} className="text-sidebar-text" />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search linked repos..." className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-sidebar-label" />
-        </div>
-      </div>
-      <div className="px-3">
-        <button type="button" className={cn("flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-150 ease-out", location.pathname === "/" ? "bg-brand text-primary-foreground shadow-brand hover:bg-brand/90 hover:shadow-lg" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground")}>
-          <PieChart size={14} strokeWidth={1.5} /><span className="flex-1 text-left">Overview</span>
-        </button>
-      </div>
-      <div className="mb-1 mt-5 flex items-center justify-between px-5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-label">Linked repositories</span>
-      </div>
-      <div className="scrollbar-hide flex-1 overflow-y-auto px-3">
-        {filtered.length === 0 && (
-          <div className="rounded-lg border border-sidebar-tree p-3 text-xs text-sidebar-text">No linked repositories yet.</div>
-        )}
-        {filtered.map((p) => {
-          const active = activeId === p.id || isRepoActive(getRepoFullName(p));
-          const repo = getRepoFullName(p);
-          return (
-            <button key={p.id} type="button" onClick={() => onSelect(p)} className={cn("mb-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-[13px] transition-all duration-150 ease-out", active ? "bg-primary/15 text-primary-foreground" : "text-sidebar-text hover:bg-primary/10 hover:text-primary-foreground")}>
-              <Folder size={14} strokeWidth={1.5} className="shrink-0" />
-              <span className="min-w-0 flex-1 truncate text-left">{repo}</span>
-            </button>
-          );
-        })}
-      </div>
-      <div className="mt-auto border-t border-white/10 px-4 py-3">
-        <div className="flex items-center justify-between gap-3 text-[11px] text-sidebar-label">
-          <RouterLink to="/Terms-of-Service" className="transition-colors hover:text-primary-foreground hover:underline">Terms of Service</RouterLink>
-          <span>•</span>
-          <RouterLink to="/Privacy-Policy" className="transition-colors hover:text-primary-foreground hover:underline">Privacy Policy</RouterLink>
-        </div>
-      </div>
-    </aside>
-  );
-}
 
-function TopBar({ dark, toggle, project, onBell, onSettingsNavigate, onProfileNavigate, onSignOut }: { dark: boolean; toggle: () => void; project: Project | null; onBell: () => void; onSettingsNavigate: () => void; onProfileNavigate: () => void; onSignOut: () => void }) {
-  const { user } = useAuth();
-  return (
-    <TooltipProvider delayDuration={150}>
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 sm:px-6">
-      <div className="ml-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted">
-              {dark ? <Moon size={18} strokeWidth={1.5} /> : <Sun size={18} strokeWidth={1.5} />}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="border-border bg-card text-foreground">{dark ? "Light theme" : "Dark theme"}</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" aria-label="Alerts" onClick={onBell} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted"><Bell size={18} strokeWidth={1.5} /></button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Alerts</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" aria-label="Settings" onClick={onSettingsNavigate} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted"><Settings size={18} strokeWidth={1.5} /></button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Settings</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" aria-label="Logout" onClick={onSignOut} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 ease-out hover:bg-muted"><LogOut size={18} strokeWidth={1.5} /></button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Logout</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label="Profile"
-              onClick={onProfileNavigate}
-              className="rounded-full outline-none ring-offset-2 ring-offset-background focus-visible:ring-2"
-            >
-              <Avatar className="h-9 w-9 border border-border/60">
-                <AvatarImage src={user?.avatar_url || ""} alt="User avatar" />
-                <AvatarFallback className="bg-accent text-xs font-bold text-brand">{(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}</AvatarFallback>
-              </Avatar>
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="border-border bg-card text-foreground">Profile</TooltipContent>
-        </Tooltip>
-      </div>
-      </div>
-    </TooltipProvider>
-  );
-}
+
+
 
 /* ---------------- Dashboard sections ---------------- */
 type WorkspaceStats = {
@@ -919,7 +738,6 @@ function LinkRepoModal({ open, onClose, onLinked }: { open: boolean; onClose: ()
 /* ---------------- Page ---------------- */
 export default function Index() {
   const navigate = useNavigate();
-  const { dark, toggle } = useTheme();
   const { user, token, loading: authLoading, signOut } = useAuth();
   const { projectId, setProjectId } = useProject();
   const data = useDevantData();
@@ -1077,15 +895,6 @@ export default function Index() {
     <div className="flex min-h-screen w-full overflow-hidden bg-background">
       <LoadingSpinner visible={loading} />
       <main className="relative min-w-0 flex-1 overflow-y-auto bg-card pb-24 ml-[3.05rem]">
-        <TopBar
-          dark={dark}
-          toggle={toggle}
-          project={activeProject}
-          onBell={() => null}
-          onSettingsNavigate={() => navigate('/settings')}
-          onProfileNavigate={() => navigate('/profile')}
-          onSignOut={signOut}
-        />
         <ErrorBanner error={error} onRetry={refetch} />
         <div className="flex flex-wrap items-center justify-between gap-2 px-6 pt-4">
           <div>
