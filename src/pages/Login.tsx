@@ -1,28 +1,30 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Activity, AlertCircle, Github, Lock, Mail } from "lucide-react";
+import { Activity, Github } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demoData";
+import { TEST_SESSION_TOKEN, getTestSessionUser, isTestCredentials } from "@/lib/testSession";
 
 export default function Login() {
-  const { user, signInGoogle, signInGithub, signInDemo, loading } = useAuth();
+  const { user, signInGoogle, signInGithub, loading, setSession } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState(DEMO_EMAIL);
-  const [password, setPassword] = useState(DEMO_PASSWORD);
-  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (loading || user) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("test_email") || params.get("email");
+    const password = params.get("test_password") || params.get("password");
+
+    if (!email || !password || !isTestCredentials(email, password)) return;
+
+    setSession(TEST_SESSION_TOKEN, getTestSessionUser());
+    localStorage.setItem("devant.isTestSession", "1");
+    navigate("/", { replace: true });
+  }, [loading, user, setSession, navigate]);
 
   useEffect(() => {
     if (!loading && user) navigate(user.github_connected ? "/" : "/connect-github", { replace: true });
   }, [loading, user, navigate]);
-
-  const handleDemoLogin = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-    const ok = signInDemo(email, password);
-    if (!ok) {
-      setError("Use the test credentials shown below to open the demo analytics session.");
-    }
-  };
 
   if (loading) {
     return (
@@ -47,7 +49,7 @@ export default function Login() {
           </div>
         </div>
         <h2 className="text-2xl font-bold text-foreground mb-1">Welcome back</h2>
-        <p className="text-sm text-muted-foreground mb-6">Sign in to track your real GitHub activity, or use the test account to see demo analytics.</p>
+        <p className="text-sm text-muted-foreground mb-6">Sign in to track your real GitHub activity.</p>
 
         <div className="space-y-2">
           <button
@@ -65,59 +67,6 @@ export default function Login() {
           >
             <Github size={16} /> Continue with GitHub
           </button>
-        </div>
-
-        <div className="mt-6 rounded-2xl border border-border bg-accent/30 p-4">
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
-            <Lock size={14} /> Test login
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Use these credentials to load mock analytics and project data for domain verification.
-          </p>
-
-          <form onSubmit={handleDemoLogin} className="mt-4 space-y-3">
-            <label className="block">
-              <span className="mb-1 flex items-center gap-2 text-xs font-medium text-muted-foreground"><Mail size={12} /> Email</span>
-              <input
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                type="email"
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand"
-                placeholder={DEMO_EMAIL}
-              />
-            </label>
-
-            <label className="block">
-              <span className="mb-1 flex items-center gap-2 text-xs font-medium text-muted-foreground"><Lock size={12} /> Password</span>
-              <input
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                type="password"
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand"
-                placeholder={DEMO_PASSWORD}
-              />
-            </label>
-
-            {error ? (
-              <div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                <AlertCircle size={14} className="mt-0.5 shrink-0" />
-                <span>{error}</span>
-              </div>
-            ) : null}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Open demo analytics
-            </button>
-          </form>
-
-          <div className="mt-3 rounded-xl border border-dashed border-border bg-background/70 px-3 py-2 text-xs text-muted-foreground">
-            <div><span className="font-semibold text-foreground">Email:</span> {DEMO_EMAIL}</div>
-            <div><span className="font-semibold text-foreground">Password:</span> {DEMO_PASSWORD}</div>
-          </div>
         </div>
 
         <div className="mt-6 pt-4 border-t border-border text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5">
