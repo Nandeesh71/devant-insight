@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { apiClient } from "@/lib/apiClient";
 import { API_BASE } from "@/config/api";
-import { supabase } from "@/lib/supabase";
 
 export type AuthUser = {
   id: string;
@@ -91,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = () => {
-    void supabase.auth.signOut();
+    void apiClient.post("/api/auth/logout").catch(() => {});
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem("devant.activeProjectId");
