@@ -1,4 +1,5 @@
 import { API_BASE } from "@/config/api";
+import { getDemoResponse, isDemoToken } from "@/lib/demoData";
 
 type Json = Record<string, unknown> | unknown[] | null;
 
@@ -7,6 +8,11 @@ async function request<T>(method: string, path: string, body?: Json): Promise<T>
   const headers: Record<string, string> = {};
   const token = typeof window !== "undefined" ? localStorage.getItem("devant.token") : null;
   if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  if (isDemoToken(token)) {
+    return getDemoResponse(method, path) as T;
+  }
+
   const init: RequestInit = { method, headers };
   if (body !== undefined && (method === "POST" || method === "PUT")) {
     headers["Content-Type"] = "application/json";
