@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/apiClient";
 import { useProject } from "@/context/ProjectContext";
+import { getRealtimeUrl, parseRealtimeMessage } from "@/lib/realtime";
 
 export type Project = { id: string; name: string; [k: string]: unknown };
 export type Commit = {
@@ -51,6 +52,39 @@ export function useDevantData(): DevantData {
   const [health, setHealth] = useState<Health | null>(null);
   const [tick, setTick] = useState(0);
   const [hydratedProjects, setHydratedProjects] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const token = localStorage.getItem("devant.token");
+    if (!token) return;
+
+    const socket = new WebSocket(getRealtimeUrl());
+
+    socket.onopen = () => {
+      socket.send(JSON.stringify({
+        type: "subscribe",
+        projectIds: projects.map((p) => p.id),
+      }));
+    };
+
+    socket.onmessage = (event) => {
+      const msg = parseRealtimeMessage(String(event.data));
+      if (!msg || msg.type !== "project.update") return;
+
+      const updatedProjectId = String(msg.projectId || "");
+      if (!updatedProjectId) return;
+
+      const relevant = updatedProjectId === projectId || !projectId;
+      if (!relevant) return;
+
+      setTick((current) => current + 1);
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, [projectId, projects]);
 
   useEffect(() => {
     let cancelled = false;

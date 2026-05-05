@@ -38,6 +38,7 @@ import { LoadingSpinner, ErrorBanner } from "@/components/StatusBanners";
 import { useAuth } from "@/context/AuthContext";
 import { useDevantData, type Project } from "@/hooks/useDevantData";
 import { apiClient } from "@/lib/apiClient";
+import { getRealtimeUrl, parseRealtimeMessage } from "@/lib/realtime";
 import { toast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -210,6 +211,31 @@ export default function ProjectDetail() {
       cancelled = true;
     };
   }, [resolvedProjectId, summaryData, summaryLoading, hydrationAttempted]);
+
+  useEffect(() => {
+    if (!resolvedProjectId) return;
+    if (typeof window === "undefined") return;
+    if (!localStorage.getItem("devant.token")) return;
+
+    const socket = new WebSocket(getRealtimeUrl());
+
+    socket.onopen = () => {
+      socket.send(JSON.stringify({ type: "subscribe", projectIds: [resolvedProjectId] }));
+    };
+
+    socket.onmessage = (event) => {
+      const msg = parseRealtimeMessage(String(event.data));
+      if (!msg || msg.type !== "project.update") return;
+      if (String(msg.projectId || "") !== resolvedProjectId) return;
+
+      setDetailTick((current) => current + 1);
+      refetch();
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, [resolvedProjectId, refetch]);
 
   // Fetch deployments when user opens Deployments tab
   useEffect(() => {
