@@ -924,7 +924,6 @@ export default function Index() {
   const { projectId, setProjectId } = useProject();
   const data = useDevantData();
   const { loading, error, refetch, projects } = data;
-  const [tab, setTab] = useState("portfolio");
   const [sort, setSort] = useState("Newest");
   const [showLink, setShowLink] = useState(false);
   const [disconnectTarget, setDisconnectTarget] = useState<Project | null>(null);
@@ -1077,14 +1076,12 @@ export default function Index() {
   return (
     <div className="flex min-h-screen w-full overflow-hidden bg-background">
       <LoadingSpinner visible={loading} />
-      <IconRail tab={tab} setTab={setTab} alertsCount={0} onSettingsNavigate={() => navigate('/settings')} onSignOut={signOut} />
-      <MiddleSidebar projects={projects} activeId={projectId} onSelect={handleProjectSelect} />
-      <main className="relative min-w-0 flex-1 overflow-y-auto bg-card pb-24 lg:ml-[19.5rem]">
+      <main className="relative min-w-0 flex-1 overflow-y-auto bg-card pb-24">
         <TopBar
           dark={dark}
           toggle={toggle}
           project={activeProject}
-          onBell={() => setTab("alerts")}
+          onBell={() => null}
           onSettingsNavigate={() => navigate('/settings')}
           onProfileNavigate={() => navigate('/profile')}
           onSignOut={signOut}

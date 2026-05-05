@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import ProjectDetail from "./pages/ProjectDetail.tsx";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AppShell from "./components/AppShell";
 import NotFound from "./pages/NotFound.tsx";
 import { ProjectProvider } from "./context/ProjectContext";
 import { AuthProvider } from "./context/AuthContext";
@@ -33,18 +34,20 @@ const App = () => (
       <ProjectProvider>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/login" element={<Login />} />
             <Route path="/Terms-of-Service" element={<Terms />} />
             <Route path="/Privacy-Policy" element={<Privacy />} />
             <Route path="/terms" element={<Navigate to="/Terms-of-Service" replace />} />
             <Route path="/privacy" element={<Navigate to="/Privacy-Policy" replace />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/connect-github" element={<ProtectedRoute><ConnectGithub /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/owner/:owner/:repo" element={<LegacyOwnerRouteRedirect />} />
-            <Route path="/:owner/:repo" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
+            <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+              <Route path="/" element={<Index />} />
+              <Route path="/connect-github" element={<ConnectGithub />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/owner/:owner/:repo" element={<LegacyOwnerRouteRedirect />} />
+              <Route path="/:owner/:repo" element={<ProjectDetail />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
