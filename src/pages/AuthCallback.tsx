@@ -135,45 +135,32 @@ export default function AuthCallback() {
     }
 
     if (code) {
-      void supabase.auth.exchangeCodeForSession(code).then(({ data, error: exchangeError }) => {
-        if (exchangeError) {
-          setError(exchangeError.message);
-          return;
-        }
-
-        const session = data.session;
-        const supabaseUser = session?.user;
-        if (!session?.access_token || !supabaseUser) {
-          setError("Missing Supabase session in callback");
-          return;
-        }
-
-        setSession(session.access_token, {
-          id: supabaseUser.id,
-          email: supabaseUser.email || "",
-          name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email || "",
-          avatar_url: supabaseUser.user_metadata?.avatar_url,
-          provider: "google",
-          github_connected: false,
-        });
-        // Silent refresh for the same reason as above.
-        refresh({ silent: true }).finally(() => {
-          if (!hasToasted.current) {
-            hasToasted.current = true;
-            toast.success("Welcome back!", {
-              style: {
-                background: "#1e1b3a",
-                border: "1px solid rgba(139, 92, 246, 0.4)",
-                color: "#ddd6fe",
-              },
-              icon: "✦",
-            });
+      void apiClient
+        .post<{ token: string; user?: import("@/context/AuthContext").AuthUser }>("/api/auth/exchange", { code })
+        .then((res) => {
+          if (!res?.token) {
+            setError("Missing token from backend exchange");
+            return;
           }
-          navigate(normalizeNext(next || "/dashboard"), { replace: true });
+          setSession(res.token, res.user);
+          refresh({ silent: true }).finally(() => {
+            if (!hasToasted.current) {
+              hasToasted.current = true;
+              toast.success("Welcome back!", {
+                style: {
+                  background: "#1e1b3a",
+                  border: "1px solid rgba(139, 92, 246, 0.4)",
+                  color: "#ddd6fe",
+                },
+                icon: "✦",
+              });
+            }
+            navigate(normalizeNext(next || "/dashboard"), { replace: true });
+          });
+        })
+        .catch((exchangeError) => {
+          setError(exchangeError instanceof Error ? exchangeError.message : "Failed to complete sign-in");
         });
-      }).catch((exchangeError) => {
-        setError(exchangeError instanceof Error ? exchangeError.message : "Failed to complete Supabase sign-in");
-      });
       return;
     }
 
