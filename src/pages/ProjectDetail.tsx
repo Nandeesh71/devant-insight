@@ -274,7 +274,7 @@ export default function ProjectDetail() {
       if (!resolvedProjectId) return;
       setCommitsLoadingLocal(true);
       try {
-        const rows = await apiClient.get<Record<string, unknown>[]>(`/api/commits/${resolvedProjectId}?limit=5`);
+        const rows = await apiClient.get<Record<string, unknown>[]>(`/api/commits/${resolvedProjectId}?limit=50`);
         if (!cancelled) setCommitsList(Array.isArray(rows) ? rows : []);
       } catch {
         if (!cancelled) setCommitsList([]);
@@ -659,7 +659,7 @@ export default function ProjectDetail() {
                               <div className="flex flex-col items-end gap-2 flex-shrink-0">
                                 <span className="text-xs text-muted-foreground">{time}</span>
                                 <div className="flex items-center gap-2">
-                                  <button onClick={() => navigate(`/${owner}/${repo}/commit/${String((commit as any).sha || '').slice(0,40)}`)} className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
+                                  <button onClick={() => navigate(`/${owner}/${repo}/commit/${encodeURIComponent(String((commit as any).sha || (commit as any).id || '').slice(0,40))}`)} className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
                                     View
                                   </button>
                                   <a href={String((commit as any).url || getProjectCommitsUrl(resolvedProject) || `https://github.com/${owner}/${repo}/commit/${(commit as any).sha}`)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
