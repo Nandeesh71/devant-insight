@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = () => {
-    void supabase.auth.signOut();
+    void apiClient.post("/api/auth/logout").catch(() => {});
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem("devant.activeProjectId");
