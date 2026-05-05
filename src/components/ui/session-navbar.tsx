@@ -379,7 +379,7 @@ export function SessionNavBar() {
                         <AvatarImage src={avatarUrl} alt={displayName} />
                         <AvatarFallback className="text-[10px]">{initial1}</AvatarFallback>
                       </Avatar>
-                      <motion.li variants={itemVariants} className="flex w-full items-center gap-2 overflow-hidden">
+                      <motion.li variants={itemVariants} className={cn("flex items-center gap-2 overflow-hidden", isCollapsed ? "w-0" : "w-full")}>
                         {!isCollapsed && (
                           <>
                             <p className="text-sm font-medium truncate transition-all duration-200">{displayName}</p>
