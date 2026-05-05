@@ -119,10 +119,10 @@ function formatMaybeCurrency(value?: number | null) {
 }
 
 function getProjectRepoUrl(project: Project | null) {
-  const repoName = String(project?.repo_full_name || project?.github_repo_full_name || project?.github_repo || project?.repository || "");
-  if (!repoName) return null;
-  if (repoName.startsWith("http")) return repoName;
-  return `https://github.com/${repoName}`;
+  const fullName = getRepoFullName(project);
+  if (!fullName || fullName === "—" || fullName === "Untitled project") return null;
+  if (fullName.startsWith("http")) return fullName;
+  return `https://github.com/${fullName}`;
 }
 
 function getProjectCommitsUrl(project: Project | null) {
