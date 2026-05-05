@@ -5,7 +5,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge"
 import {
-  Bell,
   Blocks,
   ChevronsUpDown,
   FileClock,
@@ -35,13 +34,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton"
+
 import { useAuth } from "@/context/AuthContext";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const sidebarVariants = {
   open: {
-    width: "15rem",
+    width: "20rem",
   },
   closed: {
     width: "3.05rem",
@@ -109,7 +108,7 @@ export function SessionNavBar() {
   return (
     <motion.div
       className={cn(
-        "sidebar fixed left-0 z-40 h-full shrink-0 border-r border-[#302b59]",
+        "sidebar fixed left-0 z-40 h-full shrink-0 border-r border-[#302b59] overflow-hidden",
       )}
       initial={isCollapsed ? "closed" : "open"}
       animate={isCollapsed ? "closed" : "open"}
@@ -119,7 +118,7 @@ export function SessionNavBar() {
       onMouseLeave={() => setIsCollapsed(true)}
     >
       <motion.div
-        className={`relative z-40 flex h-full shrink-0 flex-col bg-[#1a1a2e] text-slate-200 transition-all`}
+        className={`relative z-40 flex h-full shrink-0 flex-col bg-[#1a1a2e] text-slate-200 transition-all overflow-hidden`}
         variants={contentVariants}
       >
         <motion.ul variants={staggerVariants} className="flex h-full flex-col">
@@ -189,56 +188,44 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/dashboard"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
-                        pathname === "/dashboard" &&
-                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
+                        pathname === "/dashboard" ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
                       )}
                     >
-                      <LayoutDashboard className="h-4 w-4" />{" "}
+                      <LayoutDashboard className="h-5 w-5" />
                       <motion.li variants={variants}>
                         {!isCollapsed && (
-                          <p className="ml-2 text-sm font-medium">Dashboard</p>
+                          <p className="text-[15px] font-medium">Dashboard</p>
                         )}
                       </motion.li>
                     </RouterLink>
                     <RouterLink
                       to="/reports"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
-
-                        pathname?.startsWith("/reports") &&
-                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
+                        pathname?.startsWith("/reports") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
                       )}
                     >
-                      <FileClock className="h-4 w-4" />{" "}
+                      <FileClock className="h-5 w-5" />
                       <motion.li variants={variants}>
                         {!isCollapsed && (
-                          <div className="flex items-center gap-2">
-                            <p className="ml-2 text-sm font-medium">Reports</p>
-                          </div>
+                          <p className="text-[15px] font-medium">Reports</p>
                         )}
                       </motion.li>
                     </RouterLink>
                     <RouterLink
                       to="/chat"
                       className={cn(
-                        "flex h-8 flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
-                        pathname?.startsWith("/chat") && "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
+                        pathname?.startsWith("/chat") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
                       )}
                     >
-                      <MessagesSquare className="h-4 w-4" />
+                      <MessagesSquare className="h-5 w-5" />
                       <motion.li variants={variants}>
                         {!isCollapsed && (
-                          <div className="ml-2 flex items-center  gap-2">
-                            <p className="text-sm font-medium">Chat</p>
-                            <Badge
-                              className={cn(
-                                "flex h-fit w-fit items-center gap-1.5 rounded border-none bg-blue-50 px-1.5 text-blue-600 dark:bg-blue-700 dark:text-blue-300",
-                              )}
-                              variant="outline"
-                            >
-                              BETA
-                            </Badge>
+                          <div className="flex items-center gap-3">
+                            <p className="text-[15px] font-medium">Chat</p>
+                            <Badge className="flex h-fit w-fit items-center gap-1.5 rounded border-none bg-blue-50 px-1.5 text-blue-600" variant="outline">BETA</Badge>
                           </div>
                         )}
                       </motion.li>
@@ -247,49 +234,42 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/deals"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
-
-                        pathname?.startsWith("/deals") && "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
+                        pathname?.startsWith("/deals") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
                       )}
                     >
-                      <Layout className="h-4 w-4" />{" "}
+                      <Layout className="h-5 w-5" />
                       <motion.li variants={variants}>
                         {!isCollapsed && (
-                          <p className="ml-2 text-sm font-medium">Deals</p>
+                          <p className="text-[15px] font-medium">Deals</p>
                         )}
                       </motion.li>
                     </RouterLink>
                     <RouterLink
                       to="/accounts"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
-
-                        pathname?.startsWith("/accounts") &&
-                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
+                        pathname?.startsWith("/accounts") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
                       )}
                     >
-                      <UserCircle className="h-4 w-4" />{" "}
+                      <UserCircle className="h-5 w-5" />
                       <motion.li variants={variants}>
                         {!isCollapsed && (
-                          <p className="ml-2 text-sm font-medium">Accounts</p>
+                          <p className="text-[15px] font-medium">Accounts</p>
                         )}
                       </motion.li>
                     </RouterLink>
                     <RouterLink
                       to="/competitors"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
-
-                        pathname?.startsWith("/competitors") &&
-                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
+                        pathname?.startsWith("/competitors") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
                       )}
                     >
-                      <UserSearch className="h-4 w-4" />
+                      <UserSearch className="h-5 w-5" />
                       <motion.li variants={variants}>
                         {!isCollapsed && (
-                          <p className="ml-2 text-sm font-medium">
-                            Competitors
-                          </p>
+                          <p className="text-[15px] font-medium">Competitors</p>
                         )}
                       </motion.li>
                     </RouterLink>
@@ -297,51 +277,42 @@ export function SessionNavBar() {
                     <RouterLink
                       to="/knowledge-base"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
-
-                        pathname?.startsWith("/knowledge-base") &&
-                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
+                        pathname?.startsWith("/knowledge-base") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
                       )}
                     >
-                      <GraduationCap className="h-4 w-4" />{" "}
+                      <GraduationCap className="h-5 w-5" />
                       <motion.li variants={variants}>
                         {!isCollapsed && (
-                          <p className="ml-2 text-sm font-medium">
-                            Knowledge Base
-                          </p>
+                          <p className="text-[15px] font-medium">Knowledge Base</p>
                         )}
                       </motion.li>
                     </RouterLink>
                     <RouterLink
                       to="/feedback"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
-                        pathname?.startsWith("/feedback") &&
-                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
+                        pathname?.startsWith("/feedback") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
                       )}
                     >
-                      <MessageSquareText className="h-4 w-4" />{" "}
+                      <MessageSquareText className="h-5 w-5" />
                       <motion.li variants={variants}>
                         {!isCollapsed && (
-                          <p className="ml-2 text-sm font-medium">Feedback</p>
+                          <p className="text-[15px] font-medium">Feedback</p>
                         )}
                       </motion.li>
                     </RouterLink>
                     <RouterLink
                       to="/document-review"
                       className={cn(
-                        "flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white",
-
-                        pathname?.startsWith("/document-review") &&
-                          "bg-[#7c3aed]/20 text-white ring-1 ring-[#7c3aed]/30",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
+                        pathname?.startsWith("/document-review") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
                       )}
                     >
-                      <FileClock className="h-4 w-4" />{" "}
+                      <FileClock className="h-5 w-5" />
                       <motion.li variants={variants}>
                         {!isCollapsed && (
-                          <p className="ml-2 text-sm font-medium">
-                            Document Review
-                          </p>
+                          <p className="text-[15px] font-medium">Document Review</p>
                         )}
                       </motion.li>
                     </RouterLink>
@@ -354,15 +325,10 @@ export function SessionNavBar() {
                     <TooltipTrigger asChild>
                       <button
                         onClick={handleThemeToggle}
-                        className="flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-muted hover:text-primary"
+                        className="flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-white/10 hover:text-white"
                         aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
                       >
                         {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                        <motion.span variants={variants}>
-                          {!isCollapsed && (
-                            <p className="ml-2 text-sm font-medium">{isDark ? 'Light' : 'Dark'}</p>
-                          )}
-                        </motion.span>
                       </button>
                     </TooltipTrigger>
                     {isCollapsed && <TooltipContent side="right">{isDark ? 'Light theme' : 'Dark theme'}</TooltipContent>}
@@ -370,19 +336,22 @@ export function SessionNavBar() {
                 </TooltipProvider>
                 <RouterLink
                   to="/settings"
-                  className="flex h-8 w-full flex-row items-center rounded-md px-2 py-1.5 transition hover:bg-white/10 hover:text-white"
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors duration-150",
+                    pathname?.startsWith("/settings") ? "bg-[#7c3aed] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
+                  )}
                 >
-                  <Settings className="h-4 w-4 shrink-0" />{" "}
+                  <Settings className="h-5 w-5 shrink-0" />
                   <motion.li variants={variants}>
                     {!isCollapsed && (
-                      <p className="ml-2 text-sm font-medium"> Settings</p>
+                      <p className="text-[15px] font-medium">Settings</p>
                     )}
                   </motion.li>
                 </RouterLink>
                 <div>
                   <DropdownMenu modal={false}>
                     <DropdownMenuTrigger className="w-full">
-                      <div className="flex h-8 w-full flex-row items-center gap-2 rounded-md px-2 py-1.5 transition hover:bg-muted hover:text-primary">
+                      <div className="flex h-8 w-full flex-row items-center gap-2 rounded-md px-2 py-1.5 transition-colors duration-150 hover:bg-white/10 hover:text-white">
                         <Avatar className="size-4">
                           <AvatarFallback>
                             {user?.name?.slice(0, 1).toUpperCase() || user?.email?.slice(0, 1).toUpperCase() || 'U'}
@@ -394,8 +363,8 @@ export function SessionNavBar() {
                         >
                           {!isCollapsed && (
                             <>
-                              <p className="text-sm font-medium">Account</p>
-                              <ChevronsUpDown className="ml-auto h-4 w-4 text-muted-foreground/50" />
+                              <p className="text-sm font-medium truncate">{user?.name || user?.email?.split('@')[0] || 'User'}</p>
+                              <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground/50" />
                             </>
                           )}
                         </motion.li>
@@ -418,14 +387,7 @@ export function SessionNavBar() {
                         </div>
                       </div>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        asChild
-                        className="flex items-center gap-2"
-                      >
-                        <RouterLink to="/account">
-                          <UserCircle className="h-4 w-4" /> Account
-                        </RouterLink>
-                      </DropdownMenuItem>
+                      
                       <DropdownMenuItem
                         asChild
                         className="flex items-center gap-2"

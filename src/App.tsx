@@ -54,7 +54,6 @@ const App = () => (
               <Route path="/document-review" element={<SectionPage title="Document Review" description="Review documents and generated summaries here." />} />
               <Route path="/connect-github" element={<ConnectGithub />} />
               <Route path="/settings/*" element={<Settings />} />
-              <Route path="/account" element={<Profile />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/owner/:owner/:repo" element={<LegacyOwnerRouteRedirect />} />
               <Route path="/:owner/:repo" element={<ProjectDetail />} />
