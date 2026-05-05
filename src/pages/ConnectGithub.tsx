@@ -45,7 +45,7 @@ export default function ConnectGithub() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen w-full items-center justify-center bg-background px-4 ml-[3.05rem]">
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-lift">
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg">

@@ -297,7 +297,7 @@ export default function ProjectDetail() {
   const commitContributors = repoContributors.length > 0 ? repoContributors : contributorsData;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background ml-[3.05rem]">
       <TooltipProvider delayDuration={150}>
         <LoadingSpinner visible={loading} />
 

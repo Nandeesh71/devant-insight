@@ -24,7 +24,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-8 sm:px-6">
+    <div className="min-h-screen bg-background px-4 py-8 sm:px-6 ml-[3.05rem]">
       <div className="mx-auto w-full max-w-3xl">
         <button
           onClick={() => navigate("/")}

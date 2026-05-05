@@ -1076,7 +1076,7 @@ export default function Index() {
   return (
     <div className="flex min-h-screen w-full overflow-hidden bg-background">
       <LoadingSpinner visible={loading} />
-      <main className="relative min-w-0 flex-1 overflow-y-auto bg-card pb-24">
+      <main className="relative min-w-0 flex-1 overflow-y-auto bg-card pb-24 ml-[3.05rem]">
         <TopBar
           dark={dark}
           toggle={toggle}
