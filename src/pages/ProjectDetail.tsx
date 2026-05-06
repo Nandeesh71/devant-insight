@@ -636,6 +636,8 @@ export default function ProjectDetail() {
                           const linesRemoved = String((commit as any).lines_removed || 0);
                           const aiTag = String((commit as any).ai_type_tag || '') || null;
                           const time = String((commit as any).timestamp || (commit as any).date || '—');
+                          // Use enriched avatar_url from backend
+                          const avatarUrl = (commit as any).author_avatar_url || (commit as any).author_github_avatar || null;
                           return (
                             <div key={key} className="flex items-start justify-between rounded-lg border border-border/60 p-3 bg-muted/30 hover:bg-muted/50 transition-colors">
                               <div className="flex items-start gap-3 min-w-0">
@@ -650,7 +652,11 @@ export default function ProjectDetail() {
 
                                   <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                                     <div className="flex items-center gap-2">
-                                      <div className="h-6 w-6 overflow-hidden rounded-full bg-muted flex items-center justify-center text-xs font-semibold">{author.slice(0,1).toUpperCase()}</div>
+                                      {avatarUrl ? (
+                                        <img src={avatarUrl} alt={author} className="h-6 w-6 rounded-full" />
+                                      ) : (
+                                        <div className="h-6 w-6 overflow-hidden rounded-full bg-muted flex items-center justify-center text-xs font-semibold">{author.slice(0,1).toUpperCase()}</div>
+                                      )}
                                       <span>{author}</span>
                                     </div>
                                     <code className="font-mono text-xs px-2 py-0.5 rounded-md border border-border/50">{sha}</code>
