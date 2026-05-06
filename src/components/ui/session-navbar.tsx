@@ -68,7 +68,7 @@ const itemVariants = {
 };
 
 const transitionProps = {
-  type: "tween",
+  type: "tween" as const,
   ease: "easeInOut" as const, // easeOutExpo
   duration: 0.25,
 };
