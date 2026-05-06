@@ -58,23 +58,24 @@ const itemVariants = {
   open: {
     x: 0,
     opacity: 1,
-    transition: { x: { stiffness: 1000, velocity: -100 } },
+    transition: { type: "tween", ease: [0.19, 1, 0.22, 1], duration: 0.2 },
   },
   closed: {
-    x: -20,
+    x: -8,
     opacity: 0,
-    transition: { x: { stiffness: 100 } },
+    transition: { type: "tween", ease: [0.19, 1, 0.22, 1], duration: 0.15 },
   },
 };
 
 const transitionProps = {
   type: "tween",
-  ease: [0.4, 0, 0.2, 1],
-  duration: 0.3,
+  ease: [0.19, 1, 0.22, 1], // easeOutExpo
+  duration: 0.25,
 };
 
 const staggerVariants = {
-  open: { transition: { staggerChildren: 0.03, delayChildren: 0.02 } },
+  open: { transition: { staggerChildren: 0.015, delayChildren: 0.05 } },
+  closed: { transition: { staggerChildren: 0.01, staggerDirection: -1 } },
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
