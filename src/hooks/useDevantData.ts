@@ -186,6 +186,17 @@ export function useDevantData(): DevantData {
     };
   }, [projectId, tick, setProjectId]);
 
+  // Phase 11: poll backend every 15s for fresh data.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const id = setInterval(() => {
+      if (!localStorage.getItem("devant.token")) return;
+      if (document.visibilityState === "hidden") return;
+      setTick((t) => t + 1);
+    }, 15000);
+    return () => clearInterval(id);
+  }, []);
+
   return {
     loading,
     error,
