@@ -28,20 +28,28 @@ async function request<T>(method: string, path: string, body?: Json): Promise<T>
   const text = await res.text();
   let data: unknown = null;
   if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = text;
-    }
+    try { data = JSON.parse(text); } catch { data = text; }
   }
 
   if (!res.ok) {
+    const obj = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
     const msg =
-      (data && typeof data === "object" && "message" in (data as object) && (data as { message?: string }).message) ||
+      (obj && typeof obj.error === "string" && obj.error) ||
+      (obj && typeof obj.message === "string" && obj.message) ||
       `Request failed: ${res.status} ${res.statusText}`;
     throw new Error(String(msg));
   }
 
+  // Tolerantly unwrap { success, data, error } envelope (Phase 9 standardization).
+  if (data && typeof data === "object" && !Array.isArray(data)) {
+    const obj = data as Record<string, unknown>;
+    if ("success" in obj && ("data" in obj || "error" in obj)) {
+      if (obj.success === false) {
+        throw new Error(typeof obj.error === "string" ? obj.error : "Request failed");
+      }
+      return obj.data as T;
+    }
+  }
   return data as T;
 }
 
