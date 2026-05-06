@@ -81,16 +81,39 @@ export default function CommitDetail() {
           <h4 className="font-semibold text-sm">Files changed</h4>
           {Array.isArray(files) && files.length > 0 ? (
             <div className="mt-2 space-y-4 text-sm">
-              {files.map((f: any, i: number) => (
-                <div key={i} className="rounded-md border border-border/50 p-3 bg-muted/20">
-                  <div className="mb-2 font-medium">{typeof f === 'string' ? f : (f.filename || f.path || JSON.stringify(f))}</div>
-                  {f.patch ? (
-                    <pre className="max-h-[360px] overflow-auto rounded bg-black/5 p-3 text-xs font-mono whitespace-pre-wrap">{f.patch}</pre>
-                  ) : (
-                    <div className="text-xs text-muted-foreground">No patch available for this file</div>
-                  )}
-                </div>
-              ))}
+              {files.map((f: any, i: number) => {
+                const filename = typeof f === 'string' ? f : (f.filename || f.path || 'unknown');
+                const patch: string | undefined = typeof f === 'object' ? f.patch : undefined;
+                const isBinary = typeof f === 'object' && (f.binary === true || (!patch && (f.status === 'modified' || f.status === 'added') && (f.changes ?? 0) === 0));
+                return (
+                  <div key={i} className="rounded-md border border-border/50 p-3 bg-muted/20">
+                    <div className="mb-2 font-medium">{filename}</div>
+                    {patch ? (
+                      <div className="max-h-[360px] overflow-auto rounded bg-black/5 text-xs font-mono">
+                        {patch.split('\n').map((line, idx) => {
+                          const isHunk = line.startsWith('@@');
+                          const isAdd = !isHunk && line.startsWith('+');
+                          const isDel = !isHunk && line.startsWith('-');
+                          const cls = isHunk
+                            ? 'bg-blue-500/10 text-blue-400'
+                            : isAdd
+                            ? 'bg-green-500/10 text-green-400'
+                            : isDel
+                            ? 'bg-red-500/10 text-red-400'
+                            : 'text-muted-foreground';
+                          return (
+                            <div key={idx} className={`px-3 py-px whitespace-pre ${cls}`}>{line || ' '}</div>
+                          );
+                        })}
+                      </div>
+                    ) : isBinary ? (
+                      <div className="text-xs text-muted-foreground">Binary file — diff not shown</div>
+                    ) : (
+                      <div className="text-xs text-muted-foreground">No patch available for this file</div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="mt-2 text-sm text-muted-foreground">No file list available</div>
