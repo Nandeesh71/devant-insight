@@ -58,18 +58,18 @@ const itemVariants = {
   open: {
     x: 0,
     opacity: 1,
-    transition: { type: "tween", ease: [0.19, 1, 0.22, 1], duration: 0.2 },
+    transition: { type: "tween", ease: "easeInOut" as const, duration: 0.2 },
   },
   closed: {
     x: -8,
     opacity: 0,
-    transition: { type: "tween", ease: [0.19, 1, 0.22, 1], duration: 0.15 },
+    transition: { type: "tween", ease: "easeInOut" as const, duration: 0.15 },
   },
 };
 
 const transitionProps = {
   type: "tween",
-  ease: [0.19, 1, 0.22, 1], // easeOutExpo
+  ease: "easeInOut" as const, // easeOutExpo
   duration: 0.25,
 };
 
