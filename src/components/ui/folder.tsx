@@ -30,6 +30,7 @@ export interface FolderCardProps {
 
 export function FolderCard({
   title,
+  fullName,
   repoName,
   repoFullPath,
   isPrivate,
