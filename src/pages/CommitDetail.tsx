@@ -57,11 +57,8 @@ export default function CommitDetail() {
       <div className="mb-4 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 rounded-md px-3 py-1 text-sm"> <ArrowLeft size={14} /> Back</button>
         <h2 className="text-lg font-semibold">Commit {String(commit.sha).slice(0,7)}</h2>
-        {(commit.github_url || commit.url) && (
-          <a href={String(commit.github_url || commit.url)} target="_blank" rel="noreferrer" className="ml-3 inline-flex items-center gap-1 text-sm text-brand"><ExternalLink size={14} /> Open on GitHub</a>
-        )}
-        {commit.patch_url && (
-          <a href={String(commit.patch_url)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-blue-600"><ExternalLink size={14} /> View patch</a>
+        {commit.url && (
+          <a href={String(commit.url)} target="_blank" rel="noreferrer" className="ml-3 inline-flex items-center gap-1 text-sm text-brand"><ExternalLink size={14} /> Open on GitHub</a>
         )}
       </div>
 
@@ -84,26 +81,39 @@ export default function CommitDetail() {
           <h4 className="font-semibold text-sm">Files changed</h4>
           {Array.isArray(files) && files.length > 0 ? (
             <div className="mt-2 space-y-4 text-sm">
-              {files.map((f: any, i: number) => (
-                <div key={i} className="rounded-md border border-border/50 p-3 bg-muted/20">
-                  <div className="mb-2 font-medium flex items-center justify-between">
-                    <span>{typeof f === 'string' ? f : (f.filename || f.path || JSON.stringify(f))}</span>
-                    {f.github_url && (
-                      <a href={f.github_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline flex items-center gap-1"><ExternalLink size={12} /> View</a>
+              {files.map((f: any, i: number) => {
+                const filename = typeof f === 'string' ? f : (f.filename || f.path || 'unknown');
+                const patch: string | undefined = typeof f === 'object' ? f.patch : undefined;
+                const isBinary = typeof f === 'object' && (f.binary === true || (!patch && (f.status === 'modified' || f.status === 'added') && (f.changes ?? 0) === 0));
+                return (
+                  <div key={i} className="rounded-md border border-border/50 p-3 bg-muted/20">
+                    <div className="mb-2 font-medium">{filename}</div>
+                    {patch ? (
+                      <div className="max-h-[360px] overflow-auto rounded bg-black/5 text-xs font-mono">
+                        {patch.split('\n').map((line, idx) => {
+                          const isHunk = line.startsWith('@@');
+                          const isAdd = !isHunk && line.startsWith('+');
+                          const isDel = !isHunk && line.startsWith('-');
+                          const cls = isHunk
+                            ? 'bg-blue-500/10 text-blue-400'
+                            : isAdd
+                            ? 'bg-green-500/10 text-green-400'
+                            : isDel
+                            ? 'bg-red-500/10 text-red-400'
+                            : 'text-muted-foreground';
+                          return (
+                            <div key={idx} className={`px-3 py-px whitespace-pre ${cls}`}>{line || ' '}</div>
+                          );
+                        })}
+                      </div>
+                    ) : isBinary ? (
+                      <div className="text-xs text-muted-foreground">Binary file — diff not shown</div>
+                    ) : (
+                      <div className="text-xs text-muted-foreground">No patch available for this file</div>
                     )}
                   </div>
-                  <div className="mb-2 text-xs text-muted-foreground">
-                    {f.additions !== undefined && f.deletions !== undefined && (
-                      <span>+{f.additions} -{f.deletions}</span>
-                    )}
-                  </div>
-                  {f.patch ? (
-                    <pre className="max-h-[360px] overflow-auto rounded bg-black/5 p-3 text-xs font-mono whitespace-pre-wrap">{f.patch}</pre>
-                  ) : (
-                    <div className="text-xs text-muted-foreground">No patch available for this file</div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="mt-2 text-sm text-muted-foreground">No file list available</div>
