@@ -267,14 +267,15 @@ export default function ProjectDetail() {
     return () => { cancelled = true; };
   }, [tab, resolvedProjectId, detailTick]);
 
-  // If summary has no recent commits, fetch raw commits as a fallback
+  // If summary has no recent commits, fetch ALL raw commits as a fallback
   useEffect(() => {
     let cancelled = false;
     async function loadCommitsFallback() {
       if (!resolvedProjectId) return;
       setCommitsLoadingLocal(true);
       try {
-        const rows = await apiClient.get<Record<string, unknown>[]>(`/api/commits/${resolvedProjectId}?limit=50`);
+        // Fetch ALL commits (no limit param means unlimited)
+        const rows = await apiClient.get<Record<string, unknown>[]>(`/api/commits/${resolvedProjectId}`);
         if (!cancelled) setCommitsList(Array.isArray(rows) ? rows : []);
       } catch {
         if (!cancelled) setCommitsList([]);
@@ -327,9 +328,11 @@ export default function ProjectDetail() {
   const recentCommits = ((summaryData?.commits as Record<string, unknown> | undefined)?.recent as Record<string, unknown>[] | undefined) || [];
   const teamMembers = (teamData?.members as Record<string, unknown>[] | undefined) || ((summaryData?.team as Record<string, unknown> | undefined)?.members as Record<string, unknown>[] | undefined) || [];
   const repoMeta = teamData?.repo as Record<string, unknown> | undefined;
-  const repoOwner = repoMeta?.owner as Record<string, unknown> | undefined;
-  const repoCollaborators = (repoMeta?.collaborators as Record<string, unknown>[] | undefined) || [];
-  const repoContributors = (repoMeta?.contributors as Record<string, unknown>[] | undefined) || [];
+  
+  // Extract owner, collaborators, contributors from both top-level AND nested repo object
+  const repoOwner = (teamData?.owner as Record<string, unknown> | undefined) || (repoMeta?.owner as Record<string, unknown> | undefined);
+  const repoCollaborators = ((teamData?.collaborators as Record<string, unknown>[] | undefined) || (repoMeta?.collaborators as Record<string, unknown>[] | undefined) || []);
+  const repoContributors = ((teamData?.contributors as Record<string, unknown>[] | undefined) || (repoMeta?.contributors as Record<string, unknown>[] | undefined) || []);
   const commitContributors = repoContributors.length > 0 ? repoContributors : contributorsData;
 
   return (
